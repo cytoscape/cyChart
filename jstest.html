@@ -1,0 +1,44 @@
+<html>
+				<head>
+				<script>
+				function getResults(results) {
+					alert(results);
+				}
+
+				function nodeSelectionChanged(selectedNodes) {
+					selectionChanged("Selected Nodes", "nodeSelection", selectedNodes);
+				}
+
+				function edgeSelectionChanged(selectedEdges) {
+					selectionChanged("Selected Edges", "edgeSelection", selectedEdges);
+				}
+
+				function selectionChanged(header, id, selection) {
+					// alert("Selected nodes: "+selectedNodes);
+					var obj = JSON.parse(selection);
+					var table = "<h3>"+header+"</h3><table><tr><th>SUID</th><th>Name</th></tr>"
+					for (var i = 0; i < obj.length; i++) {
+						table += "<tr><td>"+obj[i]['suid']+"</td><td>"+obj[i]['name']+"</td></tr>";
+					}
+					table += "</table>";
+					document.getElementById(id).innerHTML = table;
+				}
+				</script>
+				</head>
+				<body>
+								<h1>Test</h1>
+								<!--input type="button" onClick="window.open('cycmd:view fit content', '_blank');" value="Fit Content"/-->
+								<input type="button" onclick="cybrowser.executeCyCommand('view fit content');" value="Fit Content"/>
+								<input type="button" onclick="cybrowser.executeCyCommandWithResults('network select nodeList=YKR026C', 'getResults');" value="Select YkR026C"/>
+								<input type="button" onclick="cybrowser.registerSelectionListeners('nodeSelection', 'current', 'nodeSelectionChanged');" value="Register node listener"/>
+								<input type="button" onclick="cybrowser.registerSelectionListeners('edgeSelection', 'current', 'edgeSelectionChanged');" value="Register edge listener"/>
+								<!-- input type="button" onClick="location.href='http://www.cgl.ucsf.edu';" value="CGL"/-->
+								<input type="button" onclick="window.open('http://www.cgl.ucsf.edu','_blank');" value="CGL"/>
+								<a href="cycmd:view fit content">Fit content</a>
+
+								<div id="nodeSelection">
+								</div>
+								<div id="edgeSelection">
+								</div>
+				</body>
+</html>

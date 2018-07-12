@@ -1,0 +1,14 @@
+.geology-btn {
+    -fx-font: 18px "Trebuchet MS";
+    -fx-text-fill: white;
+    -fx-background-color: #CC7722;
+    -fx-effect: innershadow( three-pass-box , #27496d , 2, 0, 0, 0);
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+}
+
+.chart-symbol.default-color0 { 
+	-fx-background-radius: 26px; 
+	-fx-background-color: #39e220;  
+	-fx-shape: "M0,4 L2,4 L4,8 L7,0 L9,0 L4,11 Z";
+}
