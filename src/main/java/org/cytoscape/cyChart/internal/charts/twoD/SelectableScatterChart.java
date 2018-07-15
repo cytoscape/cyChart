@@ -23,7 +23,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -42,16 +41,17 @@ public class SelectableScatterChart extends VBox
 	private final ScatterChartController controller;
 	public ScatterChart<Number, Number> 	getScatterChart()	{ return scatter;	}
 	
-	public SelectableScatterChart(ScatterChartController ctlr, List<MixedDataRow> observableList)
+	public SelectableScatterChart(ScatterChartController ctlr, List<MixedDataRow> observableList, Label statusFeedback)
 	{
-		this(ctlr);
+		this(ctlr, statusFeedback);
 //		addData(observableList);
 	}
 
 	//------------------------------------------------------------------------
-	public SelectableScatterChart(ScatterChartController ctlr)
+	public SelectableScatterChart(ScatterChartController ctlr, Label statusFeedback)
 	{
 		controller = ctlr;
+		infoLabel = statusFeedback;
 		addLayer("Height", "Weight", 0);
 		VBox pile = new VBox();
 		pile.getChildren().addAll(scatter);
@@ -83,8 +83,8 @@ public class SelectableScatterChart extends VBox
 		Node chartPlotArea = getPlotAreaNode();
 		if (chartPlotArea != null)
 		{
-			Region rgn = (Region) chartPlotArea;
-			rgn.setBorder(Borders.blueBorder1);
+//			Region rgn = (Region) chartPlotArea;
+//			rgn.setBorder(Borders.blueBorder1);
 		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> resized();
 		    scatter.widthProperty().addListener(paneSizeListener);
 		    scatter.heightProperty().addListener(paneSizeListener);  	
@@ -267,7 +267,8 @@ public class SelectableScatterChart extends VBox
 	 * The info label shows a short info text
 	 */
 	private void addInfoLabel() {
-		infoLabel = new Label("");
+		if (infoLabel == null)
+			infoLabel = new Label("");
 		infoLabel.setId(INFO_LABEL_ID);
 		getChildren().add(infoLabel);
 		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);

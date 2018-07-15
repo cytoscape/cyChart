@@ -1,56 +1,77 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
-import org.cytoscape.cyChart.internal.charts.Borders;
-import org.cytoscape.cyChart.internal.charts.CSVTableData;
-import org.cytoscape.cyChart.internal.charts.MixedDataRow;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.fxml.FXML;
+import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 public class ScatterChartController implements Initializable
 {
-//  @FXML private  LineChart<Number, Number> histogramChart;
- 
-  @FXML  private Pane chartBox;
-  @FXML  private StackPane chartContainer;
-  @FXML  private ChoiceBox<String> columnChoices;
-  @FXML  private ChoiceBox<String> yAxisChoices;
-  @FXML  private TableView<MixedDataRow> tableview;
-  @FXML  private TableColumn<MixedDataRow, Integer> ID;
-  @FXML  private TableColumn<MixedDataRow, String> colA;
-  @FXML  private TableColumn<MixedDataRow, Integer> colB;
-  @FXML  private TableColumn<MixedDataRow, Double> colC;
-  private CSVTableData dataTable;
-//  private NumberAxis xAxis;
-//  private NumberAxis yAxis;
-
-	private static String getPathName() {		return "/Users/adam/galFilteredOut.csv";	}
-  
-  
+  private Pane chartBox;
+  private StackPane chartContainer;
+  private ChoiceBox<String> columnChoices;
+  private ChoiceBox<String> yAxisChoices;
+  private NumberAxis xAxis;
+  private NumberAxis yAxis;
+	private final CyApplicationManager applicationManager;
+	private CyTable nodeTable;
+	CyServiceRegistrar registrar;
 	private SelectableScatterChart scatterChartHome;
+	
+	// use this if you don't use FXML to define the chart
+	public ScatterChartController(StackPane parent, CyServiceRegistrar reg) {
+		chartContainer = parent;
+		registrar = reg;
+		applicationManager = registrar.getService(CyApplicationManager.class);
+		nodeTable = getCurrentNodeTable();
+		xAxis = new NumberAxis();
+		yAxis = new NumberAxis();
+		chartBox = new Pane();
+		columnChoices = new ChoiceBox<String>();
+		yAxisChoices = new ChoiceBox<String>();
+		HBox line = new HBox(columnChoices);
+		HBox line2 = new HBox(yAxisChoices);
+		VBox page = new VBox(chartBox, line, line2);
+		parent.getChildren().add(page);
+		initialize(null, null);
+	}
 
-  static boolean bypass = false;
+	CyTable getCurrentNodeTable() 
+	{	
+		return applicationManager.getCurrentNetwork().getDefaultNodeTable();	
+	}
+	
+
+  
+
+//  static boolean bypass = false;
 	@Override public void initialize(URL url, ResourceBundle rb)
 	{
-	    System.out.println("ScatterChartController.initialize");
-	   bypass = true;
+//	    System.out.println("ScatterChartController.initialize");
+//	   bypass = true;
 //		assert (scatterChart != null);
 	    assert( chartContainer != null);
-		buildData();
 		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{	
 			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
 			{   setXParameters(newV);   }	
@@ -59,48 +80,14 @@ public class ScatterChartController implements Initializable
 			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
 			{   setYParameters(newV);   }	
 		};
-		
+		populateColumnChoices();
 		columnChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
-		columnChoices.getSelectionModel().select("Eccentricity");
+		columnChoices.getSelectionModel().select(0);
 		yAxisChoices.getSelectionModel().selectedIndexProperty().addListener(yListener);
-		yAxisChoices.getSelectionModel().select("ClosenessCentrality");
-		bypass = false;		
+		yAxisChoices.getSelectionModel().select(1);
+//		bypass = false;		
 		setParameters();
 	}
-	// ------------------------------------------------------
-	// reads the table file and fills the cells into a tableview's model
-	
-	public void buildData()
-	{
-	    System.out.println("buildData");
-		try
-		{
-			String pathname = getPathName();
-			dataTable = CSVTableData.readCSVfile(pathname);
-			if (dataTable == null) return;
-			dataTable.populateCSVTable(tableview);
-			setupChart();
-		} 
-		catch (Exception e) { e.printStackTrace(); }
-	}
-	// ------------------------------------------------------
-//	SelectableScatterChart ssc;
-	private void setupChart()
-	{
-		if (!dataTable.getColumnNames().isEmpty())
-		{
-			for (String colName : dataTable.getColumnNames())
-			{
-				columnChoices.getItems().add(colName);
-				yAxisChoices.getItems().add(colName);
-			}
-		}
-		chartBox.getChildren().clear();
-		SelectableScatterChart ssc = new SelectableScatterChart(this, dataTable.getData());
-		chartBox.getChildren().add(ssc);
-//		chartBox.setBorder(Borders.greenBorder);
-	}
-
 	// ------------------------------------------------------
 	public void setXParameters(Number val)
 	{
@@ -116,15 +103,15 @@ public class ScatterChartController implements Initializable
 static int DOT_SIZE = 4; 
 	public void setParameters()
 	{
-		if (bypass) return;
+//		if (bypass) return;
 		if (chartBox != null)
 		{
 			chartBox.getChildren().clear();
 			String x = columnChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + " v. " + y);
-			XYChart.Series<Number, Number> series1 = dataTable.generateData(x, y);
-			scatterChartHome = new SelectableScatterChart(this);
+		    System.out.println(x + " v.  " + y);
+			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+			scatterChartHome = new SelectableScatterChart(this, null);
 			scatterChartHome.setDataSeries(series1);
 	        for (XYChart.Data<Number, Number> dataVal : series1.getData()) {
 	        	StackPane stackPane =  (StackPane) dataVal.getNode();
@@ -139,7 +126,66 @@ static int DOT_SIZE = 4;
 		    	legend.setVisible(false);
 		}
 	}
-//	// ------------------------------------------------------
+	private void populateColumnChoices() {
+		if (nodeTable != null && !nodeTable.getColumns().isEmpty())
+		{
+			for (CyColumn col : nodeTable.getColumns())
+			{
+				if (!isNumericColumn(col)) continue;
+				columnChoices.getItems().add(col.getName());
+				yAxisChoices.getItems().add(col.getName());
+			}
+			columnChoices.getSelectionModel().select(0);
+		}
+	}
+	private boolean isNumericColumn(CyColumn col) {
+		return col.getType() == Double.class || col.getType() == Integer.class;
+	}
+
+	private XYChart.Series<Number, Number>  getDataSeries(String xName, String yName) {
+		nodeTable = getCurrentNodeTable(); 
+		if (nodeTable == null) return null;
+		CyColumn xcol = nodeTable.getColumn(xName);
+		if (xcol == null) return null; 
+		CyColumn ycol = nodeTable.getColumn(yName);
+		if (ycol == null) return null;
+		List<Double> xvalues = getColumnValues(xcol);
+		List<Double> yvalues = getColumnValues(ycol);
+		XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+		series.nameProperty().set("");
+		try
+		{
+			ObservableList<Data<Number, Number>>  data = series.getData();
+			int size = xvalues.size();
+			for (int i = 0; i < size; i++)
+			{
+				Double x = xvalues.get(i);
+				if (x == null) continue;
+				Double y = yvalues.get(i);	
+				if (y == null) continue;
+				data.add(new XYChart.Data<Number, Number>(x,y));
+			}
+		}
+		catch (Exception e)		{			e.printStackTrace();		}
+		return series;
+	}
+	
+	private List<Double> getColumnValues(CyColumn col)
+	{
+		if (col.getType() == Double.class)
+			return col.getValues(Double.class);
+		if (col.getType() == Integer.class)
+		{
+			List<Integer> intvalues = col.getValues(Integer.class);
+			List<Double> dubvalues = new ArrayList<Double>();
+			for (Integer i : intvalues)
+				dubvalues.add(new Double(i));
+			return dubvalues;
+		}
+		return null;
+	}
+
+	//	// ------------------------------------------------------
 	private double startX, endX, startY, endY;			// these are values in the charts data space
 	
 	public double getSelectionStart()	{ 	return startX;	}
@@ -169,40 +215,54 @@ static int DOT_SIZE = 4;
 		
 		startX = xMin;	endX = xMax;
 		startY = yMin; 	endY = yMax;
-		int xcol = findColumn(xname);
-		int ycol = findColumn(yname);
-		if (xcol < 0 || ycol < 0) return;
-		tableview.getSelectionModel().clearSelection();
+		CyColumn xcol = findColumn(xname);
+		CyColumn ycol = findColumn(yname);
+		if (xcol == null || ycol == null) return;
 		selectRange(xcol, xMin, xMax, ycol, yMin, yMax);
 	}
 	
-	public int findColumn(String name)
+	public CyColumn findColumn(String name)
 	{
-		int nCols = tableview.getColumns().size();
-		for (int col = 0; col < nCols; col++)
-		{
-			TableColumn<?,?> column = tableview.getColumns().get(col);
-			if (name.equals(column.getText()))
-				return col;
-		}
-		return -1;
-	}
-	
-	public void selectRange(int xcolIndex, double xMin, double xMax, int ycolIndex, double yMin, double yMax) 
-	{
-		for (MixedDataRow row : tableview.getItems())
-			if (rowMatch(row, xcolIndex, xMin, xMax, ycolIndex, yMin, yMax))
-				tableview.getSelectionModel().select(row);
-	}
-	
-	boolean verbose = false;
-	private boolean rowMatch(MixedDataRow row, int xcolIndex, double xMin, double xMax, int ycolIndex, double yMin, double yMax) {
-		double x = row.get(xcolIndex).doubleValue();
-		double y = row.get(ycolIndex).doubleValue();
-		
-		boolean match = (xMin <= x && xMax >= x && yMin <= y && yMax >= y);
-		if (verbose) System.out.println(String.format("%s X is col %d (%.2f %.2f) %.2f Y is col %d (%.2f %.2f) %.2f",( match ? "HIT " : "MISS" ), xcolIndex, xMin, xMax, x, ycolIndex, yMin, yMax, y));
-		return match;
+		for (CyColumn column : nodeTable.getColumns())
+			if (name.equals(column.getName()))
+				return column;
+		return null;
 	}
 
+	public void selectRange(CyColumn col, double xMin, double xMax, CyColumn ycol, double yMin, double yMax) 
+	{
+		for (CyRow row : nodeTable.getAllRows())
+		{	
+			boolean selectedX =  (rowMatch(row, col, xMin, xMax));
+			boolean selectedY =  (rowMatch(row, ycol, yMin, yMax));
+			boolean selected = selectedX && selectedY;
+			row.set(CyNetwork.SELECTED, selected);
+//			System.out.println((selected ? "selecting " : "deselecting ") + row.get("SUID", Long.class));
+		}
+	}
+	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
+		if (row == null) {		System.out.println("row is null");		return false;	}
+		if (col == null) {		System.out.println("col is null");		return false;	}
+		
+//		System.out.println(String.format("col %s (%.2f - %.2f)", col.getName(), xMin, xMax));
+		Object val = row.get(col.getName(), col.getType());
+		if (val == null) return false;
+		System.out.println("" + val);
+		if (val instanceof Double)
+		{ 
+			Double v = (Double) val;
+			boolean hit = (xMin <= v && xMax >= v);
+			return hit;
+		}
+		if (val instanceof Integer)
+		{ 
+			double v = 1.0 * (Integer) val;
+			boolean hit = (xMin <= v && xMax >= v);
+			return hit;
+		}
+		return false;
+		
+	}
+
+	public String ping() {		return "JERE";		}
 	}

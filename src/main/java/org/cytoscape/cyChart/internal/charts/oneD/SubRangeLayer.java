@@ -1,6 +1,7 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.List;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
@@ -114,12 +115,12 @@ public class SubRangeLayer			// a 1D GateLayer
 		setGateValues(selectionAnchor, selectionMovingEnd);
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
-		double freq = getGateFreq(chart, xMin, xMax);
+		double freq = getRangeFreq(chart, xMin, xMax);
 		NumberFormat fmt = new DecimalFormat("0.00");
 		String s = fmt.format(freq * 100) +  "% for ( " + fmt.format(xMin) + ", " + fmt.format(xMax) +  ")";
 		infoLabel.setText(s);
 		showInfo();
-		selectGated(chart, xMin, xMax);
+		selectRange(chart, xMin, xMax);
 
 	}
 	boolean BETWEEN(double a, double min, double max)		{		return a >= min && a <= max;		}
@@ -315,13 +316,13 @@ public class SubRangeLayer			// a 1D GateLayer
 	public void setGateValues(double selAnchorH, double selEndH) {
 		double x0 = converter.frameToScale(selAnchorH, chart, false);
 		double x1 = converter.frameToScale(selEndH, chart, false);
-		controller.setGateValues(x0, x1);		
+		controller.setRange1DValues(x0, x1);		
 	}
-	public void setGateValues(double selAnchorH, double selEndH, double v) {
+	public void setRangeValues(double selAnchorH, double selEndH, double v) {
 		double x0 = converter.frameToScale(selAnchorH, chart, false);
 		double x1 = converter.frameToScale(selEndH, chart,  false);
 		double y1 = converter.frameToScale(v, chart, true);
-		controller.setGateValues(x0, x1, y1);		
+		controller.setRange1DValues(x0, x1, y1);		
 	}
 
 	public void setAxisBounds() 		// window has resized or selection set programmatically
@@ -348,10 +349,13 @@ public class SubRangeLayer			// a 1D GateLayer
 		
 		}
 	
-	private double getGateFreq(XYChart<Number, Number> chart, double xMin, double xMax)
+	private double getRangeFreq(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
 		int ct = 0;
-		XYChart.Series<Number, Number> data = chart.getData().get(0);
+		List<XYChart.Series<Number, Number>> dataList = chart.getData();
+		if (dataList == null || dataList.isEmpty()) return 0;
+		XYChart.Series<Number, Number> data = dataList.get(0);
+		if (data.getData().isEmpty()) return 0;
 		for (Data<Number, Number> n : data.getData())
 		{
 			double x = n.getXValue().doubleValue();
@@ -362,35 +366,12 @@ public class SubRangeLayer			// a 1D GateLayer
 		
 	}
 	
-	private void selectGated(XYChart<Number, Number> chart, double xMin, double xMax)
+	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
 		XYChart.Series<Number, Number> data = chart.getData().get(0);
 		controller.selectRange(data.getName(), xMin, xMax);
-		
-//		XYChart.Series<Number, Number> data = chart.getData().get(0);
-//		if (data == null) return;
-//		int row = 0, ct = 0;
-//		for (Data<Number, Number> n : data.getData())
-//		{
-//			row++;
-//			double x = n.getXValue().doubleValue();
-//			double y = n.getYValue().doubleValue();
-////			System.out.println("test " +  x + " vs " + y + " in row " + row++);		
-//			if ( BETWEEN(x, xMin, xMax))
-//			{	
-//				Object suid = n.getExtraValue();
-//				select(n, row);
-//				ct++;
-//			}
-//		}
-//		System.out.println("selected " +  ct + " rows");		
 	}
 	
-	
-	private void select(Object suid, int row) {
-		System.out.println("selecting " +  row + " with val " + suid);
-	}
-
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
 		selectionH.setVisible(false);
@@ -446,7 +427,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		leftBar.setStartX(selectionAnchor);		leftBar.setStartY(top);			leftBar.setEndX(selectionAnchor);	leftBar.setEndY(bottom);
 		rightBar.setStartX(selectionMovingEnd);		rightBar.setStartY(top);		rightBar.setEndX(selectionMovingEnd);		rightBar.setEndY(bottom);
 		crossBar.setStartX(selectionAnchor);		crossBar.setStartY(v);			crossBar.setEndX(selectionMovingEnd);		crossBar.setEndY(v);
-		setGateValues(selectionAnchor, selectionMovingEnd, v);
+		setRangeValues(selectionAnchor, selectionMovingEnd, v);
 		
 		double startX = leftBar.getStartX();
 		double endX = rightBar.getStartX();

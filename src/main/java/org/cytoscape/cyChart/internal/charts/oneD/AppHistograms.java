@@ -3,6 +3,8 @@ package org.cytoscape.cyChart.internal.charts.oneD;
 import java.io.IOException;
 import java.net.URL;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,18 +20,18 @@ public class AppHistograms extends Application
     @Override public  void start(Stage stage) throws Exception 
     {
     	me = this;
-    	StackPane appPane = getStackPane();
+    	StackPane appPane = getStackPane(null);
     	Scene scene = new Scene(appPane, 1000, 800);
 	    stage.setScene(scene);
 	    stage.show();
    }
 
-    public static StackPane getStackPane()
+    public static StackPane getStackPane(CyServiceRegistrar registrar)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(800);
 	    pane.setPrefHeight(500);
-	    HistogramChartController cntl = new HistogramChartController(pane);
+	    HistogramChartController cntl = new HistogramChartController(pane, registrar);
 	    System.out.println("HistogramChartControllers status = "  + cntl.ping()); 
 	    return pane;
     }  

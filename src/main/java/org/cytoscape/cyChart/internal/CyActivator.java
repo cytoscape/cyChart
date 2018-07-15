@@ -12,11 +12,11 @@ import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.util.Properties;
-import org.cytoscape.task.TableColumnTaskFactory;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
-import org.cytoscape.cyChart.internal.tasks.DialogTaskFactory;
+import org.cytoscape.cyChart.internal.tasks.HistogramFilterTaskFactory;
+import org.cytoscape.cyChart.internal.tasks.ScatterFilterTaskFactory;
 import org.cytoscape.cyChart.internal.tasks.VersionTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -41,10 +41,10 @@ public class CyActivator extends AbstractCyActivator {
 		String version = bc.getBundle().getVersion().toString();
 		manager.setVersion(version);
 
-		DialogTaskFactory startChart = new DialogTaskFactory(manager);
+		HistogramFilterTaskFactory startChart = new HistogramFilterTaskFactory(manager);
 		Properties props = new Properties();
 		props.setProperty(PREFERRED_MENU, "Tools");
-		props.setProperty(TITLE, "Chart Filter...");
+		props.setProperty(TITLE, "Histogram Filter...");
 		props.setProperty(MENU_GRAVITY, "1.0");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
@@ -52,12 +52,27 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(COMMAND_DESCRIPTION, "Launch a Chart Filter in a separate window");
 		props.setProperty(COMMAND_LONG_DESCRIPTION, 
 		                  "Launch Cytoscape's internal CyChart in a separate window.  " +
-		                  "Provide an ``id`` for the window if you " +
-		                  "want subsequent control of the window via ``cychart hide``");
+		                  "Provide an ``id`` for the window if you want subsequent control of the window via ``cychart hide``");
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
 		registerService(bc, startChart, TaskFactory.class, props);
 //		registerService(bc, startChart, TableColumnTaskFactory.class, props);
+
+		ScatterFilterTaskFactory scatChart = new ScatterFilterTaskFactory(manager);
+		props = new Properties();
+		props.setProperty(PREFERRED_MENU, "Tools");
+		props.setProperty(TITLE, "Scatter Filter...");
+		props.setProperty(MENU_GRAVITY, "1.5");
+		props.setProperty(IN_MENU_BAR, "true");
+		props.setProperty(COMMAND_NAMESPACE, "cychart");
+		props.setProperty(COMMAND, "dialog");
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a Scatter Filter in a separate window");
+		props.setProperty(COMMAND_LONG_DESCRIPTION, 
+		                  "Launch Cytoscape's internal 2D CyChart in a separate window.  " +
+		                  "Provide an ``id`` for the window if you want subsequent control of the window via ``cychart hide``");
+		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
+		registerService(bc, scatChart, TaskFactory.class, props);
 	
 		VersionTaskFactory versionTask = new VersionTaskFactory(version);
 		props = new Properties();
@@ -68,6 +83,6 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"1.0\"}");
 		registerService(bc, versionTask, TaskFactory.class, props);
-        registerService(bc, startChart, DialogTaskFactory.class, props);
+        registerService(bc, startChart, HistogramFilterTaskFactory.class, props);
 	}
 }

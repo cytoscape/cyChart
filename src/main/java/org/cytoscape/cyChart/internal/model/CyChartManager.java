@@ -7,11 +7,16 @@ import java.util.Map;
 
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.cyChart.internal.charts.twoD.ChartDialog;
+import org.cytoscape.cyChart.internal.charts.oneD.Histogram1D;
+import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+
+import javafx.geometry.Point2D;
 
 public class CyChartManager {
 
@@ -37,6 +42,52 @@ public class CyChartManager {
 		return null;
 	}
 
+	CyNetwork getCurrentNetwork() 		{	return registrar.getService(CyApplicationManager.class).getCurrentNetwork();	}
+	CyTable getNodeTable(CyNetwork net) {	return net.getDefaultNodeTable();	}
+	
+	Map<Long, Double> getColumnDoubleMap(CyTable table, String colName)
+	{
+		Map<Long, Double> map = new HashMap<Long, Double> ();
+		CyColumn col = table.getColumn(colName);
+		if (col != null)
+		{
+			List<Double> vals = null;
+			List<Long> ids = null;
+			vals = col.getValues(Double.class);
+			ids = col.getValues(Long.class);
+			int sz = vals.size();
+			for (int i=0; i< sz; i++)
+				map.put(ids.get(i), vals.get(i));
+		}
+		return map;
+	}
+	
+	Map<Long, Point2D> getColumnPointMap(CyTable table, String xColName, String yColName)
+	{
+		Map<Long, Point2D> map = new HashMap<Long, Point2D> ();
+		CyColumn xcol = table.getColumn(xColName);
+		CyColumn ycol = table.getColumn(yColName);
+		CyColumn idcol = table.getColumn("SUID");
+		if (xcol != null && ycol != null)
+		{
+			List<Long> ids = null;
+			List<Double> xvals = xcol.getValues(Double.class);
+			List<Double> yvals = xcol.getValues(Double.class);
+			ids = idcol.getValues(Long.class);
+			int sz = xvals.size();
+			for (int i=0; i< sz; i++)
+				map.put(ids.get(i), new Point2D(xvals.get(i), yvals.get(i)));
+		}
+		return map;
+	}
+	
+		
+	
+	Histogram1D getHistogram(CyNetwork network, String column)
+	{
+		return null;
+	}
+	
 	public String makeId() {
 		String id = "CyChart "+chartCount;
 		chartCount++;
@@ -74,7 +125,7 @@ public class CyChartManager {
 		}
 
 		SwingUtilities.invokeLater( new Runnable() {
-			@Override public void run() {	if (chart instanceof ChartDialog)	((ChartDialog)chart).dispose();	}	
+			@Override public void run() {	if (chart instanceof HistogramFilterDialog)	((HistogramFilterDialog)chart).dispose();	}	
 		});
 			
 		removeChart(id);

@@ -46,6 +46,36 @@ public class Histogram1D
 		this(inName, DEFAULT_HISTO_LEN, inX, false);
 	}
 	
+	public Histogram1D(String name, List<Double> values)
+	{
+		this(name, values.size(), new Range(0, values.size()));
+		range = getRange(values);
+		for (Double d : values)
+		{
+			if (d != null) 
+			{
+				double dd = d;
+				count(dd);
+			}
+		}
+	}
+	
+	Range getRange(List<Double> values)
+	{
+		double min = Double.MAX_VALUE;
+		double max = Double.MIN_VALUE;
+		for (Double d : values)
+		{
+			if (d == null) {
+				System.out.println("null value");
+				continue;
+			}
+			if (d < min) min = d;
+			if (d > max) max = d;
+		}
+		return new Range(min, max);
+	}
+	
 	public Histogram1D(String inName, int len, Range inX)
 	{
 		name = inName;

@@ -1,6 +1,6 @@
 package org.cytoscape.cyChart.internal.tasks;
 
-import org.cytoscape.cyChart.internal.charts.twoD.ChartDialog;
+import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
 import org.cytoscape.cyChart.internal.model.CyChart;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.work.ProvidesTitle;
@@ -27,8 +27,8 @@ public class HideChartTask extends AbstractEmptyObservableTask {
 //		if (browser instanceof ResultsPanelBrowser)
 //			manager.unregisterCytoPanel((ResultsPanelBrowser)browser);
 //		else 
-			if (chart instanceof ChartDialog)
-			((ChartDialog)chart).dispose();
+			if (chart instanceof HistogramFilterDialog)
+			((HistogramFilterDialog)chart).dispose();
 		manager.removeChart(id);
 	}
 

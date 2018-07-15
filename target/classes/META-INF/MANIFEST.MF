@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1531439351526
+Bnd-LastModified: 1531616881860
 Build-Jdk: 1.8.0_172
 Built-By: adam
 Bundle-Activator: org.cytoscape.cyChart.internal.CyActivator
@@ -7,7 +7,7 @@ Bundle-ClassPath: .,jfxrt-8.0.jar
 Bundle-ManifestVersion: 2
 Bundle-Name: cyChart
 Bundle-SymbolicName: cyChart
-Bundle-Version: 1.0.1
+Bundle-Version: 0.1.0
 Created-By: Apache Maven Bundle Plugin
 Embed-Dependency: *;scope=!provided|!test
 Embed-Transitive: true
@@ -28,26 +28,27 @@ Import-Package: com.oracle.jrockit.jfr;resolution:=optional,com.sun.appl
  ion:=optional,javax.xml.namespace;resolution:=optional,javax.xml.parser
  s;resolution:=optional,javax.xml.stream;resolution:=optional,javax.xml.
  stream.util;resolution:=optional,org.apache.log4j;resolution:=optional;
- version="[1.2,2)",org.cytoscape.application.swing;resolution:=optional;
- version="[3.6,4)",org.cytoscape.model;resolution:=optional;version="[3.
- 6,4)",org.cytoscape.model.events;resolution:=optional;version="[3.6,4)"
- ,org.cytoscape.service.util;resolution:=optional;version="[3.6,4)",org.
- cytoscape.session.events;resolution:=optional;version="[3.6,4)",org.cyt
- oscape.work;resolution:=optional,org.cytoscape.work.json;resolution:=op
- tional;version="[3.6,4)",org.osgi.framework;resolution:=optional;versio
- n="[1.5,2)",org.w3c.dom;resolution:=optional,org.w3c.dom.css;resolution
- :=optional,org.w3c.dom.events;resolution:=optional,org.w3c.dom.html;res
- olution:=optional,org.w3c.dom.ranges;resolution:=optional,org.w3c.dom.s
- tylesheets;resolution:=optional,org.w3c.dom.traversal;resolution:=optio
- nal,org.w3c.dom.views;resolution:=optional,org.w3c.dom.xpath;resolution
- :=optional,org.xml.sax;resolution:=optional,org.xml.sax.helpers;resolut
- ion:=optional,sun.awt;resolution:=optional,sun.awt.dnd;resolution:=opti
- onal,sun.awt.image;resolution:=optional,sun.java2d;resolution:=optional
- ,sun.misc;resolution:=optional,sun.nio.ch;resolution:=optional,sun.plug
- in2.applet;resolution:=optional,sun.plugin2.applet2;resolution:=optiona
- l,sun.plugin2.main.client;resolution:=optional,sun.plugin2.message;reso
- lution:=optional,sun.reflect;resolution:=optional,sun.reflect.misc;reso
- lution:=optional,sun.security.x509;resolution:=optional,sun.swing;resol
- ution:=optional,sun.util.logging;resolution:=optional
+ version="[1.2,2)",org.cytoscape.application;resolution:=optional,org.cy
+ toscape.application.swing;resolution:=optional;version="[3.6,4)",org.cy
+ toscape.model;resolution:=optional;version="[3.6,4)",org.cytoscape.mode
+ l.events;resolution:=optional;version="[3.6,4)",org.cytoscape.service.u
+ til;resolution:=optional;version="[3.6,4)",org.cytoscape.session.events
+ ;resolution:=optional;version="[3.6,4)",org.cytoscape.work;resolution:=
+ optional,org.cytoscape.work.json;resolution:=optional;version="[3.6,4)"
+ ,org.osgi.framework;resolution:=optional;version="[1.5,2)",org.w3c.dom;
+ resolution:=optional,org.w3c.dom.css;resolution:=optional,org.w3c.dom.e
+ vents;resolution:=optional,org.w3c.dom.html;resolution:=optional,org.w3
+ c.dom.ranges;resolution:=optional,org.w3c.dom.stylesheets;resolution:=o
+ ptional,org.w3c.dom.traversal;resolution:=optional,org.w3c.dom.views;re
+ solution:=optional,org.w3c.dom.xpath;resolution:=optional,org.xml.sax;r
+ esolution:=optional,org.xml.sax.helpers;resolution:=optional,sun.awt;re
+ solution:=optional,sun.awt.dnd;resolution:=optional,sun.awt.image;resol
+ ution:=optional,sun.java2d;resolution:=optional,sun.misc;resolution:=op
+ tional,sun.nio.ch;resolution:=optional,sun.plugin2.applet;resolution:=o
+ ptional,sun.plugin2.applet2;resolution:=optional,sun.plugin2.main.clien
+ t;resolution:=optional,sun.plugin2.message;resolution:=optional,sun.ref
+ lect;resolution:=optional,sun.reflect.misc;resolution:=optional,sun.sec
+ urity.x509;resolution:=optional,sun.swing;resolution:=optional,sun.util
+ .logging;resolution:=optional
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
 Tool: Bnd-2.4.1.201501161923
