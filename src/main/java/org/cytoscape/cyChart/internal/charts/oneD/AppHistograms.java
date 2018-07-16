@@ -21,7 +21,7 @@ public class AppHistograms extends Application
     {
     	me = this;
     	StackPane appPane = getStackPane(null);
-    	Scene scene = new Scene(appPane, 1000, 800);
+    	Scene scene = new Scene(appPane, 600, 400);
 	    stage.setScene(scene);
 	    stage.show();
    }
@@ -29,8 +29,8 @@ public class AppHistograms extends Application
     public static StackPane getStackPane(CyServiceRegistrar registrar)
     {
 	    StackPane pane = new StackPane();
-	    pane.setPrefWidth(800);
-	    pane.setPrefHeight(500);
+	    pane.setPrefWidth(600);
+	    pane.setPrefHeight(400);
 	    HistogramChartController cntl = new HistogramChartController(pane, registrar);
 	    System.out.println("HistogramChartControllers status = "  + cntl.ping()); 
 	    return pane;

@@ -73,6 +73,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		update(0);
 		selectionH.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
 		selectionH.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
+		selectionH.setVisible(false);
 		pane.getChildren().add(selectionH);
 
 		addDragSelectionMechanism();
@@ -368,6 +369,8 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
+		List<XYChart.Series<Number, Number>> dataList = chart.getData();
+		if (dataList==null || dataList.isEmpty()) return;
 		XYChart.Series<Number, Number> data = chart.getData().get(0);
 		controller.selectRange(data.getName(), xMin, xMax);
 	}

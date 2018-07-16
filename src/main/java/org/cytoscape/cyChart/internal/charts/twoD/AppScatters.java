@@ -21,11 +21,12 @@ public class AppScatters extends Application
     @Override public  void start(Stage stage) throws Exception 
     {
     	me = this;
-	    FXMLLoader fxmlLoader = new FXMLLoader();
-	    URL url = getClass().getResource("ScatterChart.fxml");
-	    fxmlLoader.setLocation(url);
-	    AnchorPane appPane = fxmlLoader.load();
-	    Scene scene = new Scene(appPane, 1000, 800);
+//	    FXMLLoader fxmlLoader = new FXMLLoader();
+//	    URL url = getClass().getResource("ScatterChart.fxml");
+//	    fxmlLoader.setLocation(url);
+//	    AnchorPane appPane = fxmlLoader.load();
+    	StackPane pane = getStackPane(null);
+    	Scene scene = new Scene(pane, 500, 550);
 	    stage.setScene(scene);
 	    stage.show();
    }

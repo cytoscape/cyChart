@@ -44,8 +44,16 @@ public class HistogramChartController implements Initializable
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg) {
 		chartContainer = parent;
 		registrar = reg;
+		if (registrar == null)
+		{
+			applicationManager = null;
+			nodeTable = null;
+		}
+		else
+		{	
 		applicationManager = registrar.getService(CyApplicationManager.class);
 		nodeTable = getNodeTable(getCurrentNetwork());
+		}
 		xAxis = new NumberAxis();
 		yAxis = new NumberAxis();
 		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);

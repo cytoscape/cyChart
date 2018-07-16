@@ -42,9 +42,16 @@ public class ScatterChartController implements Initializable
 	// use this if you don't use FXML to define the chart
 	public ScatterChartController(StackPane parent, CyServiceRegistrar reg) {
 		chartContainer = parent;
-		registrar = reg;
-		applicationManager = registrar.getService(CyApplicationManager.class);
-		nodeTable = getCurrentNodeTable();
+		if (reg == null)
+		{
+			applicationManager = null;
+			nodeTable = null;
+			
+		}else
+		{	registrar = reg;
+			applicationManager = registrar.getService(CyApplicationManager.class);
+			nodeTable = getCurrentNodeTable();
+		}
 		xAxis = new NumberAxis();
 		yAxis = new NumberAxis();
 		chartBox = new Pane();
@@ -59,6 +66,7 @@ public class ScatterChartController implements Initializable
 
 	CyTable getCurrentNodeTable() 
 	{	
+		if (applicationManager == null) return null;
 		return applicationManager.getCurrentNetwork().getDefaultNodeTable();	
 	}
 	
@@ -112,12 +120,15 @@ static int DOT_SIZE = 4;
 		    System.out.println(x + " v.  " + y);
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 			scatterChartHome = new SelectableScatterChart(this, null);
-			scatterChartHome.setDataSeries(series1);
-	        for (XYChart.Data<Number, Number> dataVal : series1.getData()) {
-	        	StackPane stackPane =  (StackPane) dataVal.getNode();
-	        	if (stackPane != null)
-	        		stackPane.setPrefSize(DOT_SIZE, DOT_SIZE);
-	        }
+			if (series1 != null)
+			{
+				scatterChartHome.setDataSeries(series1);
+		        for (XYChart.Data<Number, Number> dataVal : series1.getData()) {
+		        	StackPane stackPane =  (StackPane) dataVal.getNode();
+		        	if (stackPane != null)
+		        		stackPane.setPrefSize(DOT_SIZE, DOT_SIZE);
+		        }
+			}
 			scatterChartHome.setAxes(x, y);
 			chartBox.getChildren().add(scatterChartHome);
 //			chartPlotArea = (Region) scatterChartHome.getPlotAreaNode();
@@ -223,6 +234,7 @@ static int DOT_SIZE = 4;
 	
 	public CyColumn findColumn(String name)
 	{
+		if (nodeTable == null) return null;
 		for (CyColumn column : nodeTable.getColumns())
 			if (name.equals(column.getName()))
 				return column;
@@ -231,6 +243,7 @@ static int DOT_SIZE = 4;
 
 	public void selectRange(CyColumn col, double xMin, double xMax, CyColumn ycol, double yMin, double yMax) 
 	{
+		if (nodeTable == null) return;
 		for (CyRow row : nodeTable.getAllRows())
 		{	
 			boolean selectedX =  (rowMatch(row, col, xMin, xMax));

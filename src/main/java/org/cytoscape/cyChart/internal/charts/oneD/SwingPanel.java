@@ -61,14 +61,14 @@ public class SwingPanel extends JPanel {
 	private void initComponents() {
 		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
-		System.out.println("jfxPanel created");
+//		System.out.println("jfxPanel created");
 		StackPane appPane = AppHistograms.getStackPane(registrar);
 		if (appPane != null) 
 		{
-			System.out.println("appPane created");
+//			System.out.println("appPane created");
 			Scene scene = new Scene(appPane);
 			jfxPanel.setScene(scene);
-			System.out.println("scene created");
+//			System.out.println("scene created");
 		}
 		else System.out.println("appPane came back null");
 
