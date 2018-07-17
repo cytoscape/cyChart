@@ -1,15 +1,11 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
-import java.net.URL;
+import javax.swing.JLabel;
 
-import org.cytoscape.cyChart.internal.charts.oneD.HistogramChartController;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -25,18 +21,18 @@ public class AppScatters extends Application
 //	    URL url = getClass().getResource("ScatterChart.fxml");
 //	    fxmlLoader.setLocation(url);
 //	    AnchorPane appPane = fxmlLoader.load();
-    	StackPane pane = getStackPane(null);
+    	StackPane pane = getStackPane(null, null);
     	Scene scene = new Scene(pane, 500, 550);
 	    stage.setScene(scene);
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, JLabel status)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(500);
 	    pane.setPrefHeight(600);
-	    ScatterChartController cntl = new ScatterChartController(pane, registrar);
+	    ScatterChartController cntl = new ScatterChartController(pane, registrar, status);
 	    System.out.println("ScatterChartController status = "  + cntl.ping()); 
 	    return pane;
     }  

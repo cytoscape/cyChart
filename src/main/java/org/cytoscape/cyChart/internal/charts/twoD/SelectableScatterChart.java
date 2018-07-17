@@ -51,7 +51,7 @@ public class SelectableScatterChart extends VBox
 	public SelectableScatterChart(ScatterChartController ctlr, Label statusFeedback)
 	{
 		controller = ctlr;
-		infoLabel = statusFeedback;
+//		infoLabel = statusFeedback;
 		addLayer("Height", "Weight", 0);
 		VBox pile = new VBox();
 		pile.getChildren().addAll(scatter);
@@ -121,7 +121,7 @@ public class SelectableScatterChart extends VBox
 	private NumberAxis yAxis;
 	private Rectangle selectionRectangleScaleDef;
 	private Rectangle selectionRectangle;
-	private Label infoLabel;
+//	private Label infoLabel;
 
 	private Point2D selRectStart = null;
 	private Point2D selRectEnd = null;
@@ -141,7 +141,7 @@ public class SelectableScatterChart extends VBox
 		yAxis = (NumberAxis) scatter.getYAxis();
 		makeSelectionRectangle();
 		addDragSelectionMechanism(getPlotAreaNode());
-		addInfoLabel();
+//		addInfoLabel();
 
 		StackPane.setAlignment(selectionRectangle, Pos.TOP_LEFT);
 	}
@@ -266,15 +266,15 @@ public class SelectableScatterChart extends VBox
 	/**
 	 * The info label shows a short info text
 	 */
-	private void addInfoLabel() {
-		if (infoLabel == null)
-			infoLabel = new Label("");
-		infoLabel.setId(INFO_LABEL_ID);
-		getChildren().add(infoLabel);
-		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
-		infoLabel.setVisible(false);
-	}
-
+//	private void addInfoLabel() {
+//		if (infoLabel == null)
+//			infoLabel = new Label("");
+//		infoLabel.setId(INFO_LABEL_ID);
+//		getChildren().add(infoLabel);
+//		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
+//		infoLabel.setVisible(false);
+//	}
+//
 	
 	/**----------------------------------------------------------------------------------
 	 * Adds a mechanism to select an area in the chart 
@@ -307,7 +307,7 @@ public class SelectableScatterChart extends VBox
 			setAxisBounds();
 			selRectStart = selRectEnd = null;
 			setSelectionRectangleScale(rectDef(selectionRectangle, getPlotFrame()));
-			makeGate(selectionRectangle);
+			makeSelectionRect(selectionRectangle);
 //		if (tool == gater)
 //	if (ev.isShiftDown())
 //		addGate(selectionRectangle);
@@ -381,9 +381,9 @@ public class SelectableScatterChart extends VBox
 	{			
 		NumberFormat fmt = new DecimalFormat("0.00");
 		String s = fmt.format(freq * 100) +  "% for X( " + fmt.format(xMin) + " - " + fmt.format(xMax) + ") Y( " + fmt.format(yMin) + " - " + fmt.format(yMax) + ")";
-		infoLabel.setText(s);
+//		infoLabel.setText(s);
 //		System.out.println(s);
-		infoLabel.setVisible(true);	
+		controller.setStatus(s);	
 		xRange = new Range(xMin, xMax);
 		yRange = new Range(yMin, yMax);
 	}
@@ -452,7 +452,7 @@ public class SelectableScatterChart extends VBox
 
 
 	
-	private void makeGate(Rectangle marquee)
+	private void makeSelectionRect(Rectangle marquee)
 	{
 		marquee.getStyleClass().add("selection");
 		marquee.setOpacity(0.3);

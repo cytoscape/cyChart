@@ -40,7 +40,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	double chartOffsetX, chartOffsetY;
 	private HistogramChartController controller;
 	private Group selectionH;
-	private Label infoLabel;
+//	private Label infoLabel;
 	private Label positionLabel;
 	FrameScaleConverter converter = new FrameScaleConverter();
 
@@ -93,11 +93,11 @@ public class SubRangeLayer			// a 1D GateLayer
 	 * The info label shows a short info text that tells the user how to unreset the zoom level.
 	 */
 	private void addInfoLabel() {
-		infoLabel = new Label("Subrange info goes here");
-		infoLabel.setId(INFO_LABEL_ID);
-		pane.getChildren().add(infoLabel);
-		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
-		infoLabel.setVisible(false);
+//		infoLabel = new Label("Subrange info goes here");
+//		infoLabel.setId(INFO_LABEL_ID);
+//		pane.getChildren().add(infoLabel);
+//		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
+//		infoLabel.setVisible(false);
 		positionLabel = new Label("positionLabel");
 		positionLabel.setId(POSITION_LABEL_ID);
 		pane.getChildren().add(positionLabel);
@@ -110,7 +110,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		yAxis.setAutoRanging(false);
 	}
 
-	private void showInfo() 				{			infoLabel.setVisible(true);		}
+//	private void showInfo() 				{			infoLabel.setVisible(true);		}
 	public void updateController()
 	{
 		setGateValues(selectionAnchor, selectionMovingEnd);
@@ -119,8 +119,8 @@ public class SubRangeLayer			// a 1D GateLayer
 		double freq = getRangeFreq(chart, xMin, xMax);
 		NumberFormat fmt = new DecimalFormat("0.00");
 		String s = fmt.format(freq * 100) +  "% for ( " + fmt.format(xMin) + ", " + fmt.format(xMax) +  ")";
-		infoLabel.setText(s);
-		showInfo();
+		controller.setStatusText(s);
+//		showInfo();
 		selectRange(chart, xMin, xMax);
 
 	}
@@ -432,8 +432,8 @@ public class SubRangeLayer			// a 1D GateLayer
 		crossBar.setStartX(selectionAnchor);		crossBar.setStartY(v);			crossBar.setEndX(selectionMovingEnd);		crossBar.setEndY(v);
 		setRangeValues(selectionAnchor, selectionMovingEnd, v);
 		
-		double startX = leftBar.getStartX();
-		double endX = rightBar.getStartX();
+//		double startX = leftBar.getStartX();
+//		double endX = rightBar.getStartX();
 //		System.out.println(String.format(" %.2f - %.2f ", startX, endX));
 
 	}
@@ -443,7 +443,6 @@ public class SubRangeLayer			// a 1D GateLayer
 	public int testHit(double x)
 	{
 		if (leftBar == null || rightBar == null) return 0;
-		double startX = leftBar.getStartX();
 		if (Math.abs(x - leftBar.getStartX()) < SLOP) return 1;
 		if (Math.abs(x - rightBar.getStartX()) < SLOP) return 3;
 		if (x > leftBar.getStartX() && x < rightBar.getStartX()) return 2;

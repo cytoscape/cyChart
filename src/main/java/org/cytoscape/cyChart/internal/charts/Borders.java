@@ -1,7 +1,5 @@
 package org.cytoscape.cyChart.internal.charts;
 
-import org.cytoscape.work.TunableValidator.ValidationState;
-
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;
 import javafx.scene.layout.BorderStrokeStyle;

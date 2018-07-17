@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JLabel;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -38,10 +40,12 @@ public class ScatterChartController implements Initializable
 	private CyTable nodeTable;
 	CyServiceRegistrar registrar;
 	private SelectableScatterChart scatterChartHome;
+	JLabel statusLabel;
 	
 	// use this if you don't use FXML to define the chart
-	public ScatterChartController(StackPane parent, CyServiceRegistrar reg) {
+	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, JLabel status) {
 		chartContainer = parent;
+		statusLabel = status;
 		if (reg == null)
 		{
 			applicationManager = null;
@@ -60,6 +64,7 @@ public class ScatterChartController implements Initializable
 		HBox line = new HBox(columnChoices);
 		HBox line2 = new HBox(yAxisChoices);
 		VBox page = new VBox(chartBox, line, line2);
+		page.setSpacing(4);
 		parent.getChildren().add(page);
 		initialize(null, null);
 	}
@@ -70,7 +75,10 @@ public class ScatterChartController implements Initializable
 		return applicationManager.getCurrentNetwork().getDefaultNodeTable();	
 	}
 	
-
+public void setStatus(String s)
+{
+	if ( statusLabel != null)  statusLabel.setText(s);
+}
   
 
 //  static boolean bypass = false;

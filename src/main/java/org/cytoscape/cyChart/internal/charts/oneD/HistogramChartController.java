@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.JLabel;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -39,11 +41,13 @@ public class HistogramChartController implements Initializable
   CyServiceRegistrar registrar; 
 	private final CyApplicationManager applicationManager;
 	private CyTable nodeTable;
-
+	JLabel statusLabel;
+	
 	// use this if you don't use FXML to define the chart
-	public HistogramChartController(StackPane parent, CyServiceRegistrar reg) {
+	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, JLabel status, CyColumn column) {
 		chartContainer = parent;
 		registrar = reg;
+		statusLabel = status;
 		if (registrar == null)
 		{
 			applicationManager = null;
@@ -69,9 +73,21 @@ public class HistogramChartController implements Initializable
 		VBox page = new VBox(histogramChart, line);
 		parent.getChildren().add(page);
 		initialize(null, null);
+		if (column != null)
+		{
+			int idx = findColumnIndex(column.getName());
+			columnChoices.getSelectionModel().select(column.getName());
+			System.out.println("index set to " + idx);
+			setXParameter(column.getName());
+		}
 	}
   
-  
+	 public void setStatusText(String s) {
+		 if (statusLabel != null)
+			 statusLabel.setText(s);
+			 
+	 }
+
 	@Override public void initialize(URL url, ResourceBundle rb)
 	{
 	    System.out.println("HistogramChartController.initialize");
@@ -85,6 +101,7 @@ public class HistogramChartController implements Initializable
 		columnChoices.getSelectionModel().select(0);
 		
 		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
+		setXParameter(0);
 	}
 	
 	private void populateColumnChoices() {
@@ -165,22 +182,26 @@ public class HistogramChartController implements Initializable
 //	}
 
 	// ------------------------------------------------------
-	public void setXParameter(Number index)
+	public void setXParameter(String name)
 	{
-		String item = columnChoices.getItems().get( index.intValue());
-//	    System.out.println(item);
 		if (subrangeLayer != null) subrangeLayer.hideSelection();
-		Histogram1D h1 = getHistogram(item);
+		Histogram1D h1 = getHistogram(name);
 		if (h1 != null)
 		{
 			histogramChart.getData().clear();
-			histogramChart.getData().add(h1.getDataSeries(item) );
+			histogramChart.getData().add(h1.getDataSeries(name) );
 			xAxis.setLowerBound(h1.getRange().min());
 			xAxis.setUpperBound(h1.getRange().max());
 			yAxis.setLowerBound(0);
-			yAxis.setUpperBound(0.1);
+			yAxis.setUpperBound(0.2);
 //			System.out.println(dataTable.toString());
 		}
+	}
+	public void setXParameter(Number index)
+	{
+		String item = columnChoices.getItems().get( index.intValue());
+		setXParameter(item);
+//	    System.out.println(item);
 	}
 
 	private Histogram1D getHistogram(String item) {
@@ -250,6 +271,18 @@ public class HistogramChartController implements Initializable
 			if (name.equals(column.getName()))
 				return column;
 		return null;
+	}
+	
+	public int findColumnIndex(String name)
+	{
+		int idx = 0;
+		for (CyColumn column : nodeTable.getColumns())
+		{
+			if (name.equals(column.getName()))
+				return idx;
+			idx++;
+		}
+		return idx;
 	}
 	
 	public int ping()	{  return 2;	}

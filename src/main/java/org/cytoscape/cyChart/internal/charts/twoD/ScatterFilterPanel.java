@@ -12,11 +12,9 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cyChart.internal.charts.oneD.AppHistograms;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
-import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -31,22 +29,19 @@ public class ScatterFilterPanel extends JPanel {
 	public static final String EVENT_TYPE_CONTEXT_MENU = "contextmenu";
 
 	private String title = null;
-	private final String id;
 	private CyServiceRegistrar registrar;
 
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
  
-	public ScatterFilterPanel(CyChartManager manager, String id, ScatterFilterDialog parentDialog) {
+	public ScatterFilterPanel(CyChartManager manager, ScatterFilterDialog parentDialog) {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
 		System.out.println("ScatterFilterPanel");
-		this.id = id;
 		setPreferredSize(new Dimension(800, 500));
 		initComponents();
 //		Platform.setImplicitExit(false);
 	}
 
-	public String getId() 		{		return id;	}
 	public String getTitle() 	{		return title;	}
 
 	public String execute(final String script) {
@@ -61,7 +56,7 @@ public class ScatterFilterPanel extends JPanel {
 
 	private void initComponents() {
 		jfxPanel = new JFXPanel();
-		StackPane appPane = AppScatters.getStackPane(registrar);
+		StackPane appPane = AppScatters.getStackPane(registrar, lblStatus);
 		if (appPane != null) 
 		{
 			Scene scene = new Scene(appPane);

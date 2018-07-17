@@ -1,7 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.concurrent.CountDownLatch;
@@ -13,6 +12,7 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.application.Platform;
@@ -30,22 +30,28 @@ public class SwingPanel extends JPanel {
 	public static final String EVENT_TYPE_CONTEXT_MENU = "contextmenu";
 
 	private String title = null;
-	private final String id;
 	private CyServiceRegistrar registrar;
 
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
  
-	public SwingPanel(CyChartManager manager, String id, HistogramFilterDialog parentDialog) {
+	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog) {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
-		System.out.println("SwingPanel");
-		this.id = id;
+//		System.out.println("SwingPanel");
 		setPreferredSize(new Dimension(800, 500));
-		initComponents();
+		initComponents(null);
 		Platform.setImplicitExit(false);
 	}
 
-	public String getId() 		{		return id;	}
+	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog, CyColumn column) {
+		super(new BorderLayout());
+		registrar = manager.getRegistrar();
+//		System.out.println("SwingPanel");
+		setPreferredSize(new Dimension(800, 500));
+		initComponents(column);
+		Platform.setImplicitExit(false);
+	}
+
 	public String getTitle() 	{		return title;	}
 
 	public String execute(final String script) {
@@ -58,11 +64,11 @@ public class SwingPanel extends JPanel {
 		return returnVal[0];
 	}
 
-	private void initComponents() {
-		System.out.println("initComponents");
+	private void initComponents(CyColumn column) {
+//		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
-		StackPane appPane = AppHistograms.getStackPane(registrar);
+		StackPane appPane = AppHistograms.getStackPane(registrar, lblStatus, column);
 		if (appPane != null) 
 		{
 //			System.out.println("appPane created");
@@ -85,11 +91,9 @@ public class SwingPanel extends JPanel {
 		add(statusBar, BorderLayout.SOUTH);
 //		JPanel container = new JPanel();
 //		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 //		container.add(jfxPanel);
 		add(jfxPanel, BorderLayout.CENTER);
-//		jfxPanel.setBorder(Borders.blueBorder1);
-//		jfxPanel.setStyle("-fx-border-color: orange");
 	}
 
 }
