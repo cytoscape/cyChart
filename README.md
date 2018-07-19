@@ -4,7 +4,9 @@ This is a graphical interface to the filter mechanism found in Cytoscape's Selec
 
 Right click on a numerical column and select Histogram Filter...
 
-A plot will appear.  Drag within the plot area to create an H shaped selection field.  Drag either end or the middle to edit the field.
+A plot will appear.  Drag within the plot area to create an H shaped selection field.  Drag either end or the middle to edit the field.  
+
+(Editing is flaky if left edge is at the Y axis.  Drag in center to move selection off the axis.)
 
 
 ![Screen Dump](histo1.png)
