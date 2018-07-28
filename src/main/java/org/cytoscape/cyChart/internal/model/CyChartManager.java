@@ -42,8 +42,19 @@ public class CyChartManager {
 //		return null;
 //	}
 
-	CyNetwork getCurrentNetwork() 		{	return registrar.getService(CyApplicationManager.class).getCurrentNetwork();	}
-	CyTable getNodeTable(CyNetwork net) {	return net.getDefaultNodeTable();	}
+	public CyNetwork getCurrentNetwork() 		
+	{	
+		if (registrar == null) return null;
+		CyApplicationManager appMgr = registrar.getService(CyApplicationManager.class);
+		if (appMgr == null) return null;
+		return appMgr.getCurrentNetwork();	
+	}
+	
+	public CyTable getNodeTable(CyNetwork net) 
+	{	
+		if (net == null) return null;
+		return net.getDefaultNodeTable();	
+	}
 //	public Map<String, CyChart> getChartMap() {		return idMap;	}
 	public void setVersion(String v) { this.version = v; }
 	public String getVersion() { return version; }

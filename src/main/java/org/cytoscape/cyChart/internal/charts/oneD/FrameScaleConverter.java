@@ -2,7 +2,7 @@ package org.cytoscape.cyChart.internal.charts.oneD;
 
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
-import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 
 public class FrameScaleConverter {
@@ -18,7 +18,7 @@ public class FrameScaleConverter {
 		Bounds bounds =  getChartPlotBounds(theChart);
 		double frameLength = isYAxis ? bounds.getHeight() : bounds.getWidth();
 		//https://stackoverflow.com/questions/16268207/why-cant-i-modify-the-axes-from-a-javafx-linechart
-		NumberAxis axis = (NumberAxis) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
+		ValueAxis<Number> axis = (ValueAxis<Number>) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
 		double scaleMin = axis.getLowerBound();
 		double scaleMax = axis.getUpperBound();
 		double relativePosition = framePosition / frameLength;
@@ -48,7 +48,7 @@ public class FrameScaleConverter {
 	 */
 
 	public double scaleToFrame(double scaleValue, XYChart<Number, Number> theChart, boolean isYAxis) {
-		NumberAxis axis = (NumberAxis) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
+		ValueAxis<Number> axis = (ValueAxis<Number>) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
 		Bounds bounds =  getChartPlotBounds(theChart);
 		double widthOrHeight = isYAxis ? bounds.getHeight() : bounds.getWidth();
 		double lower = axis.getLowerBound();

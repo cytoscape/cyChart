@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -18,10 +19,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -34,14 +38,14 @@ public class ScatterChartController implements Initializable
   private StackPane chartContainer;
   private ChoiceBox<String> columnChoices;
   private ChoiceBox<String> yAxisChoices;
-  private NumberAxis xAxis;
-  private NumberAxis yAxis;
 	private final CyApplicationManager applicationManager;
 	private CyTable nodeTable;
 	CyServiceRegistrar registrar;
 	private SelectableScatterChart scatterChartHome;
 	JLabel statusLabel;
-	
+	CheckBox logXTransform;
+	CheckBox logYTransform;
+
 	// use this if you don't use FXML to define the chart
 	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, JLabel status) {
 		chartContainer = parent;
@@ -56,19 +60,57 @@ public class ScatterChartController implements Initializable
 			applicationManager = registrar.getService(CyApplicationManager.class);
 			nodeTable = getCurrentNodeTable();
 		}
-		xAxis = new NumberAxis();
-		yAxis = new NumberAxis();
 		chartBox = new Pane();
 		columnChoices = new ChoiceBox<String>();
 		yAxisChoices = new ChoiceBox<String>();
-		HBox line = new HBox(columnChoices);
-		HBox line2 = new HBox(yAxisChoices);
+		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
+		    @Override
+		    public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+		        setLogXDistribution(new_val);
+		    }
+		};
+			ChangeListener<Boolean> logYChange = new ChangeListener<Boolean>() {
+			    @Override
+			    public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+			        setLogYDistribution(new_val);
+			    }
+			};
+
+		logXTransform = new CheckBox("Log");
+		logXTransform.selectedProperty().addListener(logXChange);
+		logXTransform.setAlignment(Pos.CENTER);
+
+		logYTransform = new CheckBox("Log");
+		logYTransform.selectedProperty().addListener(logYChange);
+		logYTransform.setAlignment(Pos.CENTER);
+
+		HBox line = new HBox(columnChoices, logXTransform);
+		HBox line2 = new HBox(yAxisChoices, logYTransform);
 		VBox page = new VBox(chartBox, line, line2);
 		page.setSpacing(4);
 		parent.getChildren().add(page);
 		initialize(null, null);
 	}
 
+	 boolean isXLog = false;
+	 boolean isYLog = false;
+
+	 public boolean isXLog()	{ return isXLog;	}
+	 public boolean isYLog()	{ return isYLog;	}
+	 
+	 
+	 private void setLogXDistribution(Boolean new_val) 
+	{
+		 isXLog = new_val;
+		setXParameters(columnChoices.getSelectionModel().getSelectedIndex());
+			
+	}
+	 private void setLogYDistribution(Boolean new_val) 
+	{
+		 isYLog = new_val;
+		setYParameters(yAxisChoices.getSelectionModel().getSelectedIndex());
+			
+	}
 	CyTable getCurrentNodeTable() 
 	{	
 		if (applicationManager == null) return null;
@@ -125,8 +167,13 @@ static int DOT_SIZE = 4;
 			chartBox.getChildren().clear();
 			String x = columnChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + " v.  " + y);
+		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+//			  private NumberAxis xAxis;
+//			  private NumberAxis yAxis;
+			ValueAxis<Number> xAxis = isXLog ? new LogarithmicAxis() : new NumberAxis();
+			ValueAxis<Number> yAxis = isYLog ? new LogarithmicAxis() : new NumberAxis();
+//			yAxis = new NumberAxis();
 			scatterChartHome = new SelectableScatterChart(this, null);
 			if (series1 != null)
 			{
@@ -145,6 +192,7 @@ static int DOT_SIZE = 4;
 		    	legend.setVisible(false);
 		}
 	}
+	
 	private void populateColumnChoices() {
 		if (nodeTable != null && !nodeTable.getColumns().isEmpty())
 		{
@@ -157,6 +205,7 @@ static int DOT_SIZE = 4;
 			columnChoices.getSelectionModel().select(0);
 		}
 	}
+	
 	private boolean isNumericColumn(CyColumn col) {
 		return col.getType() == Double.class || col.getType() == Integer.class;
 	}
@@ -204,6 +253,9 @@ static int DOT_SIZE = 4;
 		return null;
 	}
 
+	private Double safelog(Double i) {
+		return (i == null || i <= 0) ? 0 : Math.log(i);
+	}
 	//	// ------------------------------------------------------
 	private double startX, endX, startY, endY;			// these are values in the charts data space
 	
@@ -272,13 +324,16 @@ static int DOT_SIZE = 4;
 		if (val instanceof Double)
 		{ 
 			Double v = (Double) val;
+			if (isXLog) v = safelog(v);
 			boolean hit = (xMin <= v && xMax >= v);
 			return hit;
 		}
 		if (val instanceof Integer)
 		{ 
 			double v = 1.0 * (Integer) val;
-			boolean hit = (xMin <= v && xMax >= v);
+			if (isXLog) 
+				v = safelog(v);
+		boolean hit = (xMin <= v && xMax >= v);
 			return hit;
 		}
 		return false;

@@ -45,6 +45,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		HistogramFilterTaskFactory histoChart = new HistogramFilterTaskFactory(manager);
 		Properties props = new Properties();
+		props.setProperty(MENU_GRAVITY, "0.1");
+		props.setProperty(PREFERRED_MENU, "Tools");
 		props.setProperty(TITLE, "Histogram Filter...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
@@ -57,9 +59,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		ColumnFilterTaskFactory histoChart2 = new ColumnFilterTaskFactory(manager);
 		props = new Properties();
-		props.setProperty(PREFERRED_MENU, "Tools");
 		props.setProperty(TITLE, "Histogram Filter...");
-		props.setProperty(MENU_GRAVITY, "1.0");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "dialog");
@@ -73,7 +73,7 @@ public class CyActivator extends AbstractCyActivator {
 		props = new Properties();
 		props.setProperty(PREFERRED_MENU, "Tools");
 		props.setProperty(TITLE, "Scatter Filter...");
-		props.setProperty(MENU_GRAVITY, "1.5");
+		props.setProperty(MENU_GRAVITY, "0.3");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "dialog");

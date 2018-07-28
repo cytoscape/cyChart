@@ -31,10 +31,9 @@ public class HistogramFilterDialog extends JDialog implements CyChart, ChangeLis
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		pack();
 	}
-
+//
 	public String getTitle(String id) { 	return (id == null) ? getTitle() : null;	}
-
-	public SwingPanel getPanel(String id) { return (id == null) ?currentPanel : null;	}
+	public SwingPanel getPanel(String id) { return (id == null) ? currentPanel : null;	}
 
 	@Override public void stateChanged(ChangeEvent e) {
 		String ttl = currentPanel.getTitle();

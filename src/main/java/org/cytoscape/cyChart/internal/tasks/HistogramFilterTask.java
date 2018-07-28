@@ -18,6 +18,7 @@ public class HistogramFilterTask extends AbstractEmptyObservableTask {
 	//----------------------------------------------------
 	public HistogramFilterTask(CyChartManager mgr) {
 		manager = mgr;
+		if (mgr.getCurrentNetwork() == null) return;
 		HistogramFilterDialog	chart = new HistogramFilterDialog(manager,title, null);
 		chart.setVisible(true);
 	}	

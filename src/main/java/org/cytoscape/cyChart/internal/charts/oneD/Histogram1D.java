@@ -151,15 +151,14 @@ public class Histogram1D
 		double binWidth = range.width() / size;
 		if (isLog)
 			return Math.log(range.min() + bin  * binWidth) - 5;   // TODO Transform fn subtracts 5 log  -- asymmetric!!!
-
 		return range.min() + (bin  * binWidth);
 	}
+	
 	public int valToBin(double d)
 	{
 		double binWidth = range.width() / size;
 		if (isLog)
 			return (int) Math.round(((Math.log(d) - Math.log(range.min())) / Math.log(range.width())) * size);
-	
 		return (int) Math.round((d - range.min()) / binWidth);
 	}
 	// ----------------------------------------------------------------------------------------------------
@@ -182,8 +181,7 @@ public class Histogram1D
 	// ----------------------------------------------------------------------------------------------------
 	boolean grayscale = true;
 
-
-	void setMode(double d)	{		mode = d;	} // this will determine the top of the Y axis
+//	void setMode(double d)	{		mode = d;	} // this will determine the top of the Y axis
 
 	public double getMode()	{
 		int max = 0;

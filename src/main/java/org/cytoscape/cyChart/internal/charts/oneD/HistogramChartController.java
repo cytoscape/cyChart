@@ -8,6 +8,8 @@ import java.util.ResourceBundle;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
+import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -18,10 +20,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ValueAxis;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
@@ -36,12 +44,14 @@ public class HistogramChartController implements Initializable
 //  @FXML  private TableColumn<MixedDataRow, Integer> colB;
 //  @FXML  private TableColumn<MixedDataRow, Double> colC;
 //  private CSVTableData dataTable;
-  private NumberAxis xAxis;
-  private NumberAxis yAxis;
+  private ValueAxis<Number> xAxis;
+  private ValueAxis<Number> yAxis;
+  Pane chartPane;
   CyServiceRegistrar registrar; 
 	private final CyApplicationManager applicationManager;
 	private CyTable nodeTable;
 	JLabel statusLabel;
+	CheckBox logTransform;
 	
 	// use this if you don't use FXML to define the chart
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, JLabel status, CyColumn column) {
@@ -58,10 +68,16 @@ public class HistogramChartController implements Initializable
 		applicationManager = registrar.getService(CyApplicationManager.class);
 		nodeTable = getNodeTable(getCurrentNetwork());
 		}
-		xAxis = new NumberAxis();
-		yAxis = new NumberAxis();
-		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
 		columnChoices = new ChoiceBox<String>();
+		logTransform = new CheckBox("Log");
+		ChangeListener<Boolean> logChange = new ChangeListener<Boolean>() {
+		    @Override
+		    public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+		        setLogDistribution(new_val);
+		    }
+		};
+		logTransform.selectedProperty().addListener(logChange);
+		logTransform.setAlignment(Pos.CENTER);
 		// tableview = new TableView<MixedDataRow>();
 		// colA = new TableColumn<MixedDataRow, String>();
 		// colB = new TableColumn<MixedDataRow, Integer>();
@@ -69,8 +85,9 @@ public class HistogramChartController implements Initializable
 		// SplitPane split = new SplitPane(histogramChart, tableview);
 		// split.setOrientation(Orientation.HORIZONTAL);
 		// parent.getChildren().add(split);
-		HBox line = new HBox(columnChoices);
-		VBox page = new VBox(histogramChart, line);
+		HBox line = new HBox(8, columnChoices, logTransform);
+		chartPane = new Pane();
+		VBox page = new VBox(chartPane, line);
 		parent.getChildren().add(page);
 		initialize(null, null);
 		if (column != null)
@@ -87,20 +104,24 @@ public class HistogramChartController implements Initializable
 			 statusLabel.setText(s);
 			 
 	 }
-
+	 boolean isLog = false;
+	
+	 private void setLogDistribution(Boolean new_val) 
+	{
+		isLog = new_val;
+		setXParameter(columnChoices.getSelectionModel().getSelectedItem());
+			
+	}
 	@Override public void initialize(URL url, ResourceBundle rb)
 	{
-	    System.out.println("HistogramChartController.initialize");
-		assert (histogramChart != null);
+//	    System.out.println("HistogramChartController.initialize");
+//		assert (histogramChart != null);
 	    assert( chartContainer != null);
-		buildData();
 		populateColumnChoices();
 		columnChoices.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {	@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
 					{   setXParameter(newV);   }	});
 		columnChoices.getSelectionModel().select(0);
-		
-		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
 		setXParameter(0);
 	}
 	
@@ -123,24 +144,6 @@ public class HistogramChartController implements Initializable
 	// ------------------------------------------------------
 	// reads the table file and fills the cells into a tableview's model
 	
-	public void buildData()
-	{
-	    System.out.println("buildData");
-		histogramChart.setTitle("DATA LOAD ERROR!");
-		histogramChart.setTitle("Histogram Chart");
-		histogramChart.setCreateSymbols(false);
-		xAxis = (NumberAxis) histogramChart.getXAxis();
-		yAxis = (NumberAxis) histogramChart.getYAxis();
-		//		try
-//		{
-//			String pathname = getPathName();
-//			dataTable = CSVTableData.readCSVfile(pathname);
-//			if (dataTable == null) return;
-//			dataTable.populateCSVTable(tableview);
-//			setupChart();
-//		} 
-//		catch (Exception e) { e.printStackTrace(); }
-	}
 	// ------------------------------------------------------
 //	private void setupChart()
 //	{
@@ -180,12 +183,33 @@ public class HistogramChartController implements Initializable
 //		}
 //		return map;
 //	}
+	Node getPlotAreaNode() 
+	{
+		return histogramChart.lookup(".chart-plot-background");
+	}	
 
+	
 	// ------------------------------------------------------
 	public void setXParameter(String name)
 	{
+		xAxis = isLog ? new LogarithmicAxis() : new NumberAxis();
+		yAxis = new NumberAxis();
+		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
+		histogramChart.setTitle("Histogram Chart");
+		histogramChart.setCreateSymbols(false);
+		Node chartPlotArea = getPlotAreaNode();
+		if (chartPlotArea != null)
+		{
+			Region rgn = (Region) chartPlotArea;
+			rgn.setStyle("-fx-background-color: #CCCCCC;");
+		}
+		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
+		chartPane.getChildren().clear();
+		chartPane.getChildren().add(histogramChart);
+		System.out.println("setXParameter: " + name);
+		if (StringUtil.isEmpty(name)) return;
 		if (subrangeLayer != null) subrangeLayer.hideSelection();
-		Histogram1D h1 = getHistogram(name);
+		Histogram1D h1 = getHistogram(name, isLog);
 		if (h1 != null)
 		{
 			histogramChart.getData().clear();
@@ -193,31 +217,53 @@ public class HistogramChartController implements Initializable
 			xAxis.setLowerBound(h1.getRange().min());
 			xAxis.setUpperBound(h1.getRange().max());
 			yAxis.setLowerBound(0);
-			yAxis.setUpperBound(0.2);
-//			System.out.println(dataTable.toString());
+			double top = .5 * h1.getMode() / h1.getSize();
+			yAxis.setUpperBound(top);
+			h1.calcDistributionStats();
+			System.out.println("Histo: " + h1.getStatString());
 		}
 	}
 	public void setXParameter(Number index)
 	{
-		String item = columnChoices.getItems().get( index.intValue());
-		setXParameter(item);
-//	    System.out.println(item);
+		int i =  index.intValue();
+		if (i < columnChoices.getItems().size())
+		{
+			String item = columnChoices.getItems().get(i);
+			setXParameter(item);
+	//	    System.out.println(item);
+		}
 	}
 
-	private Histogram1D getHistogram(String item) {
+	private Histogram1D getHistogram(String item, Boolean isLog) {
 		nodeTable = getNodeTable(getCurrentNetwork()); 
 		List<Double> values = null;
 		CyColumn column = nodeTable.getColumn(item);
 		if (column.getType() == Double.class)
+		{
 			values = nodeTable.getColumn(item).getValues(Double.class);
+			if (values == null) return null;
+			if (isLog)
+				for (int i=0; i<values.size(); i++)
+				{
+					Double dub = values.get(i);
+					values.set(i, safelog(dub));
+				}
+		}
 		else if (column.getType() == Integer.class)
 		{
 			values = new ArrayList<Double>();
 			for (Integer i : nodeTable.getColumn(item).getValues(Integer.class))
-				values.add(new Double(i));
+			{
+				double d = isLog ? safelog((double) i) : new Double(i);
+				values.add(d);
+			}
 
 		}
 		return new Histogram1D(item, values);
+	}
+	
+	private Double safelog(Double i) {
+		return (i == null || i <= 0) ? 0 : Math.log(i);
 	}
 // ------------------------------------------------------
 
@@ -306,13 +352,17 @@ public class HistogramChartController implements Initializable
 		if (val instanceof Double)
 		{ 
 			Double v = (Double) val;
+			if (isLog) v = safelog(v);
 			boolean hit = (xMin <= v && xMax >= v);
 			return hit;
 		}
 		if (val instanceof Integer)
 		{ 
 			Integer i = (Integer) val;
-			boolean hit = (xMin <= i && xMax >= i);
+			double d = i;
+			if (isLog) 
+				d = safelog(d);
+			boolean hit = (xMin <= d && xMax >= d);
 			return hit;
 		}
 		return false;

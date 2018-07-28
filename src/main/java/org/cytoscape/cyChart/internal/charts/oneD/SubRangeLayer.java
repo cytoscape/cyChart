@@ -11,7 +11,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
-import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.Label;
@@ -35,8 +35,8 @@ public class SubRangeLayer			// a 1D GateLayer
 	public Pane getPane()	{ return pane;	}
 	
 	private LineChart<Number, Number> chart;
-	private NumberAxis xAxis;
-	private NumberAxis yAxis;
+	private ValueAxis<Number> xAxis;
+	private ValueAxis<Number> yAxis;
 	double chartOffsetX, chartOffsetY;
 	private HistogramChartController controller;
 	private Group selectionH;
@@ -65,8 +65,8 @@ public class SubRangeLayer			// a 1D GateLayer
 		chart = inChart;
 		controller = ctrol;
 		
-		xAxis = (NumberAxis) chart.getXAxis();
-		yAxis = (NumberAxis) chart.getYAxis();
+		xAxis = (ValueAxis<Number>) chart.getXAxis();
+		yAxis = (ValueAxis<Number>) chart.getYAxis();
 		
 		selectionH = buildSubRangeGroup(chart, this);  // SelectionRectangle();
 		selectionH.setManaged(false);
@@ -88,7 +88,10 @@ public class SubRangeLayer			// a 1D GateLayer
 //		chartPlotArea.setBorder(Borders.greenBorder);}
 	    
 }
-
+	Node getPlotAreaNode() 
+	{
+		return chart.lookup(".chart-plot-background");
+	}
 	/**
 	 * The info label shows a short info text that tells the user how to unreset the zoom level.
 	 */
@@ -132,7 +135,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	 * Adds a mechanism to select an area in the chart that should be the subrange.
 	 */
 	private void addDragSelectionMechanism() {
-		Region chartPlotArea = (Region) chart.lookup(".chart-plot-background");
+		Node chartPlotArea = getPlotAreaNode();
 		chartPlotArea.setOnMouseMoved(event -> 		{ 	onMouseMoved(event);	});
 		chartPlotArea.setOnMouseExited(event -> 	{ 	positionLabel.setVisible(false);  });
 		chartPlotArea.setOnMousePressed(event -> 	{	onPressed(event);		});
@@ -186,7 +189,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	private void onPressed(MouseEvent event) 
 	{
-		Region chartPlotArea = (Region) chart.lookup(".chart-plot-background");
+		Node chartPlotArea = getPlotAreaNode();
 	    chartOffsetX = chartPlotArea.getLayoutX();
 	    chartOffsetY = chartPlotArea.getLayoutY();
 		double x = event.getX() + chartOffsetX;
@@ -233,7 +236,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		if (event.isSecondaryButtonDown()) 		return;
 		event.consume();
 		if (!dragging) return;
-		Node chartPlotArea = chart.lookup(".chart-plot-background");
+		Node chartPlotArea = getPlotAreaNode();
 		double minAllowed = chartPlotArea.getLayoutX();
 		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth();
 		double h = event.getX() + chartPlotArea.getLayoutX();
@@ -260,6 +263,12 @@ public class SubRangeLayer			// a 1D GateLayer
 	private void offsetSelection(double delta)
 	{
 //		System.out.println("Offsetting: " + delta);
+		Node chartPlotArea = getPlotAreaNode();
+		double minAllowed = chartPlotArea.getLayoutX();
+		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth();
+		double right = Math.max(selectionAnchor, selectionMovingEnd) + delta;
+		double left = Math.min(selectionAnchor, selectionMovingEnd) + delta;
+		if (left < minAllowed || right > maxAllowed) return;
 		selectionAnchor += delta;		
 		selectionMovingEnd += delta;		
 	}

@@ -1,5 +1,6 @@
 /Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/HistogramChartController.java
 /Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/tasks/ScatterFilterTask.java
+/Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/LogarithmicAxis.java
 /Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/tasks/VersionTask.java
 /Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/StringUtil.java
 /Users/adamtreister/Development/apps/cychart/cyChart/src/main/java/org/cytoscape/cyChart/internal/tasks/HistogramFilterTask.java

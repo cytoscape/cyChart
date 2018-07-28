@@ -5,8 +5,8 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Objects;
 
-import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.charts.Cursors;
+import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.charts.MixedDataRow;
 import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.cyChart.internal.charts.RectangleUtil;
@@ -19,6 +19,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
@@ -52,7 +53,7 @@ public class SelectableScatterChart extends VBox
 	{
 		controller = ctlr;
 //		infoLabel = statusFeedback;
-		addLayer("Height", "Weight", 0);
+		addLayer("X", "Y", 0);
 		VBox pile = new VBox();
 		pile.getChildren().addAll(scatter);
 		getChildren().addAll(pile);
@@ -63,15 +64,17 @@ public class SelectableScatterChart extends VBox
 	//------------------------------------------------------------------------
 	private void addLayer(String xName, String yName, int transitionType)
 	{
-		System.out.println("scatter");
-		final NumberAxis xAxis = new NumberAxis();
+//		System.out.println("scatter");
+		boolean xLog = controller.isXLog();
+		boolean yLog = controller.isYLog();
+		ValueAxis<Number> xAxis = xLog ? new LogarithmicAxis() : new NumberAxis();
 		xAxis.setLabel(xName);
 //		xAxis.setOnMouseClicked(ev -> {
 //			if (ev.isShiftDown()) prevXParm();
 //			else				nextXParm();
 //		});
 		
-		final NumberAxis yAxis = new NumberAxis();
+		ValueAxis<Number> yAxis = yLog ? new LogarithmicAxis() : new NumberAxis();
 		yAxis.setLabel(yName);
 //		yAxis.setOnMouseClicked(ev -> {
 //			if (ev.isShiftDown()) prevYParm();
@@ -83,13 +86,14 @@ public class SelectableScatterChart extends VBox
 		Node chartPlotArea = getPlotAreaNode();
 		if (chartPlotArea != null)
 		{
-//			Region rgn = (Region) chartPlotArea;
+			Region rgn = (Region) chartPlotArea;
 //			rgn.setBorder(Borders.blueBorder1);
+			rgn.setStyle("-fx-background-color: #CCCCCC;");
 		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> resized();
 		    scatter.widthProperty().addListener(paneSizeListener);
 		    scatter.heightProperty().addListener(paneSizeListener);  	
 		}
-		scatter.setStyle(scatter.getStyle() + "-fx-legend-visible: false;  ");
+		scatter.setStyle(scatter.getStyle() + "-fx-legend-visible: false; ");
 //		Image curImage = (transitionType == 0) ? null : chartSnapshot();
 //		if (transitionType != 0 && curImage != null && prevImage != null)
 //			new Transitions(prevImage, curImage).play(Transitions.Transition.CUBE);
@@ -103,6 +107,14 @@ public class SelectableScatterChart extends VBox
 		scatter.getData().add(series1); 	
 	}
 
+//	//------------------------------------------------------------------------
+//	public void setAxes(ValueAxis<Number> x, ValueAxis<Number> y) 
+//	{ 	
+//		scatter = new ScatterChart<Number, Number>(x, y);
+//		scatter.getXAxis().setLabel(x); 
+//		scatter.getYAxis().setLabel(y); 	
+//	}
+//
 	//------------------------------------------------------------------------
 	public void setAxes(String x, String y) 
 	{ 	
@@ -115,10 +127,8 @@ public class SelectableScatterChart extends VBox
  * This adds a layer on top of a the XY chart named "scatter". 
  *
  */
-
-	private static final String INFO_LABEL_ID = "zoomInfoLabel";
-	private NumberAxis xAxis;
-	private NumberAxis yAxis;
+	private ValueAxis<Number> xAxis;
+	private ValueAxis<Number> yAxis;
 	private Rectangle selectionRectangleScaleDef;
 	private Rectangle selectionRectangle;
 //	private Label infoLabel;
@@ -137,8 +147,8 @@ public class SelectableScatterChart extends VBox
 
 	public void selectionLayerBuilder() 
 	{
-		xAxis = (NumberAxis) scatter.getXAxis();
-		yAxis = (NumberAxis) scatter.getYAxis();
+		xAxis = (ValueAxis<Number>) scatter.getXAxis();
+		yAxis = (ValueAxis<Number>) scatter.getYAxis();
 		makeSelectionRectangle();
 		addDragSelectionMechanism(getPlotAreaNode());
 //		addInfoLabel();
@@ -148,19 +158,17 @@ public class SelectableScatterChart extends VBox
 
 	private void makeSelectionRectangle()
 	{
-		selectionRectangle = new Rectangle();  // SelectionRectangle();
+		selectionRectangle = new Rectangle(); 
 		selectionRectangleScaleDef = new Rectangle();
 		selectionRectangle.setManaged(false);
-//		selectionRectangle.setFill(null);
-//		selectionRectangle.setOpacity(0.2);		
 		selectionRectangle.setOpacity(0.3);
 		selectionRectangle.setFill(Color.CYAN);
-
 		selectionRectangle.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
-
 		selectionRectangle.setStroke(Color.SADDLEBROWN);
 		selectionRectangle.setStrokeWidth(2f);
+		
 		RectangleUtil.setupCursors(selectionRectangle);
+		
 		selectionRectangle.setOnMousePressed(event -> {
 //			if (event.isSecondaryButtonDown()) 	return;
 			Pos pos = RectangleUtil.getPos(event, selectionRectangle);
@@ -174,7 +182,6 @@ public class SelectableScatterChart extends VBox
 				offsetY = event.getY() - selectionRectangle.getY();
 			}
 			event.consume();
-
 		});
 
 		selectionRectangle.setOnMouseDragged(event -> {
@@ -199,6 +206,18 @@ public class SelectableScatterChart extends VBox
 				double oldY = selRectStart.getY();
 				double dx = event.getX() - oldX;
 				double dy = event.getY() - oldY;
+				Node chartPlotArea = getPlotAreaNode();
+				double minAllowedX = chartPlotArea.getLayoutX();
+				double maxAllowedX = minAllowedX + chartPlotArea.getLayoutBounds().getWidth();
+				double minAllowedY = chartPlotArea.getLayoutY();
+				double maxAllowedY = minAllowedY + chartPlotArea.getLayoutBounds().getHeight();
+
+				double newLeft = selectionRectangle.getX() + dx;
+				double newRight = newLeft + selectionRectangle.getWidth();
+				double newTop = selectionRectangle.getY() + dy;
+				double newBottom = newTop + selectionRectangle.getHeight();
+				if (newLeft < minAllowedX || newRight > maxAllowedX) return;
+				if (newTop < minAllowedY || newBottom > maxAllowedY) return;
 //				System.out.println("x:" + oldX + " y:" + oldY);
 				offsetRectangle(selectionRectangle, dx, dy);
 				drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY);
