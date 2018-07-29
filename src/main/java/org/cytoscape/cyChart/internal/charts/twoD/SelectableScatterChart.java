@@ -2,16 +2,17 @@ package org.cytoscape.cyChart.internal.charts.twoD;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Objects;
 
+import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.charts.Cursors;
 import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
-import org.cytoscape.cyChart.internal.charts.MixedDataRow;
 import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.cyChart.internal.charts.RectangleUtil;
+import org.cytoscape.cyChart.internal.charts.oneD.FrameScaleConverter;
 
 import javafx.beans.value.ChangeListener;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -23,7 +24,7 @@ import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -38,27 +39,20 @@ import javafx.scene.shape.Rectangle;
  */
 public class SelectableScatterChart extends VBox
 {
+	FrameScaleConverter converter = new FrameScaleConverter();
 	private ScatterChart<Number, Number> scatter;
 	private final ScatterChartController controller;
 	public ScatterChart<Number, Number> 	getScatterChart()	{ return scatter;	}
-	
-	public SelectableScatterChart(ScatterChartController ctlr, List<MixedDataRow> observableList, Label statusFeedback)
-	{
-		this(ctlr, statusFeedback);
-//		addData(observableList);
-	}
 
 	//------------------------------------------------------------------------
-	public SelectableScatterChart(ScatterChartController ctlr, Label statusFeedback)
+	public SelectableScatterChart(ScatterChartController ctlr)
 	{
 		controller = ctlr;
-//		infoLabel = statusFeedback;
 		addLayer("X", "Y", 0);
 		VBox pile = new VBox();
 		pile.getChildren().addAll(scatter);
 		getChildren().addAll(pile);
 		selectionLayerBuilder();
-		
 	}
 
 	//------------------------------------------------------------------------
@@ -69,35 +63,22 @@ public class SelectableScatterChart extends VBox
 		boolean yLog = controller.isYLog();
 		ValueAxis<Number> xAxis = xLog ? new LogarithmicAxis() : new NumberAxis();
 		xAxis.setLabel(xName);
-//		xAxis.setOnMouseClicked(ev -> {
-//			if (ev.isShiftDown()) prevXParm();
-//			else				nextXParm();
-//		});
 		
 		ValueAxis<Number> yAxis = yLog ? new LogarithmicAxis() : new NumberAxis();
 		yAxis.setLabel(yName);
-//		yAxis.setOnMouseClicked(ev -> {
-//			if (ev.isShiftDown()) prevYParm();
-//			else				nextYParm();
-//		});
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
-		// scatter.setTitle("title goes here");
 		Node chartPlotArea = getPlotAreaNode();
 		if (chartPlotArea != null)
 		{
 			Region rgn = (Region) chartPlotArea;
-//			rgn.setBorder(Borders.blueBorder1);
 			rgn.setStyle("-fx-background-color: #CCCCCC;");
+			rgn.setBorder(Borders.thinEtchedBorder);
 		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> resized();
 		    scatter.widthProperty().addListener(paneSizeListener);
 		    scatter.heightProperty().addListener(paneSizeListener);  	
 		}
 		scatter.setStyle(scatter.getStyle() + "-fx-legend-visible: false; ");
-//		Image curImage = (transitionType == 0) ? null : chartSnapshot();
-//		if (transitionType != 0 && curImage != null && prevImage != null)
-//			new Transitions(prevImage, curImage).play(Transitions.Transition.CUBE);
-	
 	}
 	//------------------------------------------------------------------------
 	public void setDataSeries(Series<Number, Number> series1) 
@@ -107,14 +88,6 @@ public class SelectableScatterChart extends VBox
 		scatter.getData().add(series1); 	
 	}
 
-//	//------------------------------------------------------------------------
-//	public void setAxes(ValueAxis<Number> x, ValueAxis<Number> y) 
-//	{ 	
-//		scatter = new ScatterChart<Number, Number>(x, y);
-//		scatter.getXAxis().setLabel(x); 
-//		scatter.getYAxis().setLabel(y); 	
-//	}
-//
 	//------------------------------------------------------------------------
 	public void setAxes(String x, String y) 
 	{ 	
@@ -185,44 +158,7 @@ public class SelectableScatterChart extends VBox
 		});
 
 		selectionRectangle.setOnMouseDragged(event -> {
-			if (event.isSecondaryButtonDown()) 	return;
-
-			if (resizing)
-			{
-				// store current cursor position
-				selRectEnd = computeRectanglePoint(event.getX(), event.getY());
-				if (selRectStart == null)
-					selRectStart = RectangleUtil.oppositeCorner(event,selectionRectangle);
-//selRectStart = new Point2D(event.getX(), event.getY());			// ERROR -- will reset instead of resize
-				double x = Math.min(selRectStart.getX(), selRectEnd.getX());
-				double y = Math.min(selRectStart.getY(), selRectEnd.getY());
-				double width = Math.abs(selRectStart.getX() - selRectEnd.getX());
-				double height = Math.abs(selRectStart.getY() - selRectEnd.getY());
-				drawSelectionRectangle(x, y, width, height);
-//				System.out.println("x:" + x + " y:" + y);
-			} else
-			{
-				double oldX = selRectStart.getX();
-				double oldY = selRectStart.getY();
-				double dx = event.getX() - oldX;
-				double dy = event.getY() - oldY;
-				Node chartPlotArea = getPlotAreaNode();
-				double minAllowedX = chartPlotArea.getLayoutX();
-				double maxAllowedX = minAllowedX + chartPlotArea.getLayoutBounds().getWidth();
-				double minAllowedY = chartPlotArea.getLayoutY();
-				double maxAllowedY = minAllowedY + chartPlotArea.getLayoutBounds().getHeight();
-
-				double newLeft = selectionRectangle.getX() + dx;
-				double newRight = newLeft + selectionRectangle.getWidth();
-				double newTop = selectionRectangle.getY() + dy;
-				double newBottom = newTop + selectionRectangle.getHeight();
-				if (newLeft < minAllowedX || newRight > maxAllowedX) return;
-				if (newTop < minAllowedY || newBottom > maxAllowedY) return;
-//				System.out.println("x:" + oldX + " y:" + oldY);
-				offsetRectangle(selectionRectangle, dx, dy);
-				drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY);
-				selRectStart = new Point2D(event.getX(), event.getY());
-			}
+			onDragged(event); 
 			event.consume();
 		});
 		
@@ -236,7 +172,7 @@ public class SelectableScatterChart extends VBox
 			requestFocus();		// needed for the key event handler to receive events
 			event.consume();
 		
-		});
+	});
 	}
 	
 	private void offsetRectangle(Rectangle r, double dx, double dy)
@@ -247,23 +183,50 @@ public class SelectableScatterChart extends VBox
 		r.setY(r.getY() + dy - offsetY);
 	}
 
-//	public void imagePeek(Image img)
-//	{
-////		ImageView view = new ImageView(img);
-//		Alert dialog = new Alert(AlertType.CONFIRMATION);
-//		dialog.setTitle("This shows you the image");
-//		dialog.setContentText("");
-//		dialog.setGraphic(new ImageView(img));
-//		dialog.showAndWait();
-//
-//	}
-//	
-	Node getPlotAreaNode() 
-	{
-		return scatter.lookup(".chart-plot-background");
-	}	
+	Node getPlotAreaNode() 	{		return scatter.lookup(".chart-plot-background");	}	
+	Bounds getPlotBounds() 	{		return getPlotAreaNode().getBoundsInParent();	}	
 
-	
+	private void onDragged(MouseEvent event) {
+		if (event.isSecondaryButtonDown()) 	return;
+		boolean option = event.isAltDown();
+		if (resizing)
+		{
+			// store current cursor position
+			selRectEnd = computeRectanglePoint(event.getX(), event.getY());
+			if (selRectStart == null)
+				selRectStart = RectangleUtil.oppositeCorner(event,selectionRectangle);
+//selRectStart = new Point2D(event.getX(), event.getY());			// ERROR -- will reset instead of resize
+			double x = Math.min(selRectStart.getX(), selRectEnd.getX());
+			double y = Math.min(selRectStart.getY(), selRectEnd.getY());
+			double width = Math.abs(selRectStart.getX() - selRectEnd.getX());
+			double height = Math.abs(selRectStart.getY() - selRectEnd.getY());
+			drawSelectionRectangle(x, y, width, height, option);
+//			System.out.println("x:" + x + " y:" + y);
+		} else
+		{
+			double oldX = selRectStart.getX();
+			double oldY = selRectStart.getY();
+			double dx = event.getX() - oldX;
+			double dy = event.getY() - oldY;
+			Bounds chartPlotArea = getPlotBounds();
+			double minAllowedX = chartPlotArea.getMinX();
+			double maxAllowedX = minAllowedX + chartPlotArea.getWidth();
+			double minAllowedY = chartPlotArea.getMinY();
+			double maxAllowedY = minAllowedY + chartPlotArea.getHeight();
+
+			double newLeft = selectionRectangle.getX() + dx;
+			double newRight = newLeft + selectionRectangle.getWidth();
+			double newTop = selectionRectangle.getY() + dy;
+			double newBottom = newTop + selectionRectangle.getHeight();
+			if (newLeft < minAllowedX || newRight > maxAllowedX) return;
+			if (newTop < minAllowedY || newBottom > maxAllowedY) return;
+//			System.out.println("x:" + oldX + " y:" + oldY);
+			offsetRectangle(selectionRectangle, dx, dy);
+			drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY, option);
+			selRectStart = new Point2D(event.getX(), event.getY());
+		}
+	}
+
 	Rectangle getAxisScale()
 	{
 		double xmin = xAxis.getLowerBound();
@@ -281,20 +244,7 @@ public class SelectableScatterChart extends VBox
 		double h = chartPlotArea.getLayoutBounds().getHeight();
 		return new Rectangle(chartPlotArea.getLayoutX(),chartPlotArea.getLayoutY(),w, h);	
 		
-	}
-	/**
-	 * The info label shows a short info text
-	 */
-//	private void addInfoLabel() {
-//		if (infoLabel == null)
-//			infoLabel = new Label("");
-//		infoLabel.setId(INFO_LABEL_ID);
-//		getChildren().add(infoLabel);
-//		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
-//		infoLabel.setVisible(false);
-//	}
-//
-	
+	}	
 	/**----------------------------------------------------------------------------------
 	 * Adds a mechanism to select an area in the chart 
 	 */
@@ -312,11 +262,12 @@ public class SelectableScatterChart extends VBox
 		});
 		chartRegion.setOnMouseDragged(ev -> {
 			if (ev.isSecondaryButtonDown()) 	return;	
+			boolean optionDrag = ev.isAltDown();
 			double offsetX = chartRegion.getLayoutX();
 			double offsetY = chartRegion.getLayoutY();
 			selRectEnd = computeRectanglePoint(ev.getX()+offsetX, ev.getY()+offsetY);		// store current cursor position
 			Rectangle2D r = union(selRectStart, selRectEnd);
-			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight());
+			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight(), optionDrag);
 			ev.consume();
 
 		});
@@ -358,6 +309,7 @@ public class SelectableScatterChart extends VBox
 		// dimension
 		double x = Math.max(lowerBoundX, Math.min(eventX, upperBoundX));
 		double y = Math.max(lowerBoundY, Math.min(eventY, upperBoundY));
+		System.out.println("( " + x + ", " + y + " )");
 		return new Point2D(x, y);
 	}
 
@@ -380,7 +332,7 @@ public class SelectableScatterChart extends VBox
 	}
 	/**-------------------------------------------------------------------------------
 	 */
-	private void drawSelectionRectangle(final double x, final double y, final double width, final double height) {
+	private void drawSelectionRectangle(final double x, final double y, final double width, final double height, boolean optionDrag) {
 		selectionRectangle.setVisible(true);
 		selectionRectangle.setX(x);
 		selectionRectangle.setY(y);
@@ -388,8 +340,8 @@ public class SelectableScatterChart extends VBox
 		selectionRectangle.setHeight(height);
 //		selectionRectangle.toFront();
 	}
-	private void drawSelectionRectangleAt(final double x, final double y) {
-		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight());
+	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag) {
+		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag);
 	}
 	private void disableAutoRanging() {
 		xAxis.setAutoRanging(false);
@@ -413,7 +365,7 @@ public class SelectableScatterChart extends VBox
 	private void resized()
 	{
 		Rectangle r = getScaleRect(getSelectionRectangleScale(), getPlotFrame());
-		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
 		if (verbose) System.out.println("resized");
 	}
 
@@ -431,10 +383,10 @@ public class SelectableScatterChart extends VBox
 		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY());
 		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY());
 
-		double xMin = frameToScaleX(selectionMinX);
-		double xMax = frameToScaleX(selectionMaxX);
-		double yMin = frameToScaleY(selectionMaxY);
-		double yMax = frameToScaleY(selectionMinY);
+		double xMin = converter.frameToScale(selectionMinX, scatter, false);
+		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
+		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
+		double yMax = converter.frameToScale(selectionMinY, scatter, true);
 		
 		double freq = countInRect(scatter, xMin, xMax, yMin, yMax);
 		String xName = xAxis.getLabel(), yName = yAxis.getLabel();
@@ -476,19 +428,16 @@ public class SelectableScatterChart extends VBox
 		marquee.getStyleClass().add("selection");
 		marquee.setOpacity(0.3);
 		marquee.setFill(Color.CYAN);
-//		scatter.addRectangleOverlay(displayGate);
-		// scatter.add
-//		System.out.println("Added Gate: " + displayGate.toString());
-		marquee.setOnMouseDragged(event -> {
-			if (resizing && isRectangleSizeTooSmall())
-				return;
-
-			// store current cursor position
-			selRectEnd = computeRectanglePoint(event.getX(), event.getY());
-			Rectangle2D union = union(selRectStart, selRectEnd);
-			drawSelectionRectangle(union);
-			event.consume();
-		});
+//		marquee.setOnMouseDragged(event -> {
+//			if (resizing && isRectangleSizeTooSmall())
+//				return;
+//
+//			// store current cursor position
+//			selRectEnd = computeRectanglePoint(event.getX(), event.getY());
+//			Rectangle2D union = union(selRectStart, selRectEnd);
+//			drawSelectionRectangle(union);
+//			event.consume();
+//		});
 		marquee.setOnMouseReleased(event -> {
 			if (resizing && isRectangleSizeTooSmall())
 				return;
@@ -501,17 +450,9 @@ public class SelectableScatterChart extends VBox
 
 		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
 
-		marquee.setOnMouseEntered(event -> {
-			marquee.setCursor(Cursors.getResizeCursor(RectangleUtil.getPos(event, marquee)));
-		});
-		
-		marquee.setOnMouseMoved(event -> {
-			marquee.setCursor(Cursors.getResizeCursor(RectangleUtil.getPos(event, marquee)));
-		});
-		
-		marquee.setOnMouseExited(event -> {		
-			marquee.setCursor(Cursor.DEFAULT);
-		});
+		marquee.setOnMouseEntered(event -> { setCursor(marquee, event); } );
+		marquee.setOnMouseMoved(event -> { setCursor(marquee, event); });
+		marquee.setOnMouseExited(event -> {	marquee.setCursor(Cursor.DEFAULT);		});
 		
 		marquee.setOnMousePressed(event -> {
 //			if (event.isSecondaryButtonDown()) 	return;
@@ -531,11 +472,12 @@ public class SelectableScatterChart extends VBox
 
 		marquee.setOnMouseDragged(event -> {
 			if (event.isSecondaryButtonDown()) 	return;
-
+			double h = event.getX();
+			double v = event.getY();
 			if (resizing)
 			{
 				// store current cursor position
-				selRectEnd = computeRectanglePoint(event.getX(), event.getY());
+				selRectEnd = computeRectanglePoint(h, v);
 				if (selRectStart == null)
 					selRectStart = RectangleUtil.oppositeCorner(event, marquee);
 				if (selRectStart == null) return;
@@ -549,16 +491,30 @@ public class SelectableScatterChart extends VBox
 //				System.out.println("x:" + x + " y:" + y);
 			} else
 			{
-				double oldX = selRectStart.getX();
+				Bounds chartPlotArea = getPlotBounds();
+				double minAllowed = chartPlotArea.getMinX();
+				double maxAllowed = minAllowed + chartPlotArea.getWidth()-60;
+				boolean inRange = h >= minAllowed && h <= maxAllowed;
+				if (!inRange) return;
+
+				double minAllowedY = chartPlotArea.getMinY();
+				double maxAllowedY = minAllowedY + chartPlotArea.getHeight()-30;		
+				inRange = v >= minAllowedY && v <= maxAllowedY;
+				if (!inRange) return;
+				
+ 				double oldX = selRectStart.getX();
 				double oldY = selRectStart.getY();
-				double dx = event.getX() - oldX - offsetX;
-				double dy = event.getY() - oldY - offsetY;
-//				System.out.println("x:" + oldX + " y:" + oldY);
+				double dx = h - oldX - offsetX;
+				double dy = v - oldY - offsetY;
+
+				if (selectionRectangle.getX() < minAllowed && dx < 0) return;
+				if ((selectionRectangle.getX() + selectionRectangle.getWidth() > maxAllowed) && dx > 0) return;
+				if (selectionRectangle.getY() < minAllowedY && dy < 0) return;
+				if ((selectionRectangle.getY() + selectionRectangle.getHeight() > maxAllowedY) && dy > 0) return;
+
 				marquee.setX(oldX + dx);
 				marquee.setY(oldY + dy);
-//				offsetRectangle(displayGate, dx, dy);
-//				drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY);
-				selRectStart = new Point2D(event.getX(), event.getY());
+				selRectStart = new Point2D(h, v);
 			}
 			event.consume();
 		});
@@ -577,19 +533,12 @@ public class SelectableScatterChart extends VBox
 		
 	}
 
-		/**
-		 * Draws a selection box in the view.
-		 */
-	private void drawSelectionRectangle(Rectangle2D r)
+	void setCursor(Rectangle r, MouseEvent event)
 	{
-		selectionRectangle.setVisible(true);
-		selectionRectangle.setX(r.getMinX());
-		selectionRectangle.setY(r.getMinY());
-		selectionRectangle.setWidth(r.getWidth());
-		selectionRectangle.setHeight(r.getHeight());
+		 r.setCursor(Cursors.getResizeCursor(RectangleUtil.getPos(event, r)));
 	}
 
-	Rectangle2D union(Point2D a, Point2D b)
+	private Rectangle2D union(Point2D a, Point2D b)
 	{
 		if (a == null || b == null) return Rectangle2D.EMPTY;
 		double x = Math.min(a.getX(), b.getX());
@@ -598,42 +547,6 @@ public class SelectableScatterChart extends VBox
 		double height = Math.abs(a.getY() - b.getY());
 		return new Rectangle2D(x,y,width,height);
 	}
-	
-	private double frameToScaleX(double value)
-	{
-		Rectangle frame = getPlotFrame();
-		double chartZeroX = frame.getX();
-		double chartWidth = frame.getWidth();
-		return computeBound(value, chartZeroX, chartWidth, xAxis.getLowerBound(), xAxis.getUpperBound(), false);
-	}
-
-	private double frameToScaleY(double value)
-	{
-		Rectangle frame = getPlotFrame();
-		double chartZeroY = frame.getY();
-		double chartHeight = frame.getHeight();
-		return computeBound(value, chartZeroY, chartHeight, yAxis.getLowerBound(), yAxis.getUpperBound(),true);
-	}
-	
-	
-	private double computeBound(double pixelPosition, double pixelOffset, double pixelLength, double lowerBound,
-			double upperBound, boolean axisInverted) {
-		double pixelPositionWithoutOffset = pixelPosition - pixelOffset;
-		double relativePosition = pixelPositionWithoutOffset / pixelLength;
-		double axisLength = upperBound - lowerBound;
-
-		// The screen's y axis grows from top to bottom, whereas the chart's y axis goes from bottom to top.
-		// That's why we need to have this distinction here.
-		double offset = 0;
-		int sign = 0;
-		if (axisInverted) {		offset = upperBound;	sign = -1;		} 
-		else 			  {		offset = lowerBound;	sign = 1;		}
-
-		double newBound = offset + sign * relativePosition * axisLength;
-		return newBound;
-
-}
-
 
 	Rectangle getScaleRect(Rectangle def, Rectangle frame)
 	{

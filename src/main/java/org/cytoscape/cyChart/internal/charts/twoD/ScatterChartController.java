@@ -1,14 +1,17 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -18,23 +21,27 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
 public class ScatterChartController implements Initializable
 {
-  private Pane chartBox;
+  private AnchorPane chartBox;
   private StackPane chartContainer;
   private ChoiceBox<String> columnChoices;
   private ChoiceBox<String> yAxisChoices;
@@ -60,7 +67,7 @@ public class ScatterChartController implements Initializable
 			applicationManager = registrar.getService(CyApplicationManager.class);
 			nodeTable = getCurrentNodeTable();
 		}
-		chartBox = new Pane();
+		chartBox = new AnchorPane();
 		columnChoices = new ChoiceBox<String>();
 		yAxisChoices = new ChoiceBox<String>();
 		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
@@ -83,16 +90,57 @@ public class ScatterChartController implements Initializable
 		logYTransform = new CheckBox("Log");
 		logYTransform.selectedProperty().addListener(logYChange);
 		logYTransform.setAlignment(Pos.CENTER);
-
-		HBox line = new HBox(columnChoices, logXTransform);
-		HBox line2 = new HBox(yAxisChoices, logYTransform);
-		VBox page = new VBox(chartBox, line, line2);
+		makeFilter = new Button("Create Filter");
+		makeFilter.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent event) {	makeFilter();	}
+		});
+		copyImage = new Button("Copy Image");
+		copyImage.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent event) {	copyImage();	}
+		});
+		HBox lineA = new HBox(8, makeFilter, copyImage);
+		lineA.setMinHeight(30);
+		lineA.setMaxHeight(30);
+		HBox line = new HBox(8, columnChoices, logXTransform);
+		HBox line2 = new HBox(8, yAxisChoices, logYTransform);
+		VBox page = new VBox(lineA, chartBox, line, line2);
 		page.setSpacing(4);
 		parent.getChildren().add(page);
 		initialize(null, null);
 	}
+	Button makeFilter;
+	Button copyImage;
+	 protected void makeFilter() {
+			System.out.println( "Make a NumericFilter");
+			String x = columnChoices.getSelectionModel().getSelectedItem();
+			String y = yAxisChoices.getSelectionModel().getSelectedItem();
+		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+	}
+	 
+	private void copyImage() {
+		copyImage.setVisible(false);
+		makeFilter.setVisible(false);
+	    FileChooser fileChooser = new FileChooser();	
+	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
+	
+	    //Prompt user to select a file
+	    File file = fileChooser.showSaveDialog(null);
+	    if(file != null){
+	        try {
+	            //Pad the capture area
+	            WritableImage writableImage = new WritableImage((int)chartContainer.getWidth() + 20,
+	                    (int)chartContainer.getHeight() + 20);
+	            chartContainer.snapshot(null, writableImage);
+	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
+	            //Write the snapshot to the chosen file
+	            ImageIO.write(renderedImage, "png", file);
+	        } catch (IOException ex) { ex.printStackTrace(); }
+	    }
+		copyImage.setVisible(true);
+		makeFilter.setVisible(true);
+	}
 
-	 boolean isXLog = false;
+	boolean isXLog = false;
 	 boolean isYLog = false;
 
 	 public boolean isXLog()	{ return isXLog;	}
@@ -117,11 +165,11 @@ public class ScatterChartController implements Initializable
 		return applicationManager.getCurrentNetwork().getDefaultNodeTable();	
 	}
 	
-public void setStatus(String s)
-{
-	if ( statusLabel != null)  statusLabel.setText(s);
-}
-  
+	public void setStatus(String s)
+	{
+		if ( statusLabel != null)  statusLabel.setText(s);
+	}
+	  
 
 //  static boolean bypass = false;
 	@Override public void initialize(URL url, ResourceBundle rb)
@@ -169,12 +217,7 @@ static int DOT_SIZE = 4;
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
 		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
-//			  private NumberAxis xAxis;
-//			  private NumberAxis yAxis;
-			ValueAxis<Number> xAxis = isXLog ? new LogarithmicAxis() : new NumberAxis();
-			ValueAxis<Number> yAxis = isYLog ? new LogarithmicAxis() : new NumberAxis();
-//			yAxis = new NumberAxis();
-			scatterChartHome = new SelectableScatterChart(this, null);
+			scatterChartHome = new SelectableScatterChart(this);
 			if (series1 != null)
 			{
 				scatterChartHome.setDataSeries(series1);
@@ -247,7 +290,8 @@ static int DOT_SIZE = 4;
 			List<Integer> intvalues = col.getValues(Integer.class);
 			List<Double> dubvalues = new ArrayList<Double>();
 			for (Integer i : intvalues)
-				dubvalues.add(new Double(i));
+				if (i != null) 
+					dubvalues.add(new Double(i));
 			return dubvalues;
 		}
 		return null;
@@ -341,4 +385,4 @@ static int DOT_SIZE = 4;
 	}
 
 	public String ping() {		return "JERE";		}
-	}
+}

@@ -21,7 +21,7 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 
 
 	public ScatterFilterDialog(CyChartManager mgr, String title ) {
-		super();
+		super(mgr.getOwner());
 		System.out.println("<ScatterFilterDialog>");
 		manager = mgr;
 		if (title != null) {

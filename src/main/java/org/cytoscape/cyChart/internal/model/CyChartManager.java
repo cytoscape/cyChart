@@ -1,22 +1,15 @@
 package org.cytoscape.cyChart.internal.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.awt.Frame;
+import java.awt.Window;
 
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.cyChart.internal.charts.oneD.Histogram1D;
-import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
-
-import javafx.geometry.Point2D;
 
 public class CyChartManager {
 
@@ -58,6 +51,11 @@ public class CyChartManager {
 //	public Map<String, CyChart> getChartMap() {		return idMap;	}
 	public void setVersion(String v) { this.version = v; }
 	public String getVersion() { return version; }
+
+	public Frame getOwner() {
+		final CySwingApplication swingApplication = registrar.getService(CySwingApplication.class);
+		return swingApplication == null ? null : swingApplication.getJFrame();
+	}
 	
 	
 //	Map<Long, Double> getColumnDoubleMap(CyTable table, String colName)

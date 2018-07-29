@@ -1,5 +1,7 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
+import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
+
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
@@ -19,6 +21,15 @@ public class FrameScaleConverter {
 		double frameLength = isYAxis ? bounds.getHeight() : bounds.getWidth();
 		//https://stackoverflow.com/questions/16268207/why-cant-i-modify-the-axes-from-a-javafx-linechart
 		ValueAxis<Number> axis = (ValueAxis<Number>) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
+		if (axis instanceof LogarithmicAxis)
+		{
+			LogarithmicAxis logAxis = (LogarithmicAxis) axis;
+			double outScale =  logAxis.getValueForDisplay(framePosition).doubleValue();
+			return outScale;
+		}
+		
+		else
+		{
 		double scaleMin = axis.getLowerBound();
 		double scaleMax = axis.getUpperBound();
 		double relativePosition = framePosition / frameLength;
@@ -39,6 +50,7 @@ public class FrameScaleConverter {
 			System.out.println(String.format("%s AxisBounds:[%.1f, - %.1f] FrameLength:[%.1f] %.1f -> %.2f", axisName, scaleMin, scaleMax, frameLength, framePosition, outScale));
 		}
 		return outScale;
+		}
 	}
 
 
@@ -49,6 +61,14 @@ public class FrameScaleConverter {
 
 	public double scaleToFrame(double scaleValue, XYChart<Number, Number> theChart, boolean isYAxis) {
 		ValueAxis<Number> axis = (ValueAxis<Number>) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
+		if (axis instanceof LogarithmicAxis)
+		{
+			LogarithmicAxis logAxis = (LogarithmicAxis) axis;
+			double outFrame =  logAxis.getDisplayPosition(scaleValue);
+			return outFrame;
+		}
+		else
+		{
 		Bounds bounds =  getChartPlotBounds(theChart);
 		double widthOrHeight = isYAxis ? bounds.getHeight() : bounds.getWidth();
 		double lower = axis.getLowerBound();
@@ -63,6 +83,7 @@ public class FrameScaleConverter {
 			System.out.println(String.format("scaleToFrame: dim: %s AxisBounds:[%.1f, - %.1f] FrameLength:[%.1f] %.1f <- %.2f", axisName, lower,upper, widthOrHeight, frameVal, scaleValue));
 		}
 		return frameVal;
+		}
 	}
 	
 	

@@ -37,7 +37,7 @@ public class ScatterFilterPanel extends JPanel {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
 		System.out.println("ScatterFilterPanel");
-		setPreferredSize(new Dimension(800, 500));
+		setPreferredSize(new Dimension(600, 500));
 		initComponents();
 //		Platform.setImplicitExit(false);
 	}
@@ -70,14 +70,14 @@ public class ScatterFilterPanel extends JPanel {
 
 		JPanel statusBar = new JPanel(new BorderLayout(5, 0));
 		statusBar.add(lblStatus, BorderLayout.CENTER);
-		lblStatus.setMinimumSize(new Dimension(20, 10));
-		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
+		lblStatus.setMinimumSize(new Dimension(20, 20));
+		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 13));
 		lblStatus.setText("The status bar reports the range and percentage selected");
 		add(topBar, BorderLayout.NORTH);
 		add(statusBar, BorderLayout.SOUTH);
 //		JPanel container = new JPanel();
 //		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 //		container.add(jfxPanel);
 		add(jfxPanel, BorderLayout.CENTER);
 //		jfxPanel.setBorder(Borders.blueBorder1);

@@ -22,7 +22,7 @@ public class AppScatters extends Application
 //	    fxmlLoader.setLocation(url);
 //	    AnchorPane appPane = fxmlLoader.load();
     	StackPane pane = getStackPane(null, null);
-    	Scene scene = new Scene(pane, 500, 550);
+    	Scene scene = new Scene(pane, 520, 550);
 	    stage.setScene(scene);
 	    stage.show();
    }
@@ -30,10 +30,10 @@ public class AppScatters extends Application
     public static StackPane getStackPane(CyServiceRegistrar registrar, JLabel status)
     {
 	    StackPane pane = new StackPane();
-	    pane.setPrefWidth(500);
-	    pane.setPrefHeight(600);
+	    pane.setPrefWidth(520);
+	    pane.setPrefHeight(550);
 	    ScatterChartController cntl = new ScatterChartController(pane, registrar, status);
-	    System.out.println("ScatterChartController status = "  + cntl.ping()); 
+//	    System.out.println("ScatterChartController status = "  + cntl.ping()); 
 	    return pane;
     }  
     

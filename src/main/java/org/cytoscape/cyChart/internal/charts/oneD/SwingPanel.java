@@ -34,14 +34,14 @@ public class SwingPanel extends JPanel {
 
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
  
-	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog) {
-		super(new BorderLayout());
-		registrar = manager.getRegistrar();
-//		System.out.println("SwingPanel");
-		setPreferredSize(new Dimension(800, 500));
-		initComponents(null);
-		Platform.setImplicitExit(false);
-	}
+//	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog) {
+//		super(new BorderLayout());
+//		registrar = manager.getRegistrar();
+////		System.out.println("SwingPanel");
+//		setPreferredSize(new Dimension(800, 500));
+//		initComponents(null);
+//		Platform.setImplicitExit(false);
+//	}
 
 	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog, CyColumn column) {
 		super(new BorderLayout());

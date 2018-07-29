@@ -1,13 +1,18 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.model.CyColumn;
@@ -18,20 +23,28 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ValueAxis;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
 public class HistogramChartController implements Initializable
 {
@@ -65,8 +78,8 @@ public class HistogramChartController implements Initializable
 		}
 		else
 		{	
-		applicationManager = registrar.getService(CyApplicationManager.class);
-		nodeTable = getNodeTable(getCurrentNetwork());
+			applicationManager = registrar.getService(CyApplicationManager.class);
+			nodeTable = getNodeTable(getCurrentNetwork());
 		}
 		columnChoices = new ChoiceBox<String>();
 		logTransform = new CheckBox("Log");
@@ -78,6 +91,17 @@ public class HistogramChartController implements Initializable
 		};
 		logTransform.selectedProperty().addListener(logChange);
 		logTransform.setAlignment(Pos.CENTER);
+		makeFilter = new Button("Create Filter");
+		makeFilter.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent event) {	makeFilter();	}
+		});
+		copyImage = new Button("Copy Image");
+		copyImage.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent event) {	copyImage();	}
+		});
+		HBox lineA = new HBox(8, makeFilter, copyImage);
+		lineA.setMinHeight(28);
+		lineA.setMaxHeight(28);
 		// tableview = new TableView<MixedDataRow>();
 		// colA = new TableColumn<MixedDataRow, String>();
 		// colB = new TableColumn<MixedDataRow, Integer>();
@@ -87,7 +111,7 @@ public class HistogramChartController implements Initializable
 		// parent.getChildren().add(split);
 		HBox line = new HBox(8, columnChoices, logTransform);
 		chartPane = new Pane();
-		VBox page = new VBox(chartPane, line);
+		VBox page = new VBox(lineA, chartPane, line);
 		parent.getChildren().add(page);
 		initialize(null, null);
 		if (column != null)
@@ -97,8 +121,39 @@ public class HistogramChartController implements Initializable
 			System.out.println("index set to " + idx);
 			setXParameter(column.getName());
 		}
+		else setLogDistribution(false);
 	}
   
+	Button makeFilter;
+	Button copyImage;
+	 protected void makeFilter() {
+			System.out.println( "Make a NumericFilter");
+			String x = columnChoices.getSelectionModel().getSelectedItem();
+		    System.out.println(x + (logTransform.isSelected() ? " (Log)" : " (Lin)"));
+	}
+	 
+	private void copyImage() {
+		copyImage.setVisible(false);
+		makeFilter.setVisible(false);
+	    FileChooser fileChooser = new FileChooser();	
+	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
+	
+	    //Prompt user to select a file
+	    File file = fileChooser.showSaveDialog(null);
+	    if(file != null){
+	        try {
+	            //Pad the capture area
+	            WritableImage writableImage = new WritableImage((int)chartContainer.getWidth() + 20,
+	                    (int)chartContainer.getHeight() + 20);
+	            chartContainer.snapshot(null, writableImage);
+	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
+	            //Write the snapshot to the chosen file
+	            ImageIO.write(renderedImage, "png", file);
+	        } catch (IOException ex) { ex.printStackTrace(); }
+	    }
+		copyImage.setVisible(true);
+		makeFilter.setVisible(true);
+	}
 	 public void setStatusText(String s) {
 		 if (statusLabel != null)
 			 statusLabel.setText(s);
@@ -192,6 +247,9 @@ public class HistogramChartController implements Initializable
 	// ------------------------------------------------------
 	public void setXParameter(String name)
 	{
+		chartPane.getChildren().clear();
+		if (subrangeLayer != null)
+			subrangeLayer.clear();
 		xAxis = isLog ? new LogarithmicAxis() : new NumberAxis();
 		yAxis = new NumberAxis();
 		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
@@ -202,13 +260,20 @@ public class HistogramChartController implements Initializable
 		{
 			Region rgn = (Region) chartPlotArea;
 			rgn.setStyle("-fx-background-color: #CCCCCC;");
+			rgn.setBorder(Borders.thinEtchedBorder);
 		}
 		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
-		chartPane.getChildren().clear();
 		chartPane.getChildren().add(histogramChart);
 		System.out.println("setXParameter: " + name);
 		if (StringUtil.isEmpty(name)) return;
-		if (subrangeLayer != null) subrangeLayer.hideSelection();
+		if (subrangeLayer != null) 
+		{
+			subrangeLayer.hideSelection();
+			Group g = subrangeLayer.getSubRangeGroup();
+			Bounds bounds = getPlotAreaNode().getBoundsInParent();
+			g.setTranslateX(bounds.getMinX());
+			g.setTranslateY(bounds.getMinY());
+		}
 		Histogram1D h1 = getHistogram(name, isLog);
 		if (h1 != null)
 		{
@@ -226,12 +291,8 @@ public class HistogramChartController implements Initializable
 	public void setXParameter(Number index)
 	{
 		int i =  index.intValue();
-		if (i < columnChoices.getItems().size())
-		{
-			String item = columnChoices.getItems().get(i);
-			setXParameter(item);
-	//	    System.out.println(item);
-		}
+		if (i >= 0 && i < columnChoices.getItems().size())
+			setXParameter(columnChoices.getItems().get(i));
 	}
 
 	private Histogram1D getHistogram(String item, Boolean isLog) {
