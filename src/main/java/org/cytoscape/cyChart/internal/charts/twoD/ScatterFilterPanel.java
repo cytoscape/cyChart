@@ -37,7 +37,7 @@ public class ScatterFilterPanel extends JPanel {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
 		System.out.println("ScatterFilterPanel");
-		setPreferredSize(new Dimension(600, 500));
+		setPreferredSize(new Dimension(520, 500));
 		initComponents();
 //		Platform.setImplicitExit(false);
 	}

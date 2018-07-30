@@ -29,11 +29,9 @@ public class SubRangeLayer			// a 1D GateLayer
  * This class adds a layer on top of a histogram chart. 
  *
  */
-	private static final String INFO_LABEL_ID = "zoomInfoLabel";
-	private static final String POSITION_LABEL_ID = "positionLabel";
-	private StackPane pane;
-	public StackPane getPane()	{ return pane;	}
-	public void clear() {		pane.getChildren().clear();			}
+	final private StackPane stackPane;
+	public StackPane getPane()	{ 	return stackPane;	}
+	public void clear() 		{	stackPane.getChildren().clear();			}
 	
 	private LineChart<Number, Number> chart;
 	private ValueAxis<Number> xAxis;
@@ -57,12 +55,12 @@ public class SubRangeLayer			// a 1D GateLayer
 	 * 
 	 * @param chart
 	 *            the xy chart to which the zoom support should be added
-	 * @param pane
+	 * @param stackPane
 	 *            the pane on which the selection rectangle will be drawn.
 	 */
 	public SubRangeLayer(LineChart<Number, Number> inChart, StackPane inPane, HistogramChartController ctrol) 
 	{
-		pane = inPane;
+		stackPane = inPane;
 		chart = inChart;
 		controller = ctrol;
 		
@@ -75,13 +73,13 @@ public class SubRangeLayer			// a 1D GateLayer
 		selectionH.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
 		selectionH.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
 		selectionH.setVisible(false);
-		pane.getChildren().add(selectionH);
+		stackPane.getChildren().add(selectionH);
 
 		addDragSelectionMechanism();
 		addInfoLabel();
 	    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> setAxisBounds();
-	    pane.widthProperty().addListener(paneSizeListener);
-	    pane.heightProperty().addListener(paneSizeListener);  
+	    stackPane.widthProperty().addListener(paneSizeListener);
+	    stackPane.heightProperty().addListener(paneSizeListener);  
 
 //	    if (showChartOutlines) {
 //	    chart.setBorder(Borders.cyanBorder);
@@ -102,14 +100,8 @@ public class SubRangeLayer			// a 1D GateLayer
 	 * The info label shows a short info text that tells the user how to unreset the zoom level.
 	 */
 	private void addInfoLabel() {
-//		infoLabel = new Label("Subrange info goes here");
-//		infoLabel.setId(INFO_LABEL_ID);
-//		pane.getChildren().add(infoLabel);
-//		StackPane.setAlignment(infoLabel, Pos.TOP_RIGHT);
-//		infoLabel.setVisible(false);
 		positionLabel = new Label("positionLabel");
-		positionLabel.setId(POSITION_LABEL_ID);
-		pane.getChildren().add(positionLabel);
+		stackPane.getChildren().add(positionLabel);
 		StackPane.setAlignment(positionLabel, Pos.TOP_RIGHT);
 		positionLabel.setVisible(false);
 	}
@@ -249,27 +241,22 @@ public class SubRangeLayer			// a 1D GateLayer
 //		System.out.println("onDragged: " + h + ", " + event.getY());
 		boolean inRange = h >= minAllowed && h <= maxAllowed;
 		if (!inRange) return;
+		
 		double v = event.getY();
 		double minYAllowed = 0;
 		double maxYAllowed = chartPlotArea.getLayoutBounds().getHeight();
 		boolean inVRange = v >= minYAllowed && v <= maxYAllowed;
-		if (!inVRange) 
-			return;
+		if (!inVRange) 	return;
+		
 		double delta = h - previousH;
 		if (delta == 0) return;
-
-//		if (selectionAnchor > 0 && selectionMovingEnd > 0)
-//			inRange = ((selectionAnchor + delta) >= minAllowed) && ((selectionMovingEnd + delta) <= maxAllowed);
-//		if (inRange) 
-//		{
-//			System.out.println(hitSpot);
-			if (hitSpot == 2)
-				offsetSelection(delta);
-			else 		
-				selectionMovingEnd = h;
-			update(v);
-			previousH = h;
-//		}
+		
+		if (hitSpot == 2)
+			offsetSelection(delta);
+		else 		
+			selectionMovingEnd = h;
+		update(v);
+		previousH = h;
 	}
 
 	private void offsetSelection(double delta)
@@ -306,7 +293,7 @@ public class SubRangeLayer			// a 1D GateLayer
 			updateController();
 			setSelection(-1, -1); 
 		} 
-		pane.requestFocus();		// needed for the key event handler to receive events
+		stackPane.requestFocus();		// needed for the key event handler to receive events
 		positionLabel.setVisible(false);
 		dragging = false;
 		event.consume();		
@@ -321,22 +308,6 @@ public class SubRangeLayer			// a 1D GateLayer
 	{
 		System.out.println(String.format("H: %.2f = %.2f", h, converter.frameToScale(h, chart, false)));
 	}
-//	void debugV(double v)
-//	{
-//		System.out.println(String.format("V: %.2f = #.2f", v, converter.frameToScale(v, chart, true)));
-//	}
-
-	/**-------------------------------------------------------------------------------
-	 *
-	 */
-//	public double getSelectionMin()			{		return Math.min(selectionAnchor, selectionMovingEnd);		}
-//	public double getSelectionMax()			{		return Math.max(selectionAnchor, selectionMovingEnd);		}
-//
-//	public double getSelectionStart()		{		return selectionAnchor;		}
-//	public double getSelectionEnd()			{		return selectionMovingEnd;		}
-//	public void setSelectionStart(double i)	{		selectionAnchor = i;		}
-//	public void setSelectionEnd(double i)	{		selectionMovingEnd = i;	}
-
 
 	//a drag causes new values to go from the frame to model
 	
@@ -370,11 +341,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		double v0 = converter.scaleToFrame(controller.getSelectionHeight(), chart, true);
 		setSelection(h0, h1);
 		update(v0);
-//		System.out.println(String.format("setAxisBounds %.2f - %.2f  @ %.2f  ", xMin, xMax, controller.getSelectionHeight()));
-//		System.out.println(String.format("%.2f - %.2f  @ %.2f  \n\n",h0,h1, v0));
-//		updateController();
-		
-		}
+	}
 	
 	private double getRangeFreq(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
@@ -404,8 +371,9 @@ public class SubRangeLayer			// a 1D GateLayer
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
 		selectionH.setVisible(false);
-		
 	}
+	
+	//-----------------------------
 	private Line leftBar, crossBar, rightBar;
 	int resizing = 0;
 	double dragStart = -1;
@@ -413,14 +381,13 @@ public class SubRangeLayer			// a 1D GateLayer
 	double yValue = 0;
 	
 	public double getYValue()	{ return yValue;	}
-	Group groupH;
+	
 	public Group getSubRangeGroup()
 	{
-		if (groupH != null) return groupH;
 		leftBar = new Line(20, 10, 20, 399);
 		crossBar = new Line(20, 100, 220, 100);
 		rightBar = new Line(220, 10, 220, 399);
-		groupH = new Group();
+		Group groupH = new Group();
 //		update(0,100, 0);
 		groupH.setMouseTransparent(true);
 		leftBar.setStrokeWidth(2);		leftBar.setStroke(Color.PURPLE);

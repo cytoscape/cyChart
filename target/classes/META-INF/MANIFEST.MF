@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1532900656069
+Bnd-LastModified: 1532910315369
 Build-Jdk: 1.8.0_172
 Built-By: adam
 Bundle-Activator: org.cytoscape.cyChart.internal.CyActivator

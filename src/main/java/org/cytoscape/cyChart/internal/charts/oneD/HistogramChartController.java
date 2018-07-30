@@ -26,7 +26,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
@@ -39,6 +38,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -48,9 +48,9 @@ import javafx.stage.FileChooser;
 
 public class HistogramChartController implements Initializable
 {
-  @FXML private  LineChart<Number, Number> histogramChart;
-  @FXML  private StackPane chartContainer;
-  @FXML  private ChoiceBox<String> columnChoices;
+  private  LineChart<Number, Number> histogramChart;
+  private StackPane pageContainer;
+  private ChoiceBox<String> columnChoices;
 //  @FXML  private TableView<MixedDataRow> tableview;
 //  @FXML  private TableColumn<MixedDataRow, Integer> ID;
 //  @FXML  private TableColumn<MixedDataRow, String> colA;
@@ -59,49 +59,37 @@ public class HistogramChartController implements Initializable
 //  private CSVTableData dataTable;
   private ValueAxis<Number> xAxis;
   private ValueAxis<Number> yAxis;
-  Pane chartPane;
-  CyServiceRegistrar registrar; 
-	private final CyApplicationManager applicationManager;
-	private CyTable nodeTable;
-	JLabel statusLabel;
-	CheckBox logTransform;
+  final AnchorPane chartPane;
+  final CyServiceRegistrar registrar; 
+  private CyTable nodeTable;
+  final private JLabel statusLabel;
+  final private CheckBox logTransform;
 	
 	// use this if you don't use FXML to define the chart
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, JLabel status, CyColumn column) {
-		chartContainer = parent;
+		pageContainer = parent;
 		registrar = reg;
 		statusLabel = status;
-		if (registrar == null)
-		{
-			applicationManager = null;
-			nodeTable = null;
-		}
-		else
-		{	
-			applicationManager = registrar.getService(CyApplicationManager.class);
-			nodeTable = getNodeTable(getCurrentNetwork());
-		}
+		nodeTable = (registrar == null) ? null : getNodeTable(getCurrentNetwork());
 		columnChoices = new ChoiceBox<String>();
 		logTransform = new CheckBox("Log");
 		ChangeListener<Boolean> logChange = new ChangeListener<Boolean>() {
-		    @Override
-		    public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
-		        setLogDistribution(new_val);
-		    }
-		};
+		    @Override  public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+		        setLogDistribution(new_val);  } };
 		logTransform.selectedProperty().addListener(logChange);
 		logTransform.setAlignment(Pos.CENTER);
+		
 		makeFilter = new Button("Create Filter");
 		makeFilter.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent event) {	makeFilter();	}
-		});
+			@Override public void handle(ActionEvent event) {	makeFilter();	}	});
 		copyImage = new Button("Copy Image");
 		copyImage.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent event) {	copyImage();	}
-		});
+			@Override public void handle(ActionEvent event) {	copyImage();	}	});
+		
 		HBox lineA = new HBox(8, makeFilter, copyImage);
 		lineA.setMinHeight(28);
 		lineA.setMaxHeight(28);
+//		lineA.setBorder(Borders.redBorder);
 		// tableview = new TableView<MixedDataRow>();
 		// colA = new TableColumn<MixedDataRow, String>();
 		// colB = new TableColumn<MixedDataRow, Integer>();
@@ -110,18 +98,20 @@ public class HistogramChartController implements Initializable
 		// split.setOrientation(Orientation.HORIZONTAL);
 		// parent.getChildren().add(split);
 		HBox line = new HBox(8, columnChoices, logTransform);
-		chartPane = new Pane();
+		chartPane = new AnchorPane();
 		VBox page = new VBox(lineA, chartPane, line);
-		parent.getChildren().add(page);
+//		page.setBorder(Borders.greenBorder);
+//		pageContainer.setBorder(Borders.blueBorder1);
 		initialize(null, null);
 		if (column != null)
 		{
 			int idx = findColumnIndex(column.getName());
 			columnChoices.getSelectionModel().select(column.getName());
-			System.out.println("index set to " + idx);
+//			System.out.println("index set to " + idx);
 			setXParameter(column.getName());
 		}
 		else setLogDistribution(false);
+		pageContainer.getChildren().add(page);
 	}
   
 	Button makeFilter;
@@ -143,9 +133,9 @@ public class HistogramChartController implements Initializable
 	    if(file != null){
 	        try {
 	            //Pad the capture area
-	            WritableImage writableImage = new WritableImage((int)chartContainer.getWidth() + 20,
-	                    (int)chartContainer.getHeight() + 20);
-	            chartContainer.snapshot(null, writableImage);
+	            WritableImage writableImage = new WritableImage((int)pageContainer.getWidth() + 20,
+	                    (int)pageContainer.getHeight() + 20);
+	            pageContainer.snapshot(null, writableImage);
 	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
 	            //Write the snapshot to the chosen file
 	            ImageIO.write(renderedImage, "png", file);
@@ -171,7 +161,7 @@ public class HistogramChartController implements Initializable
 	{
 //	    System.out.println("HistogramChartController.initialize");
 //		assert (histogramChart != null);
-	    assert( chartContainer != null);
+	    assert( pageContainer != null);
 		populateColumnChoices();
 		columnChoices.getSelectionModel().selectedIndexProperty().addListener(
 			new ChangeListener<Number>() {	@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
@@ -200,56 +190,17 @@ public class HistogramChartController implements Initializable
 	// reads the table file and fills the cells into a tableview's model
 	
 	// ------------------------------------------------------
-//	private void setupChart()
-//	{
-//		Histogram1D h1 = dataTable.getHistogram("Eccentricity");
-//		Histogram1D h2 = dataTable.getHistogram("Degree");
-//		CyTable nodeTable = getCurrentNetwork(). 
-//		if (!dataTable.getColumnNames().isEmpty())
-//		{
-//			for (String colName : dataTable.getColumnNames())
-//				columnChoices.getItems().add(colName);
-//			columnChoices.getSelectionModel().select(0);
-//		}
-//		if (h1 == null) 
-//			return;
-//		XYChart.Series<Number, Number> series1 = h1.getDataSeries("Eccentricity");
-//		if (series1 != null)
-//			histogramChart.getData().add(series1 );
-//
-//	}
+	private CyNetwork getCurrentNetwork() 		{	return registrar.getService(CyApplicationManager.class).getCurrentNetwork();	}
+	private CyTable getNodeTable(CyNetwork net) {	return net.getDefaultNodeTable();	}
 
-	CyNetwork getCurrentNetwork() 		{	return registrar.getService(CyApplicationManager.class).getCurrentNetwork();	}
-	CyTable getNodeTable(CyNetwork net) {	return net.getDefaultNodeTable();	}
-//	
-//	Map<Long, Double> getColumnDoubleMap(CyTable table, String colName)
-//	{
-//		Map<Long, Double> map = new HashMap<Long, Double> ();
-//		CyColumn col = table.getColumn(colName);
-//		if (col != null)
-//		{
-//			List<Double> vals = null;
-//			List<Long> ids = null;
-//			vals = col.getValues(Double.class);
-//			ids = col.getValues(Long.class);
-//			int sz = vals.size();
-//			for (int i=0; i< sz; i++)
-//				map.put(ids.get(i), vals.get(i));
-//		}
-//		return map;
-//	}
-	Node getPlotAreaNode() 
-	{
-		return histogramChart.lookup(".chart-plot-background");
-	}	
-
-	
+	private Node getPlotAreaNode() 		{		return histogramChart.lookup(".chart-plot-background");	}	
 	// ------------------------------------------------------
 	public void setXParameter(String name)
 	{
-		chartPane.getChildren().clear();
-		if (subrangeLayer != null)
-			subrangeLayer.clear();
+//		chartPane.getChildren().clear();
+//		if (subrangeLayer != null)
+//			subrangeLayer.clear();
+//		pageContainer.getChildren().clear();
 		xAxis = isLog ? new LogarithmicAxis() : new NumberAxis();
 		yAxis = new NumberAxis();
 		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
@@ -262,7 +213,7 @@ public class HistogramChartController implements Initializable
 			rgn.setStyle("-fx-background-color: #CCCCCC;");
 			rgn.setBorder(Borders.thinEtchedBorder);
 		}
-		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
+		subrangeLayer = new SubRangeLayer(histogramChart, pageContainer, this);
 		chartPane.getChildren().add(histogramChart);
 		System.out.println("setXParameter: " + name);
 		if (StringUtil.isEmpty(name)) return;

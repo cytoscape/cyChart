@@ -7,36 +7,21 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 public class HistogramFilterTask extends AbstractEmptyObservableTask {
-	public String title = null;
+	final private String title = "Histogram Filter";
 
 	@ProvidesTitle
-	public String getTitle() {		return "Starting Cytoscape Chart Filter";	}
-
-
-	final CyChartManager manager;
+	public String getTitle() {		return title;	}
+	final private CyChartManager manager;
 
 	//----------------------------------------------------
-	public HistogramFilterTask(CyChartManager mgr) {
-		manager = mgr;
-		if (mgr.getCurrentNetwork() == null) return;
-		HistogramFilterDialog	chart = new HistogramFilterDialog(manager,title, null);
-		chart.setVisible(true);
-	}	
+	public HistogramFilterTask(CyChartManager mgr) 	{ 	this(mgr, null);	}	
 	
 	public HistogramFilterTask(CyChartManager mgr, CyColumn column) {
 		manager = mgr;
-		HistogramFilterDialog	chart = new HistogramFilterDialog(manager, title, column);
-		chart.setVisible(true);
+		if (mgr.getCurrentNetwork() == null) return;
+		HistogramFilterDialog	dlog = new HistogramFilterDialog(manager, title, column);
+		dlog.setVisible(true);
 	}
 
-	public void run(TaskMonitor monitor) {
-//		SwingUtilities.invokeLater(new Runnable() {
-//			public void run() {
-//				ChartDialog	chart = new ChartDialog(manager, id, title);
-//				manager.addChart(chart, id);
-//				chart.setVisible(true);
-			}
-//		});
-//	}
-
+	public void run(TaskMonitor monitor) {	}
 }

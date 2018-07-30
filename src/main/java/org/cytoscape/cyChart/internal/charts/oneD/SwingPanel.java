@@ -1,6 +1,7 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.concurrent.CountDownLatch;
@@ -11,6 +12,7 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -47,7 +49,7 @@ public class SwingPanel extends JPanel {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
 //		System.out.println("SwingPanel");
-		setPreferredSize(new Dimension(800, 500));
+		setPreferredSize(new Dimension(600, 500));
 		initComponents(column);
 		Platform.setImplicitExit(false);
 	}
@@ -69,6 +71,7 @@ public class SwingPanel extends JPanel {
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
 		StackPane appPane = AppHistograms.getStackPane(registrar, lblStatus, column);
+//		appPane.setBorder(Borders.magentaBorder);
 		if (appPane != null) 
 		{
 //			System.out.println("appPane created");
@@ -86,12 +89,12 @@ public class SwingPanel extends JPanel {
 		statusBar.add(lblStatus, BorderLayout.CENTER);
 		lblStatus.setMinimumSize(new Dimension(20, 10));
 		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
-		lblStatus.setText("The status bar reports the range and percentage selected");
+		lblStatus.setText("The statRs bar reports the range and percentage selected.");
 		add(topBar, BorderLayout.NORTH);
 		add(statusBar, BorderLayout.SOUTH);
 //		JPanel container = new JPanel();
 //		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
+//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
 //		container.add(jfxPanel);
 		add(jfxPanel, BorderLayout.CENTER);
 	}
