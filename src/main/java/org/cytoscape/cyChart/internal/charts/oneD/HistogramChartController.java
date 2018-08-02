@@ -5,21 +5,27 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
+import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -105,9 +111,7 @@ public class HistogramChartController implements Initializable
 		initialize(null, null);
 		if (column != null)
 		{
-			int idx = findColumnIndex(column.getName());
 			columnChoices.getSelectionModel().select(column.getName());
-//			System.out.println("index set to " + idx);
 			setXParameter(column.getName());
 		}
 		else setLogDistribution(false);
@@ -117,12 +121,53 @@ public class HistogramChartController implements Initializable
 	Button makeFilter;
 	Button copyImage;
 	 protected void makeFilter() {
-			System.out.println( "Make a NumericFilter");
-			String x = columnChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + (logTransform.isSelected() ? " (Log)" : " (Lin)"));
-	}
+			CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+			if (commandTF != null && taskManager != null) {
+				System.out.println( "Make a Histogram Filter");
+				String x = columnChoices.getSelectionModel().getSelectedItem();
+			    System.out.println(x + (logTransform.isSelected() ? " (Log)" : " (Lin)"));
+			    execFilterCommand(taskManager, commandTF, filterBuilder(x, new Range(startX, endX)));
+			}
+		}
 	 
-	private void copyImage() {
+		private String filterBuilder(String columnName, Range r)
+		{
+			String criterion = String.format("[ %.4f, %.4f ]", r.min(), r.max());
+			StringBuilder buildr = new StringBuilder();
+			buildr.append("{\n");
+			buildr.append("\"id\" : \"ColumnFilter\", \n" );
+			buildr.append("\"parameters\" : {\n");
+			addLine(buildr,"predicate", "\"BETWEEN\"", true );
+			addLine(buildr,"criterion", criterion,true );
+			addLine(buildr,"caseSensitive", "false",true );
+			addLine(buildr,"type", "\"nodes\"",true );
+			addLine(buildr,"anyMatch", "true",true );
+			addLine(buildr,"columnName", inQuotes(columnName), false );
+			buildr.append("\n }\n}");
+			return buildr.toString();
+		 }
+			
+		private String inQuotes(String a) {		return '"' + a + '"';	}
+
+		private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
+		{
+			System.out.println(json);
+			Map<String, Object> args = new HashMap<>();
+			args.put("name","histogram filter");
+			args.put("json",json);
+			TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
+			taskManager.execute(ti);
+		}
+		
+		 void addLine(StringBuilder b, String attr, String value, boolean addComma)
+		 {
+				b.append(inQuotes(attr) + " : " + value  );
+				if (addComma)
+					b.append(",\n");
+		 }
+		 
+		 private void copyImage() {
 		copyImage.setVisible(false);
 		makeFilter.setVisible(false);
 	    FileChooser fileChooser = new FileChooser();	
@@ -216,15 +261,16 @@ public class HistogramChartController implements Initializable
 		subrangeLayer = new SubRangeLayer(histogramChart, pageContainer, this);
 		chartPane.getChildren().add(histogramChart);
 		System.out.println("setXParameter: " + name);
-		if (StringUtil.isEmpty(name)) return;
 		if (subrangeLayer != null) 
 		{
 			subrangeLayer.hideSelection();
 			Group g = subrangeLayer.getSubRangeGroup();
+			chartPane.getChildren().add(g);
 			Bounds bounds = getPlotAreaNode().getBoundsInParent();
-			g.setTranslateX(bounds.getMinX());
-			g.setTranslateY(bounds.getMinY());
+//			g.setTranslateX(bounds.getMinX());
+//			g.setTranslateY(-bounds.getMinY());
 		}
+		if (StringUtil.isEmpty(name)) return;
 		Histogram1D h1 = getHistogram(name, isLog);
 		if (h1 != null)
 		{

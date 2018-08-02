@@ -17,6 +17,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 
 public class ScatterFilterPanel extends JPanel {
@@ -57,9 +58,11 @@ public class ScatterFilterPanel extends JPanel {
 	private void initComponents() {
 		jfxPanel = new JFXPanel();
 		StackPane appPane = AppScatters.getStackPane(registrar, lblStatus);
+		AnchorPane anchor = new AnchorPane();
+		anchor.getChildren().add(appPane);
 		if (appPane != null) 
 		{
-			Scene scene = new Scene(appPane);
+			Scene scene = new Scene(anchor);
 			jfxPanel.setScene(scene);
 			System.out.println("scene created");
 		}

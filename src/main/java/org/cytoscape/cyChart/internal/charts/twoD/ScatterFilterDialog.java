@@ -22,7 +22,6 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 
 	public ScatterFilterDialog(CyChartManager mgr, String title ) {
 		super(mgr.getOwner());
-		System.out.println("<ScatterFilterDialog>");
 		manager = mgr;
 		if (title != null) {
 			setTitle(title);
@@ -31,12 +30,9 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 
 		currentPanel = new ScatterFilterPanel(manager, this);
 		getContentPane().add(currentPanel);
-
-
-		setPreferredSize(new Dimension(600, 600));
+		setPreferredSize(new Dimension(520, 500));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		pack();
-		System.out.println("</ ScatterFilterDialog>");
 
 	}
 

@@ -31,7 +31,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-
 /*
  *   A SelectableScatterChart is a scatter chart that can show a two dimensional data set.
  *   Identifying a region in the XY space will take the subset of events in that region
@@ -271,6 +270,7 @@ public class SelectableScatterChart extends VBox
 			ev.consume();
 
 		});
+		
 		chartRegion.setOnMouseReleased(ev -> {
 			if (selRectStart == null || selRectEnd == null) 		return;
 			if (isRectangleSizeTooSmall()) 							return;
@@ -278,23 +278,11 @@ public class SelectableScatterChart extends VBox
 			selRectStart = selRectEnd = null;
 			setSelectionRectangleScale(rectDef(selectionRectangle, getPlotFrame()));
 			makeSelectionRect(selectionRectangle);
-//		if (tool == gater)
-//	if (ev.isShiftDown())
-//		addGate(selectionRectangle);
-//			getChildren().remove(selectionRectangle);
-
 			requestFocus();		// needed for the key event handler to receive events
 			ev.consume();
-
 		});
 
-//		setOnKeyReleased(ev -> {
-//			if (KeyCode.ESCAPE.equals(ev.getCode())) {
-//				xAxis.setAutoRanging(true);
-//				yAxis.setAutoRanging(true);
-//				infoLabel.setVisible(false);
-//			}
-//		});
+
 	}
 
 	private void setSelectionRectangleScale(Rectangle r) {		selectionRectangleScaleDef = r;		}
@@ -395,6 +383,25 @@ public class SelectableScatterChart extends VBox
 
 	}
 	
+	public Range getXRange()
+	{
+		if (selRectStart == null || selRectEnd == null) 		return new Range(0,4);
+		double selectionMinX = Math.min(selRectStart.getX(), selRectEnd.getX());
+		double selectionMaxX = Math.max(selRectStart.getX(), selRectEnd.getX());
+		double xMin = converter.frameToScale(selectionMinX, scatter, false);
+		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
+		return new Range(xMin, xMax);
+	}
+	public Range getYRange()
+	{
+		if (selRectStart == null || selRectEnd == null) 		return  new Range(0,1);
+		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY());
+		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY());
+		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
+		double yMax = converter.frameToScale(selectionMinY, scatter, true);
+		return new Range(yMin, yMax);
+	}
+	
 	private double countInRect(XYChart<Number, Number> chart, double xMin, double xMax, double yMin, double yMax)
 	{
 		Objects.requireNonNull(chart);
@@ -419,25 +426,13 @@ public class SelectableScatterChart extends VBox
 	boolean resizing = false;
 //	double SLOP = 4;
 	double offsetX = 0, offsetY = 0;
-
-
-
 	
 	private void makeSelectionRect(Rectangle marquee)
 	{
 		marquee.getStyleClass().add("selection");
 		marquee.setOpacity(0.3);
 		marquee.setFill(Color.CYAN);
-//		marquee.setOnMouseDragged(event -> {
-//			if (resizing && isRectangleSizeTooSmall())
-//				return;
-//
-//			// store current cursor position
-//			selRectEnd = computeRectanglePoint(event.getX(), event.getY());
-//			Rectangle2D union = union(selRectStart, selRectEnd);
-//			drawSelectionRectangle(union);
-//			event.consume();
-//		});
+
 		marquee.setOnMouseReleased(event -> {
 			if (resizing && isRectangleSizeTooSmall())
 				return;
@@ -483,7 +478,7 @@ public class SelectableScatterChart extends VBox
 				if (selRectStart == null) return;
 				if (selRectEnd == null)
 					selRectEnd = new Point2D(event.getX(), event.getY());
-//selRectStart = new Point2D(event.getX(), event.getY());			// ERROR -- will reset instead of resize
+
 				marquee.setX(Math.min(selRectStart.getX(), selRectEnd.getX()));
 				marquee.setY(Math.min(selRectStart.getY(), selRectEnd.getY()));
 				marquee.setWidth(Math.abs(selRectStart.getX() - selRectEnd.getX()));
@@ -557,18 +552,6 @@ public class SelectableScatterChart extends VBox
 				def.getWidth() * frameWidth, def.getHeight() * frameHeight);
 		return r;
 	}
-//
-//	Rectangle rescaleRect(Rectangle def, Rectangle frame)
-//	{
-//		Rectangle display = new Rectangle();
-//		double frameWidth = frame.getWidth();
-//		double frameHeight = frame.getHeight();
-//		display.setX(frame.getX() + def.getX() * frameWidth);
-//		display.setY(frame.getY() + def.getY() * frameHeight);
-//		display.setWidth(def.getWidth() * frameWidth);
-//		display.setHeight(def.getHeight() * frameHeight);
-//		return display;
-//	}
 
 	Rectangle rectDef(Rectangle child, Rectangle frame)
 	{

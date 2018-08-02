@@ -68,11 +68,11 @@ public class SubRangeLayer			// a 1D GateLayer
 		yAxis = (ValueAxis<Number>) chart.getYAxis();
 		
 		selectionH = getSubRangeGroup(); 
+		selectionH.setVisible(true);
 		selectionH.setManaged(false);
 		update(0);
 		selectionH.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
 		selectionH.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
-		selectionH.setVisible(false);
 		stackPane.getChildren().add(selectionH);
 
 		addDragSelectionMechanism();
@@ -370,10 +370,11 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
-		selectionH.setVisible(false);
+//		selectionH.setVisible(false);
 	}
 	
 	//-----------------------------
+	private Group groupH = new Group();
 	private Line leftBar, crossBar, rightBar;
 	int resizing = 0;
 	double dragStart = -1;
@@ -387,14 +388,14 @@ public class SubRangeLayer			// a 1D GateLayer
 		leftBar = new Line(20, 10, 20, 399);
 		crossBar = new Line(20, 100, 220, 100);
 		rightBar = new Line(220, 10, 220, 399);
-		Group groupH = new Group();
 //		update(0,100, 0);
-		groupH.setMouseTransparent(true);
 		leftBar.setStrokeWidth(2);		leftBar.setStroke(Color.PURPLE);
 		crossBar.setStrokeWidth(4);		crossBar.setStroke(Color.PURPLE);
 		rightBar.setStrokeWidth(2);		rightBar.setStroke(Color.PURPLE);
+		groupH.getChildren().clear();
 		groupH.getChildren().addAll(leftBar, crossBar, rightBar);
 		groupH.setOpacity(0.3);
+		groupH.setMouseTransparent(true);
 		return groupH;
 	}
 	
@@ -411,9 +412,9 @@ public class SubRangeLayer			// a 1D GateLayer
 		Bounds chartBounds = chart.getBoundsInParent();
 		Bounds windowBounds = chart.getLayoutBounds();
 		double offX = bounds.getMinX() + chartBounds.getMinX()+ windowBounds.getMinX();
-		double offY = bounds.getMinY() + chartBounds.getMinY()+ windowBounds.getMinY()+56;
-		double top =  offY;  //bounds.getMinY();				//TODO  mystery fudge factor 
-		double bottom = offY + bounds.getHeight();  
+		double offY = bounds.getMinY() + chartBounds.getMinY()+ windowBounds.getMinY();
+		double top = 0 + offY;  // offY;  //bounds.getMinY();				//TODO  mystery fudge factor 
+		double bottom = top + bounds.getHeight();    //offY + 
 		double vMargin = 12;	
 		v = pinValue(vMargin, bottom-vMargin, v);
 
@@ -423,7 +424,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		selectionMovingEnd = pinValue(left, right, selectionMovingEnd);
 		double x1 = selectionAnchor + offX;
 		double x2 = selectionMovingEnd + offX;
-		double y = v + offY;
+		double y = v;	// + offY
 //		System.out.println(String.format("update:   %.2f - %.2f  @ %.2f  ", selStartH , selEndH, v));
 		
 		setLine(leftBar, x1, top, x1, bottom);

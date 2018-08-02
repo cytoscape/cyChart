@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1532910315369
-Build-Jdk: 1.8.0_172
-Built-By: adam
+Bnd-LastModified: 1533150216654
+Build-Jdk: 1.8.0_171
+Built-By: adamtreister
 Bundle-Activator: org.cytoscape.cyChart.internal.CyActivator
 Bundle-ManifestVersion: 2
 Bundle-Name: cyChart
@@ -21,19 +21,17 @@ Import-Package: com.sun.javafx.charts;resolution:=optional,javafx.animat
  ntrol;resolution:=optional,javafx.scene.image;resolution:=optional,java
  fx.scene.input;resolution:=optional,javafx.scene.layout;resolution:=opt
  ional,javafx.scene.paint;resolution:=optional,javafx.scene.shape;resolu
- tion:=optional,javafx.scene.web;resolution:=optional,javafx.stage;resol
- ution:=optional,javafx.util;resolution:=optional,javax.imageio;resoluti
- on:=optional,javax.swing;resolution:=optional,javax.swing.border;resolu
- tion:=optional,javax.swing.event;resolution:=optional,netscape.javascri
- pt;resolution:=optional,org.apache.log4j;resolution:=optional;version="
- [1.2,2)",org.cytoscape.application;resolution:=optional,org.cytoscape.a
- pplication.swing;resolution:=optional;version="[3.6,4)",org.cytoscape.m
- odel;resolution:=optional;version="[3.6,4)",org.cytoscape.model.events;
- resolution:=optional;version="[3.6,4)",org.cytoscape.service.util;resol
- ution:=optional;version="[3.6,4)",org.cytoscape.session.events;resoluti
- on:=optional;version="[3.6,4)",org.cytoscape.task;resolution:=optional;
- version="[3.6,4)",org.cytoscape.work;resolution:=optional,org.cytoscape
- .work.json;resolution:=optional;version="[3.6,4)",org.osgi.framework;re
- solution:=optional;version="[1.5,2)"
+ tion:=optional,javafx.stage;resolution:=optional,javafx.util;resolution
+ :=optional,javax.imageio;resolution:=optional,javax.swing;resolution:=o
+ ptional,javax.swing.border;resolution:=optional,javax.swing.event;resol
+ ution:=optional,org.apache.log4j;resolution:=optional;version="[1.2,2)"
+ ,org.cytoscape.application;resolution:=optional;version="[3.6,4)",org.c
+ ytoscape.application.swing;resolution:=optional;version="[3.6,4)",org.c
+ ytoscape.command;resolution:=optional;version="[3.6,4)",org.cytoscape.m
+ odel;resolution:=optional;version="[3.6,4)",org.cytoscape.service.util;
+ resolution:=optional;version="[3.6,4)",org.cytoscape.task;resolution:=o
+ ptional;version="[3.6,4)",org.cytoscape.work;resolution:=optional,org.c
+ ytoscape.work.json;resolution:=optional;version="[3.6,4)",org.osgi.fram
+ ework;resolution:=optional;version="[1.5,2)"
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
 Tool: Bnd-2.4.1.201501161923

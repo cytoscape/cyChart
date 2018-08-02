@@ -5,18 +5,24 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -111,11 +117,64 @@ public class ScatterChartController implements Initializable
 	Button makeFilter;
 	Button copyImage;
 	 protected void makeFilter() {
-			System.out.println( "Make a NumericFilter");
+			System.out.println( "Make a Column Filter");
 			String x = columnChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
 		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+
+	 
+			CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+			if (commandTF != null && taskManager != null) {
+				String filter1 = filterBuilder(x, new Range(startX, endX));
+				String filter2 = filterBuilder(y, new Range(startY, endY));
+				
+				StringBuilder compos = new StringBuilder();
+				compos.append("{\n\"id\" : \"CompositeFilter\",\n");
+				compos.append("\"parameters\" : {\n \"type\" : \"ALL\"\n},\n");
+				compos.append("\"transformers\" : [ \n");
+				compos.append(filter1 + ", \n" + filter2);
+				compos.append("] \n}\n");
+				execFilterCommand(taskManager, commandTF, compos.toString());
+			}
+			else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
+			
+	 }
+		String Q = "\"";
+
+	private String filterBuilder(String columnName, Range r)
+	 {
+		String criterion = String.format("[ %.4f, %.4f ]", r.min(), r.max());
+		StringBuilder buildr = new StringBuilder();
+		buildr.append("{\n");
+		buildr.append("\"id\" : \"ColumnFilter\", \n" );
+		buildr.append("\"parameters\" : {\n");
+		addLine(buildr,"predicate", "\"BETWEEN\"", true );
+		addLine(buildr,"criterion", criterion,true );
+		addLine(buildr,"caseSensitive", "false",true );
+		addLine(buildr,"type", "\"nodes\"",true );
+		addLine(buildr,"anyMatch", "true",true );
+		addLine(buildr,"columnName", Q + columnName + Q, false );
+		buildr.append("\n }\n}");
+		return buildr.toString();
+	 }
+		
+	private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
+	{
+		System.out.println(json);
+		Map<String, Object> args = new HashMap<>();
+		args.put("name","scatter filter");
+		args.put("json",json);
+		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
+		taskManager.execute(ti);
 	}
+	
+	 void addLine(StringBuilder b, String attr, String value, boolean addComma)
+	 {
+			b.append(Q + attr + Q + " : " + value  );
+			if (addComma)
+				b.append(",\n");
+	 }
 	 
 	private void copyImage() {
 		copyImage.setVisible(false);

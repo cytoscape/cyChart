@@ -33,5 +33,6 @@ public class Range
 	public Range(double mini, double maxi)	{		min = mini; max = maxi;	}
 	public Range(int mini, int maxi)		{		min = mini; max = maxi;	}
 	public String toString()				{ 		return "[" + min + " - " + max + "]"; }
+	public boolean contains(double d)		{ 		return min <= d && max > d; }
 	
 }
