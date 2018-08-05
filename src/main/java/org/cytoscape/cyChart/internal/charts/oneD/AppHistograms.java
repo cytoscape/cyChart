@@ -53,8 +53,5 @@ public class AppHistograms extends Application
     
     
  static public AppHistograms getInstance()	{ return me;	}
- static private AppHistograms me;
-// static private Stage theStage;
-// static public Stage getStage() { return theStage;  }
-     
+ static private AppHistograms me;     
 }

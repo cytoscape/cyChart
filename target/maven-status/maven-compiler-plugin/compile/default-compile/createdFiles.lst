@@ -10,8 +10,8 @@ org/cytoscape/cyChart/internal/tasks/HistogramFilterTaskFactory.class
 org/cytoscape/cyChart/internal/charts/twoD/ScatterChartController$1.class
 org/cytoscape/cyChart/internal/model/CyChart.class
 org/cytoscape/cyChart/internal/charts/StringUtil.class
-org/cytoscape/cyChart/internal/tasks/HistogramFilterTask.class
 org/cytoscape/cyChart/internal/model/CyChartManager.class
+org/cytoscape/cyChart/internal/tasks/HistogramFilterTask.class
 org/cytoscape/cyChart/internal/charts/twoD/ScatterFilterDialog.class
 org/cytoscape/cyChart/internal/charts/StatisticRequest.class
 org/cytoscape/cyChart/internal/charts/oneD/Histogram1D.class
@@ -23,8 +23,8 @@ org/cytoscape/cyChart/internal/tasks/ScatterFilterTask.class
 org/cytoscape/cyChart/internal/charts/StatisticRequest$Statistic.class
 org/cytoscape/cyChart/internal/charts/oneD/FrameScaleConverter.class
 org/cytoscape/cyChart/internal/charts/oneD/SubRangeLayer.class
-org/cytoscape/cyChart/internal/charts/oneD/SwingPanel.class
 org/cytoscape/cyChart/internal/charts/oneD/AppHistograms.class
+org/cytoscape/cyChart/internal/charts/oneD/SwingPanel.class
 org/cytoscape/cyChart/internal/charts/Range.class
 org/cytoscape/cyChart/internal/tasks/ScatterFilterTaskFactory.class
 org/cytoscape/cyChart/internal/CyActivator.class
@@ -33,8 +33,8 @@ org/cytoscape/cyChart/internal/charts/twoD/AppScatters.class
 org/cytoscape/cyChart/internal/tasks/VersionTaskFactory.class
 org/cytoscape/cyChart/internal/charts/oneD/HistogramFilterDialog.class
 org/cytoscape/cyChart/internal/charts/StringUtil$TYPES.class
-org/cytoscape/cyChart/internal/tasks/VersionTask.class
 org/cytoscape/cyChart/internal/charts/twoD/ScatterChartController.class
+org/cytoscape/cyChart/internal/tasks/VersionTask.class
 org/cytoscape/cyChart/internal/charts/oneD/HistogramChartController.class
 org/cytoscape/cyChart/internal/charts/Cursors.class
 org/cytoscape/cyChart/internal/charts/MixedDataRow.class

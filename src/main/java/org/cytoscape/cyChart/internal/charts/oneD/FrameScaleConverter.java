@@ -15,8 +15,10 @@ public class FrameScaleConverter {
 	 * relative to the plot area, so it removes an offset arg from the normal conversion
 	 * 
 	 */
+	double HACK = 4;
 	
 	public double frameToScale(double framePosition, XYChart<Number, Number> theChart, boolean isYAxis) {
+		framePosition -= HACK;
 		Bounds bounds =  getChartPlotBounds(theChart);
 		double frameLength = isYAxis ? bounds.getHeight() : bounds.getWidth();
 		//https://stackoverflow.com/questions/16268207/why-cant-i-modify-the-axes-from-a-javafx-linechart
@@ -58,8 +60,9 @@ public class FrameScaleConverter {
 	 * assumes a 0 based left coordinate for the transformation, which comes from 
 	 * theChart.lookup(".chart-plot-background")
 	 */
-
+double FUDGE = 0;
 	public double scaleToFrame(double scaleValue, XYChart<Number, Number> theChart, boolean isYAxis) {
+		scaleValue += FUDGE;
 		ValueAxis<Number> axis = (ValueAxis<Number>) (isYAxis ? theChart.getYAxis() : theChart.getXAxis()); 
 		if (axis instanceof LogarithmicAxis)
 		{

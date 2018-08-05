@@ -157,6 +157,23 @@ public class SubRangeLayer			// a 1D GateLayer
 	positionLabel.setVisible(true);
 	}
 	
+	public void reportRange() {
+
+		if (selectionAnchor > 0 &&  selectionMovingEnd > 0)
+		{
+			double min = Math.min(selectionAnchor, selectionMovingEnd);
+			double max = Math.max(selectionAnchor, selectionMovingEnd);
+			double x0 = converter.frameToScale(min, chart, false);
+			double x1 = converter.frameToScale(max, chart, false);
+			String msg = String.format("%.1f - %.1f ", x0, x1);
+//			System.out.println(msg);
+//			positionLabel.setText();
+//			positionLabel.setVisible(true);
+		}
+		else positionLabel.setVisible(false);
+			
+	}
+	
 	public void dumpPosition(MouseEvent event) {
 	Point2D pt = getPosition(event);
 	System.out.println(String.format("(%.0f , %.0f) ->   %.1f , %.3f ", event.getX(),event.getY(), pt.getX(), pt.getY()));
@@ -191,7 +208,8 @@ public class SubRangeLayer			// a 1D GateLayer
 	    chartOffsetX = chartPlotArea.getLayoutX();
 	    chartOffsetY = chartPlotArea.getLayoutY();
 		double x = event.getX() + chartOffsetX;
-		debugH(x);
+		double y = event.getY() + chartOffsetY;
+//		debugH(x);
 		if (event.isSecondaryButtonDown()) 		return;		// do nothing for a right-click
 		double scaleStart = controller.getSelectionStart();
 		selectionAnchor = converter.scaleToFrame(scaleStart, chart, false);
@@ -217,6 +235,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		{
 			dragging = true;
 			setSelection(x, x);
+			update(y);
 			selectionH.setVisible(true);
 		}
 		event.consume();
@@ -235,12 +254,16 @@ public class SubRangeLayer			// a 1D GateLayer
 		event.consume();
 		if (!dragging) return;
 		Node chartPlotArea = getPlotAreaNode();
-		double minAllowed = 0;   //chartPlotArea.getLayoutX();
-		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth();		//+ 6
+		double minAllowed = -1;   //chartPlotArea.getLayoutX();
+		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth() + 2;		//+ 6
 		double h = event.getX(); // + chartPlotArea.getLayoutX();
 //		System.out.println("onDragged: " + h + ", " + event.getY());
 		boolean inRange = h >= minAllowed && h <= maxAllowed;
-		if (!inRange) return;
+		if (!inRange) 
+			{
+//			System.out.println(String.format("%.2f <= %.2f <= %.2f ", minAllowed, h, maxAllowed));
+			return;
+			}
 		
 		double v = event.getY();
 		double minYAllowed = 0;
@@ -261,18 +284,18 @@ public class SubRangeLayer			// a 1D GateLayer
 
 	private void offsetSelection(double delta)
 	{
-		System.out.println("Offsetting: " + delta);
+//		System.out.println("Offsetting: " + delta);
 		Node chartPlotArea = getPlotAreaNode();
-		double minAllowed = 5; // chartPlotArea.getLayoutX();
+		double minAllowed = 0; // chartPlotArea.getLayoutX();
 		double maxAllowed = chartPlotArea.getLayoutBounds().getWidth();		//minAllowed + 
 		double left = Math.min(selectionAnchor, selectionMovingEnd) + delta;
 		double right = Math.max(selectionAnchor, selectionMovingEnd) + delta;
-		System.out.println("left " + left);
+//		System.out.println("left " + left);
 		if (left <= minAllowed || right > maxAllowed) 
 			return;
 		selectionAnchor += delta;		
 		selectionMovingEnd += delta;	
-		System.out.println("selection: " + selectionAnchor + " - " + selectionMovingEnd);
+//		System.out.println("selection: " + selectionAnchor + " - " + selectionMovingEnd);
 	}
 	
 	
@@ -281,6 +304,10 @@ public class SubRangeLayer			// a 1D GateLayer
 		boolean ok = selectionAnchor > 0 && selectionMovingEnd > 0;
 		if (ok && isSelectionSizeTooSmall()) 
 			ok = false;
+		double width  = getPlotBounds().getWidth();
+		double h = Math.max(Math.min(event.getX(), width), 0); // + chartPlotArea.getLayoutX();
+		if (hitSpot != 2) selectionMovingEnd = h;
+		double v = event.getY();
 		if (ok)
 		{
 //			selectionH.update(selectionStart, selectionEnd, y);
@@ -289,12 +316,12 @@ public class SubRangeLayer			// a 1D GateLayer
 			double right = Math.max(selectionAnchor, selectionMovingEnd);
 			double left = Math.min(selectionAnchor, selectionMovingEnd);
 			setSelection(left,right);
-			update(event.getY());
+			update(v);
 			updateController();
+			reportRange();
 			setSelection(-1, -1); 
 		} 
 		stackPane.requestFocus();		// needed for the key event handler to receive events
-		positionLabel.setVisible(false);
 		dragging = false;
 		event.consume();		
 	}
@@ -304,11 +331,11 @@ public class SubRangeLayer			// a 1D GateLayer
 	 *
 	 */
 	
-	void debugH(double h)
-	{
-		System.out.println(String.format("H: %.2f = %.2f", h, converter.frameToScale(h, chart, false)));
-	}
-
+//	void debugH(double h)
+//	{
+//		System.out.println(String.format("H: %.2f = %.2f", h, converter.frameToScale(h, chart, false)));
+//	}
+//
 	//a drag causes new values to go from the frame to model
 	
 	public void setRangeValues(double selAnchorH, double selEndH) {
@@ -370,7 +397,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
-//		selectionH.setVisible(false);
+		selectionH.setVisible(false);
 	}
 	
 	//-----------------------------
@@ -401,41 +428,29 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	public void update(double v)			// these are in frame (mouse) coords
 	{
-//		if (selectionStart > selectionEnd)
-//		{
-//			double d = selectionStart;
-//			selectionStart = selectionEnd;
-//			selectionEnd = d;
-//		}
-		
 		Bounds bounds = getPlotBounds();
-		Bounds chartBounds = chart.getBoundsInParent();
-		Bounds windowBounds = chart.getLayoutBounds();
-		double offX = bounds.getMinX() + chartBounds.getMinX()+ windowBounds.getMinX();
-		double offY = bounds.getMinY() + chartBounds.getMinY()+ windowBounds.getMinY();
-		double top = 0 + offY;  // offY;  //bounds.getMinY();				//TODO  mystery fudge factor 
-		double bottom = top + bounds.getHeight();    //offY + 
+		double offX = bounds.getMinX();
+		double offY = bounds.getMinY();
+		double top = 14;  
+		double bottom = top + bounds.getHeight();    
 		double vMargin = 12;	
 		v = pinValue(vMargin, bottom-vMargin, v);
 
-		double left = bounds.getMinX() - 34;			//TODO  mystery fudge factor 
-		double right = bounds.getMaxX();  
-		selectionAnchor = pinValue(left, right, selectionAnchor);
+		double left = 0; 
+		double right = left + bounds.getWidth(); 
 		selectionMovingEnd = pinValue(left, right, selectionMovingEnd);
-		double x1 = selectionAnchor + offX;
-		double x2 = selectionMovingEnd + offX;
-		double y = v;	// + offY
-//		System.out.println(String.format("update:   %.2f - %.2f  @ %.2f  ", selStartH , selEndH, v));
+		double a1 = selectionAnchor + offX;
+		double a2 = selectionMovingEnd + offX;  
+		double x1 = Math.min(a1,  a2);
+		double x2 = Math.max(a1,  a2);
+		double y = v  + offY;	//
+
+//		System.out.println(String.format("update:   %.2f - %.2f  @ %.2f  ", x1 , x2, y));
 		
 		setLine(leftBar, x1, top, x1, bottom);
 		setLine(rightBar, x2, top, x2, bottom);
 		setLine(crossBar, x1, y, x2, y);
-		setRangeValues(selectionAnchor, selectionMovingEnd, v);
-		
-//		double startX = leftBar.getStartX();
-//		double endX = rightBar.getStartX();
-//		System.out.println(String.format(" %.2f - %.2f ", startX, endX));
-
+		setRangeValues(Math.min(selectionAnchor, selectionMovingEnd), Math.max(selectionAnchor, selectionMovingEnd), v);
 	}
 
 	private void setLine(Line bar, double x1, double y1, double x2, double y2) {

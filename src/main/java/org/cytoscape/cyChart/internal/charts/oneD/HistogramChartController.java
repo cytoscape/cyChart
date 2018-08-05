@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.Borders;
 import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.charts.Range;
@@ -95,14 +96,6 @@ public class HistogramChartController implements Initializable
 		HBox lineA = new HBox(8, makeFilter, copyImage);
 		lineA.setMinHeight(28);
 		lineA.setMaxHeight(28);
-//		lineA.setBorder(Borders.redBorder);
-		// tableview = new TableView<MixedDataRow>();
-		// colA = new TableColumn<MixedDataRow, String>();
-		// colB = new TableColumn<MixedDataRow, Integer>();
-		// colC = new TableColumn<MixedDataRow, Double>();
-		// SplitPane split = new SplitPane(histogramChart, tableview);
-		// split.setOrientation(Orientation.HORIZONTAL);
-		// parent.getChildren().add(split);
 		HBox line = new HBox(8, columnChoices, logTransform);
 		chartPane = new AnchorPane();
 		VBox page = new VBox(lineA, chartPane, line);
@@ -121,65 +114,39 @@ public class HistogramChartController implements Initializable
 	Button makeFilter;
 	Button copyImage;
 	 protected void makeFilter() {
-			CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
-			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
-			if (commandTF != null && taskManager != null) {
-				System.out.println( "Make a Histogram Filter");
-				String x = columnChoices.getSelectionModel().getSelectedItem();
-			    System.out.println(x + (logTransform.isSelected() ? " (Log)" : " (Lin)"));
-			    execFilterCommand(taskManager, commandTF, filterBuilder(x, new Range(startX, endX)));
-			}
+		 if (registrar == null) {		System.err.println("No registrar found");  return; 	}
+		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+		if (commandTF != null && taskManager != null) {
+			System.out.println( "Make a Histogram Filter");
+			String x = columnChoices.getSelectionModel().getSelectedItem();
+		    System.out.println(x + (logTransform.isSelected() ? " (Log)" : " (Lin)"));
+		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
+		    execFilterCommand(taskManager, commandTF, builder.makeString(true));
 		}
-	 
-		private String filterBuilder(String columnName, Range r)
-		{
-			String criterion = String.format("[ %.4f, %.4f ]", r.min(), r.max());
-			StringBuilder buildr = new StringBuilder();
-			buildr.append("{\n");
-			buildr.append("\"id\" : \"ColumnFilter\", \n" );
-			buildr.append("\"parameters\" : {\n");
-			addLine(buildr,"predicate", "\"BETWEEN\"", true );
-			addLine(buildr,"criterion", criterion,true );
-			addLine(buildr,"caseSensitive", "false",true );
-			addLine(buildr,"type", "\"nodes\"",true );
-			addLine(buildr,"anyMatch", "true",true );
-			addLine(buildr,"columnName", inQuotes(columnName), false );
-			buildr.append("\n }\n}");
-			return buildr.toString();
-		 }
-			
-		private String inQuotes(String a) {		return '"' + a + '"';	}
-
-		private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
-		{
-			System.out.println(json);
-			Map<String, Object> args = new HashMap<>();
-			args.put("name","histogram filter");
-			args.put("json",json);
-			TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
-			taskManager.execute(ti);
-		}
-		
-		 void addLine(StringBuilder b, String attr, String value, boolean addComma)
-		 {
-				b.append(inQuotes(attr) + " : " + value  );
-				if (addComma)
-					b.append(",\n");
-		 }
-		 
-		 private void copyImage() {
-		copyImage.setVisible(false);
-		makeFilter.setVisible(false);
+	}
+	private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
+	{
+		System.out.println(json);
+		Map<String, Object> args = new HashMap<>();
+		args.put("name","histogram filter");
+		args.put("json",json);
+		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
+		taskManager.execute(ti);
+	}
+ 
+	private void copyImage() {
 	    FileChooser fileChooser = new FileChooser();	
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
-	
-	    //Prompt user to select a file
-	    File file = fileChooser.showSaveDialog(null);
-	    if(file != null){
+	    int width = (int)pageContainer.getWidth() + 20;	         //Pad the capture area
+	    int height = (int)pageContainer.getHeight() + 20;
+	   
+	    File file = fileChooser.showSaveDialog(null);			 //Prompt user to select a file
+	    if(file != null) {
 	        try {
-	            //Pad the capture area
-	            WritableImage writableImage = new WritableImage((int)pageContainer.getWidth() + 20,
-	                    (int)pageContainer.getHeight() + 20);
+	    		copyImage.setVisible(false);
+	    		makeFilter.setVisible(false);
+	            WritableImage writableImage = new WritableImage(width,height);
 	            pageContainer.snapshot(null, writableImage);
 	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
 	            //Write the snapshot to the chosen file
@@ -189,12 +156,13 @@ public class HistogramChartController implements Initializable
 		copyImage.setVisible(true);
 		makeFilter.setVisible(true);
 	}
-	 public void setStatusText(String s) {
+	 
+	public void setStatusText(String s) {
 		 if (statusLabel != null)
 			 statusLabel.setText(s);
 			 
-	 }
-	 boolean isLog = false;
+	}
+	boolean isLog = false;
 	
 	 private void setLogDistribution(Boolean new_val) 
 	{
@@ -242,7 +210,7 @@ public class HistogramChartController implements Initializable
 	// ------------------------------------------------------
 	public void setXParameter(String name)
 	{
-//		chartPane.getChildren().clear();
+		chartPane.getChildren().clear();
 //		if (subrangeLayer != null)
 //			subrangeLayer.clear();
 //		pageContainer.getChildren().clear();
@@ -267,8 +235,8 @@ public class HistogramChartController implements Initializable
 			Group g = subrangeLayer.getSubRangeGroup();
 			chartPane.getChildren().add(g);
 			Bounds bounds = getPlotAreaNode().getBoundsInParent();
-//			g.setTranslateX(bounds.getMinX());
-//			g.setTranslateY(-bounds.getMinY());
+			g.setTranslateX(bounds.getMinX());
+			g.setTranslateY(28);
 		}
 		if (StringUtil.isEmpty(name)) return;
 		Histogram1D h1 = getHistogram(name, isLog);

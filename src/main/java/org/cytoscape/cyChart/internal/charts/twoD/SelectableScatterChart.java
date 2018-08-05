@@ -297,7 +297,7 @@ public class SelectableScatterChart extends VBox
 		// dimension
 		double x = Math.max(lowerBoundX, Math.min(eventX, upperBoundX));
 		double y = Math.max(lowerBoundY, Math.min(eventY, upperBoundY));
-		System.out.println("( " + x + ", " + y + " )");
+//		System.out.println("( " + x + ", " + y + " )");
 		return new Point2D(x, y);
 	}
 

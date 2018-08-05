@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1533150216654
-Build-Jdk: 1.8.0_171
-Built-By: adamtreister
+Bnd-LastModified: 1533408676345
+Build-Jdk: 1.8.0_172
+Built-By: adam
 Bundle-Activator: org.cytoscape.cyChart.internal.CyActivator
 Bundle-ManifestVersion: 2
 Bundle-Name: cyChart
@@ -25,13 +25,13 @@ Import-Package: com.sun.javafx.charts;resolution:=optional,javafx.animat
  :=optional,javax.imageio;resolution:=optional,javax.swing;resolution:=o
  ptional,javax.swing.border;resolution:=optional,javax.swing.event;resol
  ution:=optional,org.apache.log4j;resolution:=optional;version="[1.2,2)"
- ,org.cytoscape.application;resolution:=optional;version="[3.6,4)",org.c
- ytoscape.application.swing;resolution:=optional;version="[3.6,4)",org.c
- ytoscape.command;resolution:=optional;version="[3.6,4)",org.cytoscape.m
- odel;resolution:=optional;version="[3.6,4)",org.cytoscape.service.util;
- resolution:=optional;version="[3.6,4)",org.cytoscape.task;resolution:=o
- ptional;version="[3.6,4)",org.cytoscape.work;resolution:=optional,org.c
- ytoscape.work.json;resolution:=optional;version="[3.6,4)",org.osgi.fram
- ework;resolution:=optional;version="[1.5,2)"
+ ,org.cytoscape.application;resolution:=optional,org.cytoscape.applicati
+ on.swing;resolution:=optional;version="[3.6,4)",org.cytoscape.command;r
+ esolution:=optional;version="[3.6,4)",org.cytoscape.model;resolution:=o
+ ptional;version="[3.6,4)",org.cytoscape.service.util;resolution:=option
+ al;version="[3.6,4)",org.cytoscape.task;resolution:=optional;version="[
+ 3.6,4)",org.cytoscape.work;resolution:=optional,org.cytoscape.work.json
+ ;resolution:=optional;version="[3.6,4)",org.osgi.framework;resolution:=
+ optional;version="[1.5,2)"
 Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
 Tool: Bnd-2.4.1.201501161923

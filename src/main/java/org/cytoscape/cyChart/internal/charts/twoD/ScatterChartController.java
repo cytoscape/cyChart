@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -114,67 +115,32 @@ public class ScatterChartController implements Initializable
 		parent.getChildren().add(page);
 		initialize(null, null);
 	}
-	Button makeFilter;
-	Button copyImage;
-	 protected void makeFilter() {
-			System.out.println( "Make a Column Filter");
-			String x = columnChoices.getSelectionModel().getSelectedItem();
-			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
-
-	 
-			CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
-			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
-			if (commandTF != null && taskManager != null) {
-				String filter1 = filterBuilder(x, new Range(startX, endX));
-				String filter2 = filterBuilder(y, new Range(startY, endY));
-				
-				StringBuilder compos = new StringBuilder();
-				compos.append("{\n\"id\" : \"CompositeFilter\",\n");
-				compos.append("\"parameters\" : {\n \"type\" : \"ALL\"\n},\n");
-				compos.append("\"transformers\" : [ \n");
-				compos.append(filter1 + ", \n" + filter2);
-				compos.append("] \n}\n");
-				execFilterCommand(taskManager, commandTF, compos.toString());
-			}
-			else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
-			
-	 }
-		String Q = "\"";
-
-	private String filterBuilder(String columnName, Range r)
-	 {
-		String criterion = String.format("[ %.4f, %.4f ]", r.min(), r.max());
-		StringBuilder buildr = new StringBuilder();
-		buildr.append("{\n");
-		buildr.append("\"id\" : \"ColumnFilter\", \n" );
-		buildr.append("\"parameters\" : {\n");
-		addLine(buildr,"predicate", "\"BETWEEN\"", true );
-		addLine(buildr,"criterion", criterion,true );
-		addLine(buildr,"caseSensitive", "false",true );
-		addLine(buildr,"type", "\"nodes\"",true );
-		addLine(buildr,"anyMatch", "true",true );
-		addLine(buildr,"columnName", Q + columnName + Q, false );
-		buildr.append("\n }\n}");
-		return buildr.toString();
+	private Button makeFilter;
+	private Button copyImage;
+	
+	protected void makeFilter() {
+		if (registrar == null) {		System.err.println("No registrar found");  return; 	}
+//	    System.out.println( "Make a Column Filter");
+		String x = columnChoices.getSelectionModel().getSelectedItem();
+		String y = yAxisChoices.getSelectionModel().getSelectedItem();
+//	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+	    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX), y, new Range(startY, endY));
+		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+		if (commandTF != null && taskManager != null)
+			execFilterCommand(taskManager, commandTF, builder.makeComposite());
+		else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
 	 }
 		
 	private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
 	{
-		System.out.println(json);
+//		System.out.println(json);
 		Map<String, Object> args = new HashMap<>();
 		args.put("name","scatter filter");
 		args.put("json",json);
 		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
 		taskManager.execute(ti);
 	}
-	
-	 void addLine(StringBuilder b, String attr, String value, boolean addComma)
-	 {
-			b.append(Q + attr + Q + " : " + value  );
-			if (addComma)
-				b.append(",\n");
-	 }
 	 
 	private void copyImage() {
 		copyImage.setVisible(false);
@@ -274,7 +240,7 @@ static int DOT_SIZE = 4;
 			chartBox.getChildren().clear();
 			String x = columnChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 			scatterChartHome = new SelectableScatterChart(this);
 			if (series1 != null)
@@ -379,8 +345,8 @@ static int DOT_SIZE = 4;
 
 	public void selectionDoubleClick() 
 	{
-		String info = String.format("%.2f - %.2f,  %.2f - %.2f ", startX, endX, startY, endY);
-		System.out.println("Make a filter: " + info);
+//		String info = String.format("%.2f - %.2f,  %.2f - %.2f ", startX, endX, startY, endY);
+//		System.out.println("Make a filter: " + info);
 		
 	}
 
@@ -417,13 +383,13 @@ static int DOT_SIZE = 4;
 		}
 	}
 	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
-		if (row == null) {		System.out.println("row is null");		return false;	}
-		if (col == null) {		System.out.println("col is null");		return false;	}
+		if (row == null) {		System.err.println("row is null");		return false;	}
+		if (col == null) {		System.err.println("col is null");		return false;	}
 		
 //		System.out.println(String.format("col %s (%.2f - %.2f)", col.getName(), xMin, xMax));
 		Object val = row.get(col.getName(), col.getType());
 		if (val == null) return false;
-		System.out.println("" + val);
+//		System.out.println("" + val);
 		if (val instanceof Double)
 		{ 
 			Double v = (Double) val;
