@@ -146,6 +146,8 @@ public class HistogramChartController implements Initializable
 	        try {
 	    		copyImage.setVisible(false);
 	    		makeFilter.setVisible(false);
+	    		columnChoices.setVisible(false);
+	    		logTransform.setVisible(false);
 	            WritableImage writableImage = new WritableImage(width,height);
 	            pageContainer.snapshot(null, writableImage);
 	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
@@ -155,6 +157,8 @@ public class HistogramChartController implements Initializable
 	    }
 		copyImage.setVisible(true);
 		makeFilter.setVisible(true);
+		columnChoices.setVisible(true);
+		logTransform.setVisible(true);
 	}
 	 
 	public void setStatusText(String s) {
@@ -306,11 +310,11 @@ public class HistogramChartController implements Initializable
 	
 	public void setRange1DValues(double selStart, double selEnd) {
 		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
-		startX = Math.min(selStart, selEnd);
-		endX = Math.max(selStart, selEnd);
+		startX = Math.max(xAxis.getLowerBound(), Math.min(selStart, selEnd));
+		endX = Math.min(xAxis.getUpperBound(), Math.max(selStart, selEnd));
 		
-		if (xAxis != null && !(inBounds(selStart) || !inBounds(selEnd)))
-			System.out.print("BAD VALUES");
+//		if (xAxis != null && !(inBounds(selStart) || !inBounds(selEnd)))
+//			System.out.print("BAD VALUES");
 //		System.out.println(String.format("SetGateValues:   %.2f - %.2f  @ %.2f  ", startX , endX, yVaule));
 	
 //		int nRows = tableview.getItems().size();

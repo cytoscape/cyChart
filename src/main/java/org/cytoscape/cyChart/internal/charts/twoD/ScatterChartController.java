@@ -145,6 +145,8 @@ public class ScatterChartController implements Initializable
 	private void copyImage() {
 		copyImage.setVisible(false);
 		makeFilter.setVisible(false);
+		columnChoices.setVisible(false);	logXTransform.setVisible(false);
+		yAxisChoices.setVisible(false);		logYTransform.setVisible(false);
 	    FileChooser fileChooser = new FileChooser();	
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
 	
@@ -155,14 +157,17 @@ public class ScatterChartController implements Initializable
 	            //Pad the capture area
 	            WritableImage writableImage = new WritableImage((int)chartContainer.getWidth() + 20,
 	                    (int)chartContainer.getHeight() + 20);
+	            
 	            chartContainer.snapshot(null, writableImage);
 	            RenderedImage renderedImage = SwingFXUtils.fromFXImage(writableImage, null);
-	            //Write the snapshot to the chosen file
-	            ImageIO.write(renderedImage, "png", file);
+	            ImageIO.write(renderedImage, "png", file);		   //Write the snapshot to the chosen file
 	        } catch (IOException ex) { ex.printStackTrace(); }
 	    }
 		copyImage.setVisible(true);
 		makeFilter.setVisible(true);
+		
+		columnChoices.setVisible(true);		logXTransform.setVisible(true);
+		yAxisChoices.setVisible(true);		logYTransform.setVisible(true);
 	}
 
 	boolean isXLog = false;

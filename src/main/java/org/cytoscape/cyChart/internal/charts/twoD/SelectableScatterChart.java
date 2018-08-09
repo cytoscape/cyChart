@@ -366,10 +366,13 @@ public class SelectableScatterChart extends VBox
 			selRectEnd = new Point2D(selectionRectangle.getX() + selectionRectangle.getWidth(),
 					selectionRectangle.getY());
 		}
-		double selectionMinX = Math.min(selRectStart.getX(), selRectEnd.getX());
-		double selectionMaxX = Math.max(selRectStart.getX(), selRectEnd.getX());
-		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY());
-		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY());
+		Rectangle bounds = getPlotFrame();
+		double xBase = bounds.getX();
+		double yBase = bounds.getY();
+		double selectionMinX = Math.min(selRectStart.getX(), selRectEnd.getX()) - xBase;
+		double selectionMaxX = Math.max(selRectStart.getX(), selRectEnd.getX()) - xBase;
+		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY()) - yBase;
+		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY()) - yBase;
 
 		double xMin = converter.frameToScale(selectionMinX, scatter, false);
 		double xMax = converter.frameToScale(selectionMaxX, scatter, false);

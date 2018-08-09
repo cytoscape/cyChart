@@ -13,8 +13,11 @@ public class FilterBuilder {
 		xColumnName = columnName;
 		xRange = r;
 	}
-	public FilterBuilder(String xcolumn, Range xRange, String yCol, Range yRange)
+	public FilterBuilder(String xcolumn, Range xRange, String yCol, Range inYRange)
 	{
+		this(xcolumn, xRange);
+		yColumnName = yCol;
+		yRange = inYRange;
 	}
 	
 	public String makeString(boolean isX)
