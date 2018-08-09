@@ -16,4 +16,4 @@ There is a two dimension scatter plot also available via Tools >> Scatter Filter
 
 ![Screen Dump](scatter1.png)
 
-Both the scatter and histogram filters will support you to create a filter in the Select control panel.  They both will save their state as a PNG image.
+Both the scatter and histogram filters will support you to <i>Create Filter</i> in the Select control panel.  They both have a <i>Copy Image</i> button will save their state as a PNG image.
