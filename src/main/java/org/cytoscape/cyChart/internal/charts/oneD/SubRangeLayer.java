@@ -120,7 +120,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		chartPlotArea.setOnKeyReleased(event -> 	{	});  // TODO
 	}
 	
-	Point2D getPosition(MouseEvent event)
+	private Point2D getPosition(MouseEvent event)
 	{
 		double h = event.getX();
 		double v = event.getY();
@@ -130,9 +130,9 @@ public class SubRangeLayer			// a 1D GateLayer
 	}
 
 	public void reportPosition(MouseEvent event) {
-	Point2D pt = getPosition(event);
-	positionLabel.setText(String.format("%.1f , %.3f ", pt.getX(), pt.getY()));
-	positionLabel.setVisible(true);
+		Point2D pt = getPosition(event);
+		positionLabel.setText(String.format("%.1f , %.3f ", pt.getX(), pt.getY()));
+		positionLabel.setVisible(true);
 	}
 	
 	public void reportRange() {
@@ -211,10 +211,10 @@ public class SubRangeLayer			// a 1D GateLayer
 		}
 		else
 		{
-			dragging = true;
-			setSelection(x, x);
-			update(y);
 			selectionH.setVisible(true);
+			dragging = true;
+			setSelection(event.getX(), event.getX());
+			update(y);
 		}
 		event.consume();
 	}

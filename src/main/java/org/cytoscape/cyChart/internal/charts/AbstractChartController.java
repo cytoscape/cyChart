@@ -160,8 +160,8 @@ abstract public class AbstractChartController implements Initializable {
 		logXTransform = new CheckBox("Log");
 		logXTransform.selectedProperty().addListener(logXChange);
 		logXTransform.setAlignment(Pos.CENTER);
-		xMin = makeNumberField();
-		xMax = makeNumberField();	
+		xMin = makeNumberField("xMin");
+		xMax = makeNumberField("xMax");	
 		
 		// ------------   we always create the Y axis line, but only include it if (is2D)
 		yAxisChoices = new ChoiceBox<String>();
@@ -175,8 +175,8 @@ abstract public class AbstractChartController implements Initializable {
 		logYTransform = new CheckBox("Log");
 		logYTransform.selectedProperty().addListener(logYChange);
 		logYTransform.setAlignment(Pos.CENTER);
-		yMin = makeNumberField();
-		yMax = makeNumberField();
+		yMin = makeNumberField("yMin");
+		yMax = makeNumberField("yMax");
 		
 		// -------------- layout		
 		footer1 = makeNumberRangeLine(xAxisChoices, logXTransform, xMin, xMax);
@@ -193,29 +193,36 @@ abstract public class AbstractChartController implements Initializable {
 	private HBox makeNumberRangeLine(ChoiceBox<?> choices, CheckBox log, NumberField minFld, NumberField maxFld)		// 6 controls
 	{
 		Label min = new Label("Min:");
-		Label max = new Label("Max:");
-		min.setFont(numberFont);
-		max.setFont(numberFont);
+		Label max = new Label("Max:");		
+		min.setFont(numberFont);	min.setAlignment(Pos.BASELINE_RIGHT);
+		max.setFont(numberFont);	max.setAlignment(Pos.BASELINE_RIGHT);
 		return new HBox(8, choices, log, min, minFld, max, maxFld);
 	}
 	// ------------ 
-	private NumberField makeNumberField() {
+	private NumberField makeNumberField(String id) {
 		NumberField fld = new NumberField();
-		fld.setAlignment(Pos.CENTER);
+		fld.setId(id);
+		fld.setAlignment(Pos.BASELINE_RIGHT);
 		fld.setFont(numberFont);
 		fld.setMaxWidth(55);
-		ChangeListener<String> txtListener =  (observable, oldValue, newValue) -> textChanged(newValue);		
-		fld.textProperty().addListener(txtListener);
+		fld.textProperty().addListener( (obs, oldVal, newVal) -> fieldChanged(newVal, fld.getId()));
 		return fld;
 	}
 	// ------------  respond to user edits of range values.  
-	private void textChanged(String newValue) {
+	private void fieldChanged(String newValue, String fieldId) {
+
 		BigDecimal newXmin = xMin.getNumber();
 		BigDecimal newXmax = xMax.getNumber();
 		BigDecimal newYmin = yMin.getNumber();
 		BigDecimal newYmax = yMax.getNumber();
-		System.out.println(newXmin + " - " + newXmax + " , " + newYmin + " - " + newYmax);
+		
+		double val = Double.parseDouble(newValue);
+		if ("xMin".equals(fieldId))	setXRange(new Range(val, newXmax.doubleValue()));
+		if ("xMax".equals(fieldId))	setXRange(new Range(newXmin.doubleValue(), val));
+		resized();
+//		System.out.println(fieldId + " = " + val);
 }
+	abstract public void resized();
 	//-------------------------------------------------------------
 	protected Button makeFilter;
 	protected Button copyImage;
@@ -321,6 +328,11 @@ abstract public class AbstractChartController implements Initializable {
 		setYRange(yRange);
 	}
 	  
+	public void setXmin(double d)	{ xMin.setNumber(d);	}
+	public void setXmax(double d)	{ xMax.setNumber(d);	}
+	public void setYmin(double d)	{ yMin.setNumber(d);	}
+	public void setYmax(double d)	{ yMax.setNumber(d);	}
+	
 	private void setXRange(Range r) {
 		if (r == null) return;
 		xMin.setNumber(r.min());

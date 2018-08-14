@@ -37,16 +37,17 @@ public class NumberField extends TextField
          
         private void initHandlers() {
 
-// try to parse when focus is lost or RETURN is hit
+        	// try to parse when focus is lost or RETURN is hit
             setOnAction(arg0-> {    parseAndFormatInput();  }   );
             focusedProperty().addListener((obs, old, nVal) ->{ if (!nVal.booleanValue())  parseAndFormatInput();        });
-// Set text in field if BigDecimal property is changed from outside.
+            // Set text in field if BigDecimal property is changed from outside.
             numberProperty().addListener((obs, old, nVal) ->{   setText(nf.format(nVal));      });
- // watch out for bad key input
-            setOnKeyTyped(event ->
+
+            setOnKeyTyped(event ->			 // watch out for bad key input
             {
+            	if (event.getCharacter().isEmpty()) return;
             	char c = event.getCharacter().charAt(0);
-            	if (!(Character.isDigit(c) || c == Character.DECIMAL_DIGIT_NUMBER) || ('.' == c))
+            	if (!(Character.isDigit(c) || c == Character.DECIMAL_DIGIT_NUMBER || ('.' == c)))
             		event.consume();
             });
         }
@@ -56,8 +57,7 @@ public class NumberField extends TextField
  * NumberFormat
  */
         private void parseAndFormatInput() {
-            try {
-                String input = getText();
+            try {                String input = getText();
                 if (input == null || input.length() == 0)     return;
                 Number parsedNumber = nf.parse(input);
                 BigDecimal newValue = new BigDecimal(parsedNumber.toString());

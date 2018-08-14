@@ -12,7 +12,6 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
-import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 
@@ -87,6 +86,11 @@ public class ScatterChartController extends AbstractChartController
 		}
 		catch (Exception e)		{			e.printStackTrace();		}
 		return series;
+	}
+	//------------------------------------------------------------------
+	public void resized()
+	{
+		scatterChartHome.resized();
 	}
 	
 	//------------------------------------------------------------------

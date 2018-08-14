@@ -82,7 +82,7 @@ public class SelectableScatterChart extends AnchorPane
 			Region rgn = (Region) chartPlotArea;
 			rgn.setStyle("-fx-background-color: #CCCCCC;");
 			rgn.setBorder(Borders.thinEtchedBorder);
-		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> resized();
+		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> controller.resized();
 		    scatter.widthProperty().addListener(paneSizeListener);
 		    scatter.heightProperty().addListener(paneSizeListener);  	
 		}
@@ -102,7 +102,6 @@ public class SelectableScatterChart extends AnchorPane
 		scatter.getXAxis().setLabel(x); 
 		scatter.getYAxis().setLabel(y); 	
 	}
-
 
 /*--------------------------------------------------------------------------------------------
  * This adds a layer on top of a the XY chart named "scatter". 
@@ -361,7 +360,7 @@ public class SelectableScatterChart extends AnchorPane
 	
 	//-------------------------------------------------------------------------------
 	boolean verbose = false;
-	private void resized()
+	public void resized()
 	{
 		Rectangle r = getScaleRect(getSelectionRectangleScale(), getPlotFrame());
 		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);

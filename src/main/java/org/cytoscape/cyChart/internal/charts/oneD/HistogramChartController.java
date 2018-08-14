@@ -145,6 +145,11 @@ System.out.println("setXParameter " + name);
 		return new Histogram1D(item, values);
 	}
 	// ------------------------------------------------------
+	public void resized()
+	{
+		subrangeLayer.setAxisBounds();
+	}
+	
 	
 	boolean inBounds(double x)
 	{
