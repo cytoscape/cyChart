@@ -6,9 +6,6 @@ Right click on a numerical column and select Histogram Filter...
 
 A plot will appear.  Drag within the plot area to create an H shaped selection field.  Drag either end or the middle to edit the field.  
 
-(Editing is flaky if left edge is at the Y axis.  Drag in center to move selection off the axis.)
-
-
 ![Screen Dump](histo1.png)
 
 
@@ -18,3 +15,5 @@ There is a two dimension scatter plot also available via Tools >> Scatter Filter
 
 
 ![Screen Dump](scatter1.png)
+
+Both the scatter and histogram filters will support you to <i>Create Filter</i> in the Select control panel.  They both have a <i>Copy Image</i> button will save their state as a PNG image.
