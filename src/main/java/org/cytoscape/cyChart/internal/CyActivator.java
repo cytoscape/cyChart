@@ -15,8 +15,10 @@ import java.util.Properties;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.cyChart.internal.charts.oneD.ColumnFilterTaskFactory;
+import org.cytoscape.cyChart.internal.charts.twoD.Column2DFilterTaskFactory;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.tasks.HistogramFilterTaskFactory;
+import org.cytoscape.cyChart.internal.tasks.ScatterColumnFilterTaskFactory;
 import org.cytoscape.cyChart.internal.tasks.ScatterFilterTaskFactory;
 import org.cytoscape.cyChart.internal.tasks.VersionTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -59,7 +61,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		ColumnFilterTaskFactory histoChart2 = new ColumnFilterTaskFactory(manager);
 		props = new Properties();
-		props.setProperty(TITLE, "Histogram Filter...");
+		props.setProperty(TITLE, "Histogram filter...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "dialog");
@@ -76,15 +78,25 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(MENU_GRAVITY, "0.3");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
-		props.setProperty(COMMAND, "dialog");
+		props.setProperty(COMMAND, "scatter");
 		props.setProperty(COMMAND_DESCRIPTION, "Launch a Scatter Filter in a separate window");
 		props.setProperty(COMMAND_LONG_DESCRIPTION, 
-		                  "Launch Cytoscape's internal 2D CyChart in a separate window.  " +
-		                  "Provide an ``id`` for the window if you want subsequent control of the window via ``cychart hide``");
+		                  "Launch Cytoscape's internal 2D CyChart in a separate window.  ");
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
 		registerService(bc, scatChart, TaskFactory.class, props);
 	
+		Column2DFilterTaskFactory scatChart2 = new Column2DFilterTaskFactory(manager);
+		props = new Properties();
+		props.setProperty(TITLE, "Scatter filter...");
+		props.setProperty(COMMAND_NAMESPACE, "cychart");
+		props.setProperty(COMMAND, "column");
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a two dimenional graphical filter.");
+		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch Cytoscape's 2D CyChart in a separate window.  "       );
+		props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+		registerService(bc, scatChart2, TableColumnTaskFactory.class, props);
+
+
 		VersionTaskFactory versionTask = new VersionTaskFactory(version);
 		props = new Properties();
 		props.setProperty(COMMAND_NAMESPACE, "cychart");

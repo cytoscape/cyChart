@@ -187,7 +187,8 @@ public class Histogram1D
 		int max = 0;
 		for (int row = 0; row < size; row++)
 			max = Math.max(max, counts[row]);
-		return max;
+//System.out.println("Mode: " + max);	
+	return max;
 
 	}
 	public double getModePosition()	{
@@ -198,6 +199,8 @@ public class Histogram1D
 			if (counts[row] > max) position = row;
 			max = Math.max(max, counts[row]);
 		}
+		System.out.println("Mode: " + max);	
+		System.out.println("ModeX: " + position);	
 		return range.min() + (range.width() * position) / size;
 	}
 	// ----------------------------------------------------------------------------------------------------

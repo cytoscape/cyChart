@@ -26,8 +26,6 @@ public class SwingPanel extends JPanel {
  
 	protected JFXPanel jfxPanel;
  
-	private final JLabel lblStatus = new JLabel();
-
 	public static final String EVENT_TYPE_CLICK = "click";
 	public static final String EVENT_TYPE_CONTEXT_MENU = "contextmenu";
 
@@ -70,7 +68,7 @@ public class SwingPanel extends JPanel {
 //		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
-		StackPane appPane = AppHistograms.getStackPane(registrar, lblStatus, column);
+		StackPane appPane = AppHistograms.getStackPane(registrar, column);
 //		appPane.setBorder(Borders.magentaBorder);
 		if (appPane != null) 
 		{
@@ -81,17 +79,17 @@ public class SwingPanel extends JPanel {
 		}
 		else System.out.println("appPane came back null");
 
-		JPanel topBar = new JPanel(new BorderLayout(5, 0));
-		topBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
+//		JPanel topBar = new JPanel(new BorderLayout(5, 0));
+//		topBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
 
-		JPanel statusBar = new JPanel(new BorderLayout(5, 0));
+//		JPanel statusBar = new JPanel(new BorderLayout(5, 0));
 //		statusBar.setBorder(BorderFactory.createLineBorder(Color.RED));
-		statusBar.add(lblStatus, BorderLayout.CENTER);
-		lblStatus.setMinimumSize(new Dimension(20, 10));
-		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
-		lblStatus.setText("The statRs bar reports the range and percentage selected.");
-		add(topBar, BorderLayout.NORTH);
-		add(statusBar, BorderLayout.SOUTH);
+//		statusBar.add(lblStatus, BorderLayout.CENTER);
+//		lblStatus.setMinimumSize(new Dimension(20, 10));
+//		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
+//		lblStatus.setText("The statRs bar reports the range and percentage selected.");
+//		add(topBar, BorderLayout.NORTH);
+//		add(statusBar, BorderLayout.SOUTH);
 //		JPanel container = new JPanel();
 //		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
 //		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.RED, 1));

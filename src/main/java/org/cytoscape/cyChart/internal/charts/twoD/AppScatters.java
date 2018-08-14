@@ -1,14 +1,13 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
-import javax.swing.JLabel;
-
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-
 
 public class AppScatters extends Application 
 {
@@ -27,13 +26,12 @@ public class AppScatters extends Application
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar, JLabel status)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(550);
-	    ScatterChartController cntl = new ScatterChartController(pane, registrar, status);
-//	    System.out.println("ScatterChartController status = "  + cntl.ping()); 
+	    new ScatterChartController(pane, registrar, col);
 	    return pane;
     }  
     

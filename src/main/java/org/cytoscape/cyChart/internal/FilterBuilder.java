@@ -1,6 +1,13 @@
 package org.cytoscape.cyChart.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.cyChart.internal.charts.Range;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
 
 public class FilterBuilder {
 	String xColumnName;
@@ -18,6 +25,36 @@ public class FilterBuilder {
 		this(xcolumn, xRange);
 		yColumnName = yCol;
 		yRange = inYRange;
+	}
+	
+	public void makeCompositeFilter(CyServiceRegistrar registrar)
+	{
+		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+		if (commandTF != null && taskManager != null)
+			execFilterCommand(taskManager, commandTF, makeComposite());
+		else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
+		
+	}
+	
+	public void makeSingleFilter(CyServiceRegistrar registrar)
+	{
+		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
+		TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+		if (commandTF != null && taskManager != null)
+			execFilterCommand(taskManager, commandTF, makeString(true));
+		else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
+		
+	}
+	
+	private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
+	{
+//		System.out.println(json);
+		Map<String, Object> args = new HashMap<>();
+		args.put("name","scatter filter");
+		args.put("json",json);
+		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
+		taskManager.execute(ti);
 	}
 	
 	public String makeString(boolean isX)

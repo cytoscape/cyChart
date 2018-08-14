@@ -1,16 +1,14 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cytoscape.cyChart.internal.charts.oneD.SwingPanel;
 import org.cytoscape.cyChart.internal.model.CyChart;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
+import org.cytoscape.model.CyColumn;
 
 public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListener {
 
@@ -28,9 +26,25 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 			initialTitle = title;
 		} else  setTitle("CyChart");
 
-		currentPanel = new ScatterFilterPanel(manager, this);
+		currentPanel = new ScatterFilterPanel(manager, this, null);
 		getContentPane().add(currentPanel);
-		setPreferredSize(new Dimension(520, 500));
+		setPreferredSize(new Dimension(520, 600));
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		pack();
+
+	}
+
+	public ScatterFilterDialog(CyChartManager mgr, String title, CyColumn col) {
+		super(mgr.getOwner());
+		manager = mgr;
+		if (title != null) {
+			setTitle(title);
+			initialTitle = title;
+		} else  setTitle("CyChart");
+
+		currentPanel = new ScatterFilterPanel(manager, this, col);
+		getContentPane().add(currentPanel);
+		setPreferredSize(new Dimension(520, 600));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		pack();
 

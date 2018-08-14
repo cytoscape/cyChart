@@ -3,6 +3,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 
+import org.cytoscape.cyChart.internal.charts.Range;
+
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -16,7 +18,6 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -48,7 +49,6 @@ public class SubRangeLayer			// a 1D GateLayer
 	public boolean isSelectionSizeTooSmall() {	return 10 > Math.abs(selectionMovingEnd - selectionAnchor);	}
 
 	private static final String STYLE_CLASS_SELECTION_BOX = "chart-selection-rectangle";
-
 	/**
 	 * Create a new instance of this class with the given chart and pane instances. The {@link Pane} instance is needed
 	 * as a parent for the group (H) that represents the user selection.
@@ -79,26 +79,10 @@ public class SubRangeLayer			// a 1D GateLayer
 		addInfoLabel();
 	    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> setAxisBounds();
 	    stackPane.widthProperty().addListener(paneSizeListener);
-	    stackPane.heightProperty().addListener(paneSizeListener);  
-
-//	    if (showChartOutlines) {
-//	    chart.setBorder(Borders.cyanBorder);
-//		Region chartPlotArea = (Region) chart.lookup(".chart-plot-background");
-//		chartPlotArea.setBorder(Borders.greenBorder);}
-	    
-}
-	Node getPlotAreaNode() 
-	{
-		assert(chart != null);
-		Node n = chart.lookup(".chart-plot-background");
-		assert(n != null);
-		return n;
+	    stackPane.heightProperty().addListener(paneSizeListener);  	    
 	}
-	
-	Bounds getPlotBounds()	{		return getPlotAreaNode().getBoundsInParent();		}
-	/**
-	 * The info label shows a short info text that tells the user how to unreset the zoom level.
-	 */
+
+
 	private void addInfoLabel() {
 		positionLabel = new Label("positionLabel");
 		stackPane.getChildren().add(positionLabel);
@@ -106,22 +90,16 @@ public class SubRangeLayer			// a 1D GateLayer
 		positionLabel.setVisible(false);
 	}
 
-	private void disableAutoRanging() {
-		xAxis.setAutoRanging(false);
-		yAxis.setAutoRanging(false);
-	}
-
-//	private void showInfo() 				{			infoLabel.setVisible(true);		}
 	public void updateController()
 	{
 		setRangeValues(selectionAnchor, selectionMovingEnd);
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
-		double freq = getRangeFreq(chart, xMin, xMax);
 		NumberFormat fmt = new DecimalFormat("0.00");
-		String s = fmt.format(freq * 100) +  "% for ( " + fmt.format(xMin) + ", " + fmt.format(xMax) +  ")";
-		controller.setStatusText(s);
-//		showInfo();
+		String s = getRangeCount(chart, xMin, xMax) + " / " + controller.getDataSize(chart) +   " are between " + fmt.format(xMin) + " and " + fmt.format(xMax) ;
+		
+		Range xRange = new Range(xMin, xMax);
+		controller.setStatus(s, xRange, null);
 		selectRange(chart, xMin, xMax);
 
 	}
@@ -133,13 +111,13 @@ public class SubRangeLayer			// a 1D GateLayer
 	 * Adds a mechanism to select an area in the chart that should be the subrange.
 	 */
 	private void addDragSelectionMechanism() {
-		Node chartPlotArea = getPlotAreaNode();
+		Node chartPlotArea = controller.getPlotAreaNode();
 		chartPlotArea.setOnMouseMoved(event -> 		{ 	onMouseMoved(event);	});
 		chartPlotArea.setOnMouseExited(event -> 	{ 	positionLabel.setVisible(false);  });
 		chartPlotArea.setOnMousePressed(event -> 	{	onPressed(event);		});
 		chartPlotArea.setOnMouseDragged(event -> 	{  	onDragged(event);	 	});
 		chartPlotArea.setOnMouseReleased(event -> 	{  	onReleased(event); });
-		chartPlotArea.setOnKeyReleased(event -> 	{	});
+		chartPlotArea.setOnKeyReleased(event -> 	{	});  // TODO
 	}
 	
 	Point2D getPosition(MouseEvent event)
@@ -204,7 +182,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	private void onPressed(MouseEvent event) 
 	{
-		Node chartPlotArea = getPlotAreaNode();
+		Node chartPlotArea = controller.getPlotAreaNode();
 	    chartOffsetX = chartPlotArea.getLayoutX();
 	    chartOffsetY = chartPlotArea.getLayoutY();
 		double x = event.getX() + chartOffsetX;
@@ -253,7 +231,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		if (event.isSecondaryButtonDown()) 		return;
 		event.consume();
 		if (!dragging) return;
-		Node chartPlotArea = getPlotAreaNode();
+		Node chartPlotArea = controller.getPlotAreaNode();
 		double minAllowed = -1;   //chartPlotArea.getLayoutX();
 		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth() + 2;		//+ 6
 		double h = event.getX(); // + chartPlotArea.getLayoutX();
@@ -285,7 +263,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	private void offsetSelection(double delta)
 	{
 //		System.out.println("Offsetting: " + delta);
-		Node chartPlotArea = getPlotAreaNode();
+		Node chartPlotArea = controller.getPlotAreaNode();
 		double minAllowed = 0; // chartPlotArea.getLayoutX();
 		double maxAllowed = chartPlotArea.getLayoutBounds().getWidth();		//minAllowed + 
 		double left = Math.min(selectionAnchor, selectionMovingEnd) + delta;
@@ -304,7 +282,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		boolean ok = selectionAnchor > 0 && selectionMovingEnd > 0;
 		if (ok && isSelectionSizeTooSmall()) 
 			ok = false;
-		double width  = getPlotBounds().getWidth();
+		double width  = controller.getPlotAreaNode().getBoundsInParent().getWidth();
 		double h = Math.max(Math.min(event.getX(), width), 0); // + chartPlotArea.getLayoutX();
 		if (hitSpot != 2) selectionMovingEnd = h;
 		double v = event.getY();
@@ -327,29 +305,27 @@ public class SubRangeLayer			// a 1D GateLayer
 	}
 
 
-	/**-------------------------------------------------------------------------------
-	 *
-	 */
-	
-//	void debugH(double h)
-//	{
-//		System.out.println(String.format("H: %.2f = %.2f", h, converter.frameToScale(h, chart, false)));
-//	}
-//
-	//a drag causes new values to go from the frame to model
+	//-----------------------------------------------------------------
 	
 	public void setRangeValues(double selAnchorH, double selEndH) {
 		double x0 = converter.frameToScale(selAnchorH, chart, false);
 		double x1 = converter.frameToScale(selEndH, chart, false);
-		controller.setRange1DValues(x0, x1);		
+		controller.setRangeValues(x0, x1);		
 	}
 	public void setRangeValues(double selAnchorH, double selEndH, double v) {
 		double x0 = converter.frameToScale(selAnchorH, chart, false);
 		double x1 = converter.frameToScale(selEndH, chart,  false);
 		double y1 = converter.frameToScale(v, chart, true);
-		controller.setRange1DValues(x0, x1, y1);		
+		controller.setRangeValues(x0, x1, y1, y1);		
 	}
 
+	//-----------------------------------------------------------------
+	private void disableAutoRanging() {
+		xAxis.setAutoRanging(false);
+		yAxis.setAutoRanging(false);
+	}
+
+	//-----------------------------------------------------------------
 	public void setAxisBounds() 		// window has resized or selection set programmatically
 	{
 		disableAutoRanging();
@@ -365,12 +341,13 @@ public class SubRangeLayer			// a 1D GateLayer
 		if (Double.isInfinite(xMin) || Double.isInfinite(xMax)) return;
 		double h0 = converter.scaleToFrame(xMin, chart, false);
 		double h1 = converter.scaleToFrame(xMax, chart, false);
-		double v0 = converter.scaleToFrame(controller.getSelectionHeight(), chart, true);
+		double v0 = converter.scaleToFrame(controller.getSelectionTop(), chart, true);
 		setSelection(h0, h1);
 		update(v0);
 	}
-	
-	private double getRangeFreq(XYChart<Number, Number> chart, double xMin, double xMax)
+
+	//-----------------------------------------------------------------
+	private int getRangeCount(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
 		int ct = 0;
 		List<XYChart.Series<Number, Number>> dataList = chart.getData();
@@ -383,8 +360,7 @@ public class SubRangeLayer			// a 1D GateLayer
 			if ( BETWEEN(x, xMin, xMax))
 				ct++;
 		}
-		return ct / (double) data.getData().size();
-		
+		return ct;
 	}
 	
 	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
@@ -400,7 +376,7 @@ public class SubRangeLayer			// a 1D GateLayer
 		selectionH.setVisible(false);
 	}
 	
-	//-----------------------------
+	//-----------------------------------------------------------------
 	private Group groupH = new Group();
 	private Line leftBar, crossBar, rightBar;
 	int resizing = 0;
@@ -410,6 +386,7 @@ public class SubRangeLayer			// a 1D GateLayer
 	
 	public double getYValue()	{ return yValue;	}
 	
+	//-----------------------------------------------------------------
 	public Group getSubRangeGroup()
 	{
 		leftBar = new Line(20, 10, 20, 399);
@@ -425,10 +402,10 @@ public class SubRangeLayer			// a 1D GateLayer
 		groupH.setMouseTransparent(true);
 		return groupH;
 	}
-	
+	//-----------------------------------------------------------------
 	public void update(double v)			// these are in frame (mouse) coords
 	{
-		Bounds bounds = getPlotBounds();
+		Bounds bounds = controller.getPlotBounds();
 		double offX = bounds.getMinX();
 		double offY = bounds.getMinY();
 		double top = 14;  

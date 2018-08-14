@@ -28,15 +28,15 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-
 /*
  *   A SelectableScatterChart is a scatter chart that can show a two dimensional data set.
  *   Identifying a region in the XY space will take the subset of events in that region
  *  
  */
-public class SelectableScatterChart extends VBox
+public class SelectableScatterChart extends AnchorPane
 {
 	FrameScaleConverter converter = new FrameScaleConverter();
 	private ScatterChart<Number, Number> scatter;
@@ -47,10 +47,13 @@ public class SelectableScatterChart extends VBox
 	public SelectableScatterChart(ScatterChartController ctlr)
 	{
 		controller = ctlr;
+//		setBorder(Borders.yellowBorder);
+		AnchorPane.setTopAnchor(this, 5.0);
+		AnchorPane.setBottomAnchor(this, 5.0);
+		AnchorPane.setLeftAnchor(this, 5.0);
+		AnchorPane.setRightAnchor(this, 5.0);
 		addLayer("X", "Y", 0);
-		VBox pile = new VBox();
-		pile.getChildren().addAll(scatter);
-		getChildren().addAll(pile);
+		getChildren().addAll(scatter);
 		selectionLayerBuilder();
 	}
 
@@ -67,6 +70,12 @@ public class SelectableScatterChart extends VBox
 		yAxis.setLabel(yName);
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
+//		scatter.setBorder(Borders.blueBorder1);
+		AnchorPane.setTopAnchor(scatter, 10.0);
+		AnchorPane.setBottomAnchor(scatter, 10.0);
+		AnchorPane.setLeftAnchor(scatter, 10.0);
+		AnchorPane.setRightAnchor(scatter, 10.0);
+
 		Node chartPlotArea = getPlotAreaNode();
 		if (chartPlotArea != null)
 		{
@@ -318,8 +327,8 @@ public class SelectableScatterChart extends VBox
 		} while (node != null && node != scatter);
 		return offset;
 	}
-	/**-------------------------------------------------------------------------------
-	 */
+	//-------------------------------------------------------------------------------
+
 	private void drawSelectionRectangle(final double x, final double y, final double width, final double height, boolean optionDrag) {
 		selectionRectangle.setVisible(true);
 		selectionRectangle.setX(x);
@@ -336,19 +345,21 @@ public class SelectableScatterChart extends VBox
 		yAxis.setAutoRanging(false);
 	}
 
-	private void showInfo(double freq, double xMin, double xMax, double yMin, double yMax ) 
+	//-------------------------------------------------------------------------------
+	private void showInfo(int found, int total, double xMin, double xMax, double yMin, double yMax ) 
 	{			
 		NumberFormat fmt = new DecimalFormat("0.00");
-		String s = fmt.format(freq * 100) +  "% for X( " + fmt.format(xMin) + " - " + fmt.format(xMax) + ") Y( " + fmt.format(yMin) + " - " + fmt.format(yMax) + ")";
+		String s = found + " / " + total; //  + " in range X: [ " + fmt.format(xMin) + " - " + fmt.format(xMax) + "] Y: [ " + fmt.format(yMin) + " - " + fmt.format(yMax) + "]";
 //		infoLabel.setText(s);
 //		System.out.println(s);
-		controller.setStatus(s);	
 		xRange = new Range(xMin, xMax);
 		yRange = new Range(yMin, yMax);
+		controller.setStatus(s, xRange, yRange);	
 	}
 	
 	Range xRange = null, yRange = null; 
 	
+	//-------------------------------------------------------------------------------
 	boolean verbose = false;
 	private void resized()
 	{
@@ -357,6 +368,7 @@ public class SelectableScatterChart extends VBox
 		if (verbose) System.out.println("resized");
 	}
 
+	//-------------------------------------------------------------------------------
 	private void setAxisBounds() {
 		disableAutoRanging();
 		if (selRectStart == null || selRectEnd == null)
@@ -379,13 +391,14 @@ public class SelectableScatterChart extends VBox
 		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
 		double yMax = converter.frameToScale(selectionMinY, scatter, true);
 		
-		double freq = countInRect(scatter, xMin, xMax, yMin, yMax);
+		int found = countInRect(scatter, xMin, xMax, yMin, yMax);
+		int total = getDataSize(scatter);
 		String xName = xAxis.getLabel(), yName = yAxis.getLabel();
 		controller.selectRange(xName, xMin, xMax, yName, yMin, yMax );
-		showInfo(freq, xMin, xMax, yMin, yMax);
-
+		showInfo(found, total, xMin, xMax, yMin, yMax);
 	}
 	
+	//-------------------------------------------------------------------------------
 	public Range getXRange()
 	{
 		if (selRectStart == null || selRectEnd == null) 		return new Range(0,4);
@@ -405,7 +418,8 @@ public class SelectableScatterChart extends VBox
 		return new Range(yMin, yMax);
 	}
 	
-	private double countInRect(XYChart<Number, Number> chart, double xMin, double xMax, double yMin, double yMax)
+	//-------------------------------------------------------------------------------
+	private int countInRect(XYChart<Number, Number> chart, double xMin, double xMax, double yMin, double yMax)
 	{
 		Objects.requireNonNull(chart);
 		if (chart.getData().size() == 0) return 0;
@@ -419,8 +433,15 @@ public class SelectableScatterChart extends VBox
 			if ( (x >= xMin && x < xMax) && (y >= yMin && y < yMax))
 				ct++;
 		}
-		return ct / (double) data.getData().size();
+		return ct;
 		
+	}
+	
+	private int getDataSize(XYChart<Number, Number> chart)
+	{
+		if (chart.getData().size() == 0) return 0;
+		XYChart.Series<Number, Number> data = chart.getData().get(0);
+		return data.getData().size();
 	}
 	
 	/**-------------------------------------------------------------------------------
@@ -446,7 +467,7 @@ public class SelectableScatterChart extends VBox
 			event.consume();
 		});
 
-		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
+//		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
 
 		marquee.setOnMouseEntered(event -> { setCursor(marquee, event); } );
 		marquee.setOnMouseMoved(event -> { setCursor(marquee, event); });
@@ -531,11 +552,13 @@ public class SelectableScatterChart extends VBox
 		
 	}
 
+	//-------------------------------------------------------------------------------
 	void setCursor(Rectangle r, MouseEvent event)
 	{
 		 r.setCursor(Cursors.getResizeCursor(RectangleUtil.getPos(event, r)));
 	}
 
+	//-------------------------------------------------------------------------------
 	private Rectangle2D union(Point2D a, Point2D b)
 	{
 		if (a == null || b == null) return Rectangle2D.EMPTY;
@@ -546,6 +569,7 @@ public class SelectableScatterChart extends VBox
 		return new Rectangle2D(x,y,width,height);
 	}
 
+	//-------------------------------------------------------------------------------
 	Rectangle getScaleRect(Rectangle def, Rectangle frame)
 	{
 		double frameWidth = frame.getWidth();
@@ -556,6 +580,7 @@ public class SelectableScatterChart extends VBox
 		return r;
 	}
 
+	//-------------------------------------------------------------------------------
 	Rectangle rectDef(Rectangle child, Rectangle frame)
 	{
 		double frameWidth = frame.getWidth();

@@ -18,39 +18,20 @@ public class AppHistograms extends Application
     @Override public  void start(Stage stage) throws Exception 
     {
     	me = this;
-    	StackPane appPane = getStackPane(null, null, null);
+    	StackPane appPane = getStackPane(null, null);
     	Scene scene = new Scene(appPane, 520, 500);
 	    stage.setScene(scene);
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar, JLabel status, CyColumn col)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(500);
-	    HistogramChartController cntl = new HistogramChartController(pane, registrar, status, col);
+	    new HistogramChartController(pane, registrar, col);
 	    return pane;
     }  
-//
-//    public static AnchorPane getAnchorPane()
-//    {
-//	    FXMLLoader fxmlLoader = new FXMLLoader();
-//	    URL url = AppHistograms.class.getResource("HistogramChart.fxml");
-//	    HistogramChartController cntl = new org.cytoscape.cyChart.internal.charts.oneD.HistogramChartController();
-//	   System.out.println("HistogramChartControllesr status = "  + cntl.ping()); 
-//	    fxmlLoader.setLocation(url);
-//	    AnchorPane appPane;
-//		try {
-//			appPane = fxmlLoader.load();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//			appPane = null;
-//		}
-//	    return appPane;
-//    }
-    
     
  static public AppHistograms getInstance()	{ return me;	}
  static private AppHistograms me;     
