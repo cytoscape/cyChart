@@ -109,17 +109,18 @@ public class SelectableScatterChart extends AnchorPane
  */
 	private ValueAxis<Number> xAxis;
 	private ValueAxis<Number> yAxis;
-	private Rectangle selectionRectangleScaleDef;
-	private Rectangle selectionRectangle;
+	private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
+	private Rectangle selectionRectangle = new Rectangle(0,0,0,0);
+	private Rectangle ghostRectangle = new Rectangle(0,0,0,0);
 //	private Label infoLabel;
 
 	private Point2D selRectStart = null;
 	private Point2D selRectEnd = null;
 	private boolean isRectangleSizeTooSmall() {
-		if (selRectStart == null || selRectEnd == null ) return true;
-		double width = Math.abs(selRectEnd.getX() - selRectStart.getX());
-		double height = Math.abs(selRectEnd.getY() - selRectStart.getY());
-		return width < 10 || height < 10;
+		if (selectionRectangle == null) 		return true;
+		if (selectionRectangle.getWidth() < 10)	return true;
+		if (selectionRectangle.getHeight() < 10) return true;
+		return false;
 	}
 
 	private static final String STYLE_CLASS_SELECTION_BOX = "chart-selection-rectangle";
@@ -134,12 +135,20 @@ public class SelectableScatterChart extends AnchorPane
 //		addInfoLabel();
 
 		StackPane.setAlignment(selectionRectangle, Pos.TOP_LEFT);
+		StackPane.setAlignment(ghostRectangle, Pos.TOP_LEFT);
 	}
 
 	private void makeSelectionRectangle()
 	{
-		selectionRectangle = new Rectangle(); 
-		selectionRectangleScaleDef = new Rectangle();
+//		ghostRectangle = new Rectangle(); 		// this is used for volcano plots to mirror the selection around 0
+		ghostRectangle.setManaged(false);
+		ghostRectangle.setOpacity(0.3);
+		ghostRectangle.setFill(Color.CYAN);
+		ghostRectangle.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
+		ghostRectangle.setStroke(Color.SADDLEBROWN);
+		ghostRectangle.setStrokeWidth(2f);
+
+//		selectionRectangle = new Rectangle(); 
 		selectionRectangle.setManaged(false);
 		selectionRectangle.setOpacity(0.3);
 		selectionRectangle.setFill(Color.CYAN);
@@ -185,9 +194,9 @@ public class SelectableScatterChart extends AnchorPane
 	private void offsetRectangle(Rectangle r, double dx, double dy)
 	{
 //		NumberFormat fmt = new DecimalFormat("0.00");
-//		System.out.println("dx:" + fmt.format(dx) + "dx:" + fmt.format(dy));
-		r.setX(r.getX() + dx - offsetX);
-		r.setY(r.getY() + dy - offsetY);
+//		System.out.println("dx:" + fmt.format(dx) + " dy:" + fmt.format(dy));
+		r.setX(r.getX() + dx);		// - offsetX
+		r.setY(r.getY() + dy); //  - offsetY);
 	}
 
 	Node getPlotAreaNode() 	{		return scatter.lookup(".chart-plot-background");	}	
@@ -216,22 +225,23 @@ public class SelectableScatterChart extends AnchorPane
 			double dx = event.getX() - oldX;
 			double dy = event.getY() - oldY;
 			Bounds chartPlotArea = getPlotBounds();
-			double minAllowedX = chartPlotArea.getMinX();
-			double maxAllowedX = minAllowedX + chartPlotArea.getWidth();
-			double minAllowedY = chartPlotArea.getMinY();
-			double maxAllowedY = minAllowedY + chartPlotArea.getHeight();
+			double minAllowedX = chartPlotArea.getMinX() + 12;
+			double maxAllowedX = minAllowedX + chartPlotArea.getWidth() + 12;
+			double minAllowedY = chartPlotArea.getMinY() + 12;
+			double maxAllowedY = minAllowedY + chartPlotArea.getHeight() + 12;
 
 			double newLeft = selectionRectangle.getX() + dx;
 			double newRight = newLeft + selectionRectangle.getWidth();
 			double newTop = selectionRectangle.getY() + dy;
 			double newBottom = newTop + selectionRectangle.getHeight();
-			if (newLeft < minAllowedX || newRight > maxAllowedX) return;
+			if (dx != 0 && (newLeft < minAllowedX || newRight > maxAllowedX)) return;
 			if (newTop < minAllowedY || newBottom > maxAllowedY) return;
 //			System.out.println("x:" + oldX + " y:" + oldY);
 			offsetRectangle(selectionRectangle, dx, dy);
 			drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY, option);
 			selRectStart = new Point2D(event.getX(), event.getY());
 		}
+		setAxisBounds();
 	}
 
 	Rectangle getAxisScale()
@@ -260,7 +270,11 @@ public class SelectableScatterChart extends AnchorPane
 		chartRegion.setOnMousePressed( ev -> {
 			if (ev.isSecondaryButtonDown()) 	return;	
 			if (!getChildren().contains(selectionRectangle))
+			{	
 				getChildren().add(selectionRectangle);
+				getChildren().add(ghostRectangle );
+			
+			}
 			selectionRectangle.toFront();
 			double offsetX = chartRegion.getLayoutX();
 			double offsetY = chartRegion.getLayoutY();
@@ -275,8 +289,8 @@ public class SelectableScatterChart extends AnchorPane
 			selRectEnd = computeRectanglePoint(ev.getX()+offsetX, ev.getY()+offsetY);		// store current cursor position
 			Rectangle2D r = union(selRectStart, selRectEnd);
 			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight(), optionDrag);
+			setAxisBounds();
 			ev.consume();
-
 		});
 		
 		chartRegion.setOnMouseReleased(ev -> {
@@ -284,27 +298,23 @@ public class SelectableScatterChart extends AnchorPane
 			if (isRectangleSizeTooSmall()) 							return;
 			setAxisBounds();
 			selRectStart = selRectEnd = null;
-			setSelectionRectangleScale(rectDef(selectionRectangle, getPlotFrame()));
-			makeSelectionRect(selectionRectangle);
+			selectionRectangleScaleDef = rectDef(selectionRectangle, getPlotFrame());
+//			makeSelectionRect(selectionRectangle);
 			requestFocus();		// needed for the key event handler to receive events
 			ev.consume();
 		});
-
-
 	}
-
-	private void setSelectionRectangleScale(Rectangle r) {		selectionRectangleScaleDef = r;		}
-	private Rectangle getSelectionRectangleScale() {		return selectionRectangleScaleDef;		}
 
 	private Point2D computeRectanglePoint(double eventX, double eventY) {
 		double lowerBoundX = computeOffsetInChart(xAxis, false);
 		double upperBoundX = lowerBoundX + xAxis.getWidth();
 		double lowerBoundY = computeOffsetInChart(yAxis, true);
 		double upperBoundY = lowerBoundY + yAxis.getHeight();
-		// make sure the rectangle's end point is in the interval defined by the lower and upper bounds for each
-		// dimension
-		double x = Math.max(lowerBoundX, Math.min(eventX, upperBoundX));
-		double y = Math.max(lowerBoundY, Math.min(eventY, upperBoundY));
+		double offsetX = 20;
+		double offsetY = 20;
+		// make sure the rectangle's end point is in the interval defined by the bounds for each dimension
+		double x = Math.max(lowerBoundX, Math.min(eventX +offsetX, upperBoundX));
+		double y = Math.max(lowerBoundY, Math.min(eventY +offsetY, upperBoundY));
 //		System.out.println("( " + x + ", " + y + " )");
 		return new Point2D(x, y);
 	}
@@ -335,6 +345,15 @@ public class SelectableScatterChart extends AnchorPane
 		selectionRectangle.setWidth(width);
 		selectionRectangle.setHeight(height);
 //		selectionRectangle.toFront();
+		if (optionDrag)
+		{
+			ghostRectangle.setVisible(true);
+			ghostRectangle.setX(x-30-width);
+			ghostRectangle.setY(y);
+			ghostRectangle.setWidth(width);
+			ghostRectangle.setHeight(height);
+//			ghostRectangle.toFront();
+		}
 	}
 	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag) {
 		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag);
@@ -362,7 +381,7 @@ public class SelectableScatterChart extends AnchorPane
 	boolean verbose = false;
 	public void resized()
 	{
-		Rectangle r = getScaleRect(getSelectionRectangleScale(), getPlotFrame());
+		Rectangle r = getScaleRect(selectionRectangleScaleDef, getPlotFrame());
 		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
 		if (verbose) System.out.println("resized");
 	}
@@ -407,6 +426,7 @@ public class SelectableScatterChart extends AnchorPane
 		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
 		return new Range(xMin, xMax);
 	}
+	
 	public Range getYRange()
 	{
 		if (selRectStart == null || selRectEnd == null) 		return  new Range(0,1);
@@ -433,7 +453,6 @@ public class SelectableScatterChart extends AnchorPane
 				ct++;
 		}
 		return ct;
-		
 	}
 	
 	private int getDataSize(XYChart<Number, Number> chart)
@@ -511,7 +530,7 @@ public class SelectableScatterChart extends AnchorPane
 			{
 				Bounds chartPlotArea = getPlotBounds();
 				double minAllowed = chartPlotArea.getMinX();
-				double maxAllowed = minAllowed + chartPlotArea.getWidth()-60;
+				double maxAllowed = minAllowed + chartPlotArea.getWidth()-30;
 				boolean inRange = h >= minAllowed && h <= maxAllowed;
 				if (!inRange) return;
 
@@ -554,7 +573,8 @@ public class SelectableScatterChart extends AnchorPane
 	//-------------------------------------------------------------------------------
 	void setCursor(Rectangle r, MouseEvent event)
 	{
-		 r.setCursor(Cursors.getResizeCursor(RectangleUtil.getPos(event, r)));
+		 Pos pos = RectangleUtil.getPos(event, r);
+		 r.setCursor(Cursors.getResizeCursor(pos));
 	}
 
 	//-------------------------------------------------------------------------------

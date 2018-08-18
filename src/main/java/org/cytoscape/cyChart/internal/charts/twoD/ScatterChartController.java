@@ -91,18 +91,19 @@ public class ScatterChartController extends AbstractChartController
 	public void resized()
 	{
 		scatterChartHome.resized();
+		setStatus("" + scatterChartHome.offsetX);
 	}
 	
-	//------------------------------------------------------------------
-	public void setSelectionValues(double selStart, double selEnd, double yStart, double yEnd) 
-	{
-		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
-		startX = Math.min(selStart, selEnd);
-		endX = Math.max(selStart, selEnd);
-		startY = Math.min(yStart, yEnd);
-		endY = Math.max(yStart, yEnd);
-	}
-
+//	//------------------------------------------------------------------
+//	public void setSelectionValues(double selStart, double selEnd, double yStart, double yEnd) 
+//	{
+//		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
+//		startX = Math.min(selStart, selEnd);
+//		endX = Math.max(selStart, selEnd);
+//		startY = Math.min(yStart, yEnd);
+//		endY = Math.max(yStart, yEnd);
+//	}
+//
 	//------------------------------------------------------------------
 	public void selectRange(String xname, double xMin, double xMax, String yname, double yMin, double yMax) {
 		

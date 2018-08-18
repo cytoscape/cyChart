@@ -1,6 +1,7 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
 import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
+import org.cytoscape.cyChart.internal.charts.Range;
 
 import javafx.geometry.Bounds;
 import javafx.scene.Node;
@@ -15,7 +16,16 @@ public class FrameScaleConverter {
 	 * relative to the plot area, so it removes an offset arg from the normal conversion
 	 * 
 	 */
-	double HACK = 4;
+	double HACK = 0;
+	
+	public Range frameToScaleRange(double anchor, double moving, XYChart<Number, Number> theChart)
+	{
+		double left = Math.min(anchor, moving);
+		double right = Math.max(anchor, moving);
+		double x0 = frameToScale(left, theChart, false);
+		double x1 = frameToScale(right, theChart, false);
+		return new Range(x0, x1);
+	}
 	
 	public double frameToScale(double framePosition, XYChart<Number, Number> theChart, boolean isYAxis) {
 		framePosition -= HACK;

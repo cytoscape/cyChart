@@ -29,7 +29,7 @@ import javafx.scene.layout.StackPane;
 public class HistogramChartController extends AbstractChartController
 {
   private  LineChart<Number, Number> histogramChart;	
-	private SubRangeLayer subrangeLayer;
+	private SubRangeLayer1D subrangeLayer;
 	// ------------------------------------------------------
 	// use this if you don't use FXML to define the chart
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyColumn column) {
@@ -77,7 +77,7 @@ System.out.println("setXParameter " + name);
 //		chartBox.setBorder(Borders.cyanBorder);
 //		histogramChart.setBorder(Borders.yellowBorder);
 		chartBox.getChildren().add(histogramChart);
-		subrangeLayer = new SubRangeLayer(histogramChart, chartContainer, this);
+		subrangeLayer = new SubRangeLayer1D(histogramChart, chartContainer, this);
 //		System.out.println("setXParameter: " + name);
 		if (subrangeLayer != null) 
 		{
@@ -147,7 +147,8 @@ System.out.println("setXParameter " + name);
 	// ------------------------------------------------------
 	public void resized()
 	{
-		subrangeLayer.setAxisBounds();
+		subrangeLayer.chartBoundsChanged();
+		setStatus("" + subrangeLayer.getYValue());
 	}
 	
 	

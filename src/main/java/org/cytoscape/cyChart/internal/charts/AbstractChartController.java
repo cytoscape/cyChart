@@ -194,8 +194,8 @@ abstract public class AbstractChartController implements Initializable {
 	{
 		Label min = new Label("Min:");
 		Label max = new Label("Max:");		
-		min.setFont(numberFont);	min.setAlignment(Pos.BASELINE_RIGHT);
-		max.setFont(numberFont);	max.setAlignment(Pos.BASELINE_RIGHT);
+		min.setFont(numberFont);	min.setAlignment(Pos.BASELINE_RIGHT);		min.setTranslateY(4);
+		max.setFont(numberFont);	max.setAlignment(Pos.BASELINE_RIGHT);		max.setTranslateY(4);
 		return new HBox(8, choices, log, min, minFld, max, maxFld);
 	}
 	// ------------ 
@@ -205,7 +205,8 @@ abstract public class AbstractChartController implements Initializable {
 		fld.setAlignment(Pos.BASELINE_RIGHT);
 		fld.setFont(numberFont);
 		fld.setMaxWidth(55);
-		fld.textProperty().addListener( (obs, oldVal, newVal) -> fieldChanged(newVal, fld.getId()));
+//		fld.textProperty().addListener( (obs, oldVal, newVal) -> fieldChanged(newVal, fld.getId()));
+		fld.focusedProperty().addListener((obs, old, nVal) ->{ if (!nVal.booleanValue())  fieldChanged(fld.getText(), fld.getId());        });
 		return fld;
 	}
 	// ------------  respond to user edits of range values.  
@@ -219,6 +220,8 @@ abstract public class AbstractChartController implements Initializable {
 		double val = Double.parseDouble(newValue);
 		if ("xMin".equals(fieldId))	setXRange(new Range(val, newXmax.doubleValue()));
 		if ("xMax".equals(fieldId))	setXRange(new Range(newXmin.doubleValue(), val));
+		if ("yMin".equals(fieldId))	setYRange(new Range(val, newYmax.doubleValue()));
+		if ("yMax".equals(fieldId))	setYRange(new Range(newYmin.doubleValue(), val));
 		resized();
 //		System.out.println(fieldId + " = " + val);
 }
@@ -333,15 +336,15 @@ abstract public class AbstractChartController implements Initializable {
 	public void setYmin(double d)	{ yMin.setNumber(d);	}
 	public void setYmax(double d)	{ yMax.setNumber(d);	}
 	
-	private void setXRange(Range r) {
+	public void setXRange(Range r) {
 		if (r == null) return;
-		xMin.setNumber(r.min());
-		xMax.setNumber(r.max());		
+		setXmin(startX = r.min());		
+		setXmax(endX = r.max());		
 	}
-	private void setYRange(Range r) {
+	public void setYRange(Range r) {
 		if (r == null) return;
-		yMin.setNumber(r.min());
-		yMax.setNumber(r.max());		
+		setYmin(r.min());
+		setYmax(r.max());		
 	}
 	
 		
@@ -386,10 +389,16 @@ abstract public class AbstractChartController implements Initializable {
 	public double getSelectionBottom()	{ 	return endY;	}
 
 	// ------------------------------------------------------
+	public void setRangeValues(Range r) {
+		if (r == null) return;
+		setRangeValues(r.min, r.max);
+	}
+
 	public void setRangeValues(double selStart, double selEnd) {
 		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
 		startX = Math.max(xAxis.getLowerBound(), Math.min(selStart, selEnd));
 		endX = Math.min(xAxis.getUpperBound(), Math.max(selStart, selEnd));
+//		System.out.println(String.format("setRangeValues abs %.2f - %.2f", startX, endX));
 	}
 
 	public void setRangeValues(double selStart, double selEnd, double selStartY, double selEndY) {
@@ -403,8 +412,8 @@ abstract public class AbstractChartController implements Initializable {
 
 	// ------------------------------------------------------
 	protected void anchor(Node n)					{	anchor(n,0);	}
-	protected void anchor(Node n, double margin)	{	anchor(n, margin, margin, margin, margin);	}
-	protected void anchor(Node n, double top, double left, double bottom, double right )
+	private void anchor(Node n, double margin)	{	anchor(n, margin, margin, margin, margin);	}
+	private void anchor(Node n, double top, double left, double bottom, double right )
 	{
 		AnchorPane.setTopAnchor(n, top);
 		AnchorPane.setLeftAnchor(n, left);
