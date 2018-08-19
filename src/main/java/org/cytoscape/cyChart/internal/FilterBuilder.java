@@ -55,8 +55,13 @@ public class FilterBuilder {
 		args.put("json",json);
 		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
 		taskManager.execute(ti);
+		showControlPanel();
 	}
 	
+	private void showControlPanel() {
+		// TODO issue #15   https://github.com/cytoscape/cyChart/issues/15
+		
+	}
 	public String makeString(boolean isX)
 	{
 		String criterion, columnName;

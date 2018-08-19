@@ -2,6 +2,7 @@ package org.cytoscape.cyChart.internal.charts;
 
 public class Range
 {
+	public static Range EMPTY = new Range(0,0);
 	double min;
 	double max;
 	public double min() { return min;	}

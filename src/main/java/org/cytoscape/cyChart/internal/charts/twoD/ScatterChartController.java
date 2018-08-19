@@ -10,6 +10,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.layout.AnchorPane;
@@ -36,11 +37,11 @@ public class ScatterChartController extends AbstractChartController
 			chartBox.getChildren().clear();
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 			scatterChartHome = new SelectableScatterChart(this);
-			AnchorPane.setLeftAnchor(scatterChartHome, 20.);
-			AnchorPane.setRightAnchor(scatterChartHome, 20.);
+			AnchorPane.setLeftAnchor(scatterChartHome, 0.);
+			AnchorPane.setRightAnchor(scatterChartHome, 0.);
 			if (series1 != null)
 			{
 				scatterChartHome.setDataSeries(series1);
@@ -51,6 +52,12 @@ public class ScatterChartController extends AbstractChartController
 		        }
 			}
 			scatterChartHome.setAxes(x, y);
+			if (xAxis == null) xAxis = (ValueAxis<Number>) scatterChartHome.getScatterChart().getXAxis(); 
+			if (yAxis == null) yAxis = (ValueAxis<Number>) scatterChartHome.getScatterChart().getYAxis(); 
+			logXTransform.setDisable(xAxis == null || xAxis.getLowerBound() <= 0);
+			logYTransform.setDisable(yAxis == null || yAxis.getLowerBound() <= 0);
+
+			setChart(scatterChartHome.getScatterChart());
 			chartBox.getChildren().add(scatterChartHome);
 
 		    Node legend = scatterChartHome.lookup(".chart-legend");
@@ -81,6 +88,10 @@ public class ScatterChartController extends AbstractChartController
 				if (x == null) continue;
 				Double y = yvalues.get(i);	
 				if (y == null) continue;
+				
+				if (isYLog)
+					y = -1 * safelog(y);
+				
 				data.add(new XYChart.Data<Number, Number>(x,y));
 			}
 		}

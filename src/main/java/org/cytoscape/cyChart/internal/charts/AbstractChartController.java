@@ -28,7 +28,6 @@ import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.text.Font;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
@@ -41,6 +40,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 
 /*
@@ -151,11 +151,8 @@ abstract public class AbstractChartController implements Initializable {
 		// -make the x axis choice box and log check box
 		xAxisChoices = new ChoiceBox<String>();
 		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
-		    @Override
-		    public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
-		        setLogXDistribution(new_val);
-		    }
-		};
+		    @Override public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
+		        setLogXDistribution(new_val);    } 	};
 
 		logXTransform = new CheckBox("Log");
 		logXTransform.selectedProperty().addListener(logXChange);
@@ -206,7 +203,7 @@ abstract public class AbstractChartController implements Initializable {
 		fld.setFont(numberFont);
 		fld.setMaxWidth(55);
 //		fld.textProperty().addListener( (obs, oldVal, newVal) -> fieldChanged(newVal, fld.getId()));
-		fld.focusedProperty().addListener((obs, old, nVal) ->{ if (!nVal.booleanValue())  fieldChanged(fld.getText(), fld.getId());        });
+		fld.focusedProperty().addListener((obs, old, nVal) -> { if (!nVal.booleanValue())  fieldChanged(fld.getText(), fld.getId());        });
 		return fld;
 	}
 	// ------------  respond to user edits of range values.  
@@ -286,8 +283,8 @@ abstract public class AbstractChartController implements Initializable {
 	}
 
 	protected CyColumn findColumn(String name) {
-		if (nodeTable == null)
-			return null;
+		if (name == null) return null;
+		if (nodeTable == null) return null;
 		for (CyColumn column : nodeTable.getColumns())
 			if (name.equals(column.getName()))
 				return column;
@@ -343,10 +340,9 @@ abstract public class AbstractChartController implements Initializable {
 	}
 	public void setYRange(Range r) {
 		if (r == null) return;
-		setYmin(r.min());
-		setYmax(r.max());		
+		setYmin(startY = r.min());
+		setYmax(endY = r.max());		
 	}
-	
 		
 	// ------------------------------------------------------
 	public int getDataSize(XYChart<Number, Number> chart)
@@ -377,6 +373,7 @@ abstract public class AbstractChartController implements Initializable {
 		return null;
 	}
 
+	// ------------------------------------------------------
 	protected double safelog(double d) {
 		if (d <= 0) return 0;
 		return Math.log(d);
@@ -394,6 +391,11 @@ abstract public class AbstractChartController implements Initializable {
 		setRangeValues(r.min, r.max);
 	}
 
+	public Range getXRange()
+	{
+		if (xAxis == null) xAxis = (ValueAxis<Number>) theChart.getXAxis();  //return Range.EMPTY;
+		return new Range(xAxis.getLowerBound(), xAxis.getUpperBound());
+	}
 	public void setRangeValues(double selStart, double selEnd) {
 		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
 		startX = Math.max(xAxis.getLowerBound(), Math.min(selStart, selEnd));

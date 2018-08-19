@@ -9,7 +9,6 @@
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/AppHistograms.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/HistogramChartController.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/OverlaidLineChart.java
-/Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/SubRangeLayer.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/CyActivator.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/AbstractChartController.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/CyChartManager.java
@@ -23,6 +22,7 @@
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/GraphRequest.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/StringUtil.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/FrameScaleConverter.java
+/Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/SubRangeLayer1D.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/Peak.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/RectangleUtil.java
 /Users/adam/Development/cyChart/src/main/java/org/cytoscape/cyChart/internal/tasks/HistogramFilterTask.java

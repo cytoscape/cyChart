@@ -30,7 +30,6 @@ org/cytoscape/cyChart/internal/charts/AbstractChartController$4.class
 org/cytoscape/cyChart/internal/charts/LogarithmicAxis$1.class
 org/cytoscape/cyChart/internal/charts/oneD/FrameScaleConverter.class
 org/cytoscape/cyChart/internal/charts/LogarithmicAxis.class
-org/cytoscape/cyChart/internal/charts/oneD/SubRangeLayer.class
 org/cytoscape/cyChart/internal/charts/oneD/AppHistograms.class
 org/cytoscape/cyChart/internal/charts/oneD/SwingPanel.class
 org/cytoscape/cyChart/internal/charts/Range.class

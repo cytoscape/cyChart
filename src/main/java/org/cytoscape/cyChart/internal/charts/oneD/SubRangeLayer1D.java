@@ -100,13 +100,13 @@ public class SubRangeLayer1D
 		Range xRange = new Range(xMin, xMax);
 		controller.setStatus(s, xRange, null);
 	}
-	public void updateController()
-	{
-		setRangeValues();
-		showStatus();
-		selectRange(chart);
-
-	}
+//	public void updateController()
+//	{
+//		setRangeValues();
+//		showStatus();
+//		selectRange(chart);
+//
+//	}
 	boolean BETWEEN(double a, double min, double max)		{		return a >= min && a <= max;		}
 	double previousH = -1;
 	boolean dragging = false;
@@ -153,6 +153,7 @@ public class SubRangeLayer1D
 //			System.out.println(msg);
 			positionLabel.setText(msg);
 			positionLabel.setVisible(true);
+			showStatus();
 		}
 		else positionLabel.setVisible(false);
 			
@@ -240,33 +241,30 @@ public class SubRangeLayer1D
 		reportPosition(scalePos);
 		if (event.isSecondaryButtonDown()) 		return;
 		event.consume();
-		if (!dragging) return;
+		if (!dragging) 							return;
+
 		Node chartPlotArea = controller.getPlotAreaNode();
 		double minAllowed = -1;   //chartPlotArea.getLayoutX();
 		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth() + 2;		//+ 6
 		double h = event.getX(); // - chartPlotArea.getLayoutX();
-//		System.out.println("onDragged: " + h + ", " + event.getY() );
 		boolean inRange = h >= minAllowed && h <= maxAllowed;
-		if (!inRange) 
-			{
-//			System.out.println(String.format("%.2f <= %.2f <= %.2f ", minAllowed, h, maxAllowed));
-			return;
-			}
-		
+		if (!inRange) 							return;
+
 		double v = event.getY();
 		double minYAllowed = 0;
 		double maxYAllowed = chartPlotArea.getLayoutBounds().getHeight();
 		boolean inVRange = v >= minYAllowed && v <= maxYAllowed;
-		if (!inVRange) 	return;
+		if (!inVRange) 							return;
 		
 		double delta = h - previousH;
-		if (delta == 0) return;
+		if (delta == 0) 						return;
 		
 		if (hitSpot == 2)
 			offsetSelection(delta);
 		else 		
 			selectionMovingEnd = h;
 		update(v);
+		reportRange();
 		previousH = h;
 	}
 
@@ -302,16 +300,10 @@ public class SubRangeLayer1D
 		if (!inVRange) 	return;
 		if (ok)
 		{
-//			selectionH.update(selectionStart, selectionEnd, y);
-			previousH = -1;
-//			setAxisBounds();
-//			double right = Math.max(selectionAnchor, selectionMovingEnd);
-//			double left = Math.min(selectionAnchor, selectionMovingEnd);
-//			setSelection(left,right);
 			update(v);
-//			updateController();
 			reportRange();
 			setSelection(-1, -1); 
+			previousH = -1;
 		} 
 		stackPane.requestFocus();		// needed for the key event handler to receive events
 		dragging = false;
@@ -337,7 +329,8 @@ public class SubRangeLayer1D
 		double x0 = converter.frameToScale(selAnchorH, chart, false);
 		double x1 = converter.frameToScale(selEndH, chart,  false);
 		double y1 = converter.frameToScale(v, chart, true);
-		controller.setRangeValues(x0, x1, y1, y1);		
+		controller.setRangeValues(x0, x1, y1, y1);	
+		controller.selectRange(xAxis.getLabel(), x0, x1);
 	}
 
 	//-----------------------------------------------------------------
@@ -358,7 +351,7 @@ public class SubRangeLayer1D
 		
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
-//		System.out.println(String.format("setAxisBounds: %.2f -  %.2f ", xMin, xMax));
+		System.out.println(String.format("setAxisBounds: %.2f -  %.2f ", xMin, xMax));
 		if (Double.isNaN(xMin) || Double.isNaN(xMax)) return;
 		if (Double.isInfinite(xMin) || Double.isInfinite(xMax)) return;
 		double h0 = converter.scaleToFrame(xMin, chart, false);
@@ -385,17 +378,17 @@ public class SubRangeLayer1D
 		return ct;
 	}
 	
-	private void selectRange(XYChart<Number, Number> chart)
-	{
-		selectRange(chart, controller.getSelectionStart(), controller.getSelectionEnd());
-	}
+//	private void selectRange(XYChart<Number, Number> chart)
+//	{
+//		selectRange(chart, controller.getSelectionStart(), controller.getSelectionEnd());
+//	}
 	
 	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
 	{
 		List<XYChart.Series<Number, Number>> dataList = chart.getData();
 		if (dataList==null || dataList.isEmpty()) return;
-		XYChart.Series<Number, Number> data = chart.getData().get(0);
-		controller.selectRange(data.getName(), xMin, xMax);
+//		XYChart.Series<Number, Number> data = chart.getData().get(0);
+		controller.selectRange(xAxis.getLabel(), xMin, xMax);
 	}
 	
 	public void hideSelection() {
@@ -463,6 +456,7 @@ public class SubRangeLayer1D
 		bar.setStartX(x1);		bar.setStartY(y1);		
 		bar.setEndX(x2);		bar.setEndY(y2);
 	}
+	
 	private double pinValue(double top, double bottom, double v) {	return Math.min(Math.max(v, top), bottom);	}
 
 	// 0 is outside, 1=left bar, 2=middle, 3=right bar

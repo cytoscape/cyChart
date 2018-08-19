@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.JLabel;
-
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
 import org.cytoscape.cyChart.internal.charts.Borders;
@@ -43,13 +41,23 @@ public class HistogramChartController extends AbstractChartController
  	
 	@Override public void initialize(URL url, ResourceBundle rb)
 	{
-	    assert( chartContainer != null);
-		populateColumnChoices();
-		xAxisChoices.getSelectionModel().select(0);
-		setXParameter(0);
+		super.initialize(url,rb);
+//	    assert( chartContainer != null);
+//		populateColumnChoices();
+//		xAxisChoices.getSelectionModel().select(0);
+//		setXParameter(0);
 	}
 	
-//	// ------------------------------------------------------
+	// ------------------------------------------------------
+	@Override protected void makeFilter() {
+		if (registrar != null) {		
+			String x = xAxisChoices.getSelectionModel().getSelectedItem();
+		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
+		    builder.makeSingleFilter(registrar);
+		}
+	 }
+
+	// ------------------------------------------------------
 	public void setParameters()
 	{
 		setXParameter(xAxisChoices.getSelectionModel().getSelectedItem());
@@ -59,9 +67,11 @@ public class HistogramChartController extends AbstractChartController
 	// this recreates the entire chart, axes, data series, etc.
 	public void setXParameter(String name)
 	{
-System.out.println("setXParameter " + name);
-	chartBox.getChildren().clear();
+		System.out.println("setXParameter " + name);
+		chartBox.getChildren().clear();
+		if (subrangeLayer != null) subrangeLayer.hideSelection();
 		xAxis = isXLog ? new LogarithmicAxis() : new NumberAxis();
+//		xAxis.setLowerBound(-100);
 		yAxis = new NumberAxis();
 		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
 		histogramChart.setCreateSymbols(false);
@@ -79,30 +89,41 @@ System.out.println("setXParameter " + name);
 		chartBox.getChildren().add(histogramChart);
 		subrangeLayer = new SubRangeLayer1D(histogramChart, chartContainer, this);
 //		System.out.println("setXParameter: " + name);
-		if (subrangeLayer != null) 
-		{
-			subrangeLayer.hideSelection();
-			Group g = subrangeLayer.getSubRangeGroup();
+		subrangeLayer.hideSelection();
+		Group g = subrangeLayer.getSubRangeGroup();
 //			chartContainer.getChildren().add(g);
-			Bounds bounds = getPlotAreaNode().getBoundsInParent();
-			g.setTranslateX(bounds.getMinX());
-			g.setTranslateY(36);
-		}
+		Bounds bounds = getPlotAreaNode().getBoundsInParent();
+		g.setTranslateX(bounds.getMinX());
+		g.setTranslateY(36);
 		if (StringUtil.isEmpty(name)) return;
+		
 		Histogram1D h1 = getHistogram(name, isXLog);
 		if (h1 != null)
 		{
+			Range histoRange = h1.getRange();
 			histogramChart.getData().clear();
 			histogramChart.getData().add(h1.getDataSeries(name) );
-			xAxis.setLowerBound(h1.getRange().min());
-			xAxis.setUpperBound(h1.getRange().max());
+			xAxis.setLowerBound(histoRange.min());
+			xAxis.setUpperBound(histoRange.max());
+			boolean disable = histoRange.contains(0.);
+			logXTransform.setDisable(disable);
+//			System.out.println("disable: " + (disable ? "on" : "off"));
 			yAxis.setLowerBound(0);
 			double top = .5 * h1.getMode() / h1.getSize();
 			yAxis.setUpperBound(top);
+			
 //			h1.calcDistributionStats();
 //			System.out.println("Histo: " + h1.getStatString());
 		}
+		else noHistogram();
 	}
+	
+	
+	private void noHistogram() {
+		logXTransform.setDisable(true);			// number fields should also disable
+		
+	}
+
 	public void setXParameter(Number index)
 	{
 		int i =  index.intValue();
@@ -110,13 +131,6 @@ System.out.println("setXParameter " + name);
 			setXParameter(xAxisChoices.getItems().get(i));
 	}
 
-	@Override protected void makeFilter() {
-		if (registrar != null) {		
-			String x = xAxisChoices.getSelectionModel().getSelectedItem();
-		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
-		    builder.makeSingleFilter(registrar);
-		}
-	 }
 	// ------------------------------------------------------
 	private Histogram1D getHistogram(String item, Boolean isLog) {
 		nodeTable = getCurrentNodeTable(); 
@@ -125,7 +139,7 @@ System.out.println("setXParameter " + name);
 		if (column.getType() == Double.class)
 		{
 			values = nodeTable.getColumn(item).getValues(Double.class);
-			if (values == null) return null;
+			if (values == null || values.isEmpty()) return null;
 			if (isLog)
 				for (int i=0; i<values.size(); i++)
 				{
@@ -161,6 +175,8 @@ System.out.println("setXParameter " + name);
 
 	// ------------------------------------------------------
 	public void selectRange(String name, double xMin, double xMax) {
+		if (name == null) name = xAxis.getLabel();
+		System.out.println("selectRange " + name);
 		CyColumn col = findColumn(name);
 		if (col  != null)
 			selectRange(col, xMin, xMax);
