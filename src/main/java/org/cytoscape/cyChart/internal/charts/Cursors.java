@@ -30,6 +30,7 @@ public class Cursors
 
 		return Cursor.HAND;
 	}
+
 	
     public static Cursor getTextCursor(String txt)
     {

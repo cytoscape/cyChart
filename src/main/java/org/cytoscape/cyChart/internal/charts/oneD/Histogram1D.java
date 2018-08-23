@@ -50,6 +50,7 @@ public class Histogram1D
 	{
 		this(name, values.size(), new Range(0, values.size()));
 		range = getRange(values);
+		System.out.println("getHistogram constructor " + values.size());		
 		for (Double d : values)
 		{
 			if (d != null) 
@@ -58,6 +59,7 @@ public class Histogram1D
 				count(dd);
 			}
 		}
+		System.out.println("getHistogram constructor done " + values.size());		
 	}
 	
 	Range getRange(List<Double> values)
