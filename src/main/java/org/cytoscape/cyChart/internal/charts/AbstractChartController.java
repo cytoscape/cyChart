@@ -1,6 +1,5 @@
 package org.cytoscape.cyChart.internal.charts;
 
-import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +12,9 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.NumberField;
 import org.cytoscape.model.CyColumn;
@@ -67,7 +69,7 @@ abstract public class AbstractChartController implements Initializable {
 	protected ChoiceBox<String> yAxisChoices;
 	protected CheckBox logYTransform;
 	protected CheckBox interactive;
-	public boolean isInteractive() {		return interactive.isSelected();	}
+	public boolean isInteractive() {			return interactive.isSelected();	}
 
 	protected ValueAxis<Number> xAxis;
 	protected ValueAxis<Number> yAxis;
@@ -260,8 +262,22 @@ abstract public class AbstractChartController implements Initializable {
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
 	    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX), y, new Range(startY, endY));
 	    builder.makeCompositeFilter(registrar);
+	    selectLegendPanel();
 	 }
 	 
+	//-------------------------------------------------------------
+	protected void selectLegendPanel() {
+
+	CySwingApplication desktopApp = registrar.getService(CySwingApplication.class);
+		if (desktopApp == null) return;
+		CytoPanel cytoPanelWest = desktopApp.getCytoPanel(CytoPanelName.WEST);
+		if (cytoPanelWest == null) return;
+		int index = cytoPanelWest.indexOfComponent("org.cytoscape.Filter");
+		if (index >= 0)
+			cytoPanelWest.setSelectedIndex(index);
+	}
+	
+	//-------------------------------------------------------------
 	private void copyImage() {
 	    FileChooser fileChooser = new FileChooser();	
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));

@@ -38,6 +38,7 @@ public class HistogramChartController extends AbstractChartController
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
 		    builder.makeSingleFilter(registrar);
+		    selectLegendPanel();
 		}
 	 }
 	// ------------------------------------------------------

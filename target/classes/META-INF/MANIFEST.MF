@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
-Bnd-LastModified: 1534897307891
+Bnd-LastModified: 1535310967417
 Build-Jdk: 1.8.0_172
 Built-By: adam
 Bundle-Activator: org.cytoscape.cyChart.internal.CyActivator
 Bundle-ManifestVersion: 2
 Bundle-Name: cyChart
 Bundle-SymbolicName: cyChart
-Bundle-Version: 0.1.3
+Bundle-Version: 0.1.4
 Created-By: Apache Maven Bundle Plugin
 Embed-Dependency: *;scope=!provided|!test
 Embed-Transitive: true
