@@ -70,13 +70,10 @@ public class SelectableScatterChart extends AnchorPane
 		yAxis.setLabel(yName);
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
-//		scatter.setBorder(Borders.blueBorder1);
-		AnchorPane.setTopAnchor(scatter, 0.0);
-		AnchorPane.setBottomAnchor(scatter, 0.0);
-		AnchorPane.setLeftAnchor(scatter, 0.0);
-		AnchorPane.setRightAnchor(scatter, 0.0);
+		controller.anchor(scatter);
+		controller.setChart(scatter);
 
-		Node chartPlotArea = getPlotAreaNode();
+		Node chartPlotArea = controller.getPlotAreaNode();
 		if (chartPlotArea != null)
 		{
 			Region rgn = (Region) chartPlotArea;
@@ -132,7 +129,7 @@ public class SelectableScatterChart extends AnchorPane
 		xAxis = (ValueAxis<Number>) scatter.getXAxis();
 		yAxis = (ValueAxis<Number>) scatter.getYAxis();
 		makeSelectionRectangle();
-		addDragSelectionMechanism(getPlotAreaNode());
+		addDragSelectionMechanism(controller.getPlotAreaNode());
 //		addInfoLabel();
 
 		StackPane.setAlignment(selectionRectangle, Pos.TOP_LEFT);
@@ -142,7 +139,11 @@ public class SelectableScatterChart extends AnchorPane
 	private void makeSelectionRectangle()
 	{
 
-//		selectionRectangle = new Rectangle(); 
+		selectionRectangle = new Rectangle(); 
+		selectionRectangle.setOnMouseEntered(event -> { setCursor(selectionRectangle, event); } );
+		selectionRectangle.setOnMouseMoved(event -> { setCursor(selectionRectangle, event); });
+		selectionRectangle.setOnMouseExited(event -> {	setCursor(Cursor.DEFAULT);		});
+
 		selectionRectangle.setManaged(false);
 		selectionRectangle.setOpacity(0.3);
 		selectionRectangle.setFill(Color.CYAN);
@@ -191,14 +192,9 @@ public class SelectableScatterChart extends AnchorPane
 
 	}
 	
-	private void offsetRectangle(Rectangle r, double dx, double dy)
-	{
-//		NumberFormat fmt = new DecimalFormat("0.00");
-//		System.out.println("dx:" + fmt.format(dx) + " dy:" + fmt.format(dy));
-	}
-
-	Node getPlotAreaNode() 	{		return scatter.lookup(".chart-plot-background");	}	
-	Bounds getPlotBounds() 	{		return getPlotAreaNode().getBoundsInParent();	}	
+//
+//	Node getPlotAreaNode() 	{		return controller.getPlotAreaNode(); }	
+//	Bounds getPlotBounds() 	{		return getPlotAreaNode().getBoundsInParent();	}	
 
 	private void onDragged(MouseEvent event) {
 		if (event.isSecondaryButtonDown()) 	return;
@@ -223,7 +219,7 @@ public class SelectableScatterChart extends AnchorPane
 			double oldY = selRectStart.getY();
 			double dx = event.getX() - oldX;
 			double dy = event.getY() - oldY;
-			Bounds chartPlotArea = getPlotBounds();
+			Bounds chartPlotArea = controller.getPlotBounds();
 			double minAllowedX = chartPlotArea.getMinX() + 12;
 			double maxAllowedX = minAllowedX + chartPlotArea.getWidth() + 12;
 			double minAllowedY = chartPlotArea.getMinY() + 12;
@@ -242,7 +238,8 @@ public class SelectableScatterChart extends AnchorPane
 			drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY, option);
 			selRectStart = new Point2D(event.getX(), event.getY());
 		}
-		setAxisBounds();
+		if (controller.isInteractive()) 
+			setAxisBounds();
 	}
 
 	Rectangle getAxisScale()
@@ -256,12 +253,11 @@ public class SelectableScatterChart extends AnchorPane
 	
 	Rectangle getPlotFrame()
 	{
-		Node chartPlotArea = getPlotAreaNode() ;
+		Node chartPlotArea = controller.getPlotAreaNode() ;
 		if (chartPlotArea == null) return new Rectangle(0,0,0,0);
 		double w = chartPlotArea.getLayoutBounds().getWidth();
 		double h = chartPlotArea.getLayoutBounds().getHeight();
 		return new Rectangle(chartPlotArea.getLayoutX(),chartPlotArea.getLayoutY(),w, h);	
-		
 	}	
 	/**----------------------------------------------------------------------------------
 	 * Adds a mechanism to select an area in the chart 
@@ -299,7 +295,6 @@ public class SelectableScatterChart extends AnchorPane
 			setAxisBounds();
 			selRectStart = selRectEnd = null;
 			selectionRectangleScaleDef = rectDef(selectionRectangle, getPlotFrame());
-//			makeSelectionRect(selectionRectangle);
 			requestFocus();		// needed for the key event handler to receive events
 			ev.consume();
 		});
@@ -387,12 +382,12 @@ public class SelectableScatterChart extends AnchorPane
 	Range xRange = null, yRange = null; 
 	
 	//-------------------------------------------------------------------------------
-	boolean verbose = false;
+//	boolean verbose = false;
 	public void resized()
 	{
 		Rectangle r = getScaleRect(selectionRectangleScaleDef, getPlotFrame());
 		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
-		if (verbose) System.out.println("resized");
+//		if (verbose) System.out.println("resized");
 	}
 
 	//-------------------------------------------------------------------------------
@@ -417,6 +412,7 @@ public class SelectableScatterChart extends AnchorPane
 		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
 		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
 		double yMax = converter.frameToScale(selectionMinY, scatter, true);
+		
 		
 		int found = countInRect(scatter, xMin, xMax, yMin, yMax);
 		int total = getDataSize(scatter);
@@ -478,107 +474,107 @@ public class SelectableScatterChart extends AnchorPane
 //	double SLOP = 4;
 	double offsetX = 0, offsetY = 0;
 	
-	private void makeSelectionRect(Rectangle marquee)
-	{
-		marquee.getStyleClass().add("selection");
-		marquee.setOpacity(0.3);
-		marquee.setFill(Color.CYAN);
-
-		marquee.setOnMouseReleased(event -> {
-			if (resizing && isRectangleSizeTooSmall())
-				return;
-			setAxisBounds();		// send new bounds to the controller
-			selRectStart = selRectEnd = null;
-			resizing = false;
-			requestFocus(); // needed for the key event handler to receive events
-			event.consume();
-		});
-
-//		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
-
-		marquee.setOnMouseEntered(event -> { setCursor(marquee, event); } );
-		marquee.setOnMouseMoved(event -> { setCursor(marquee, event); });
-		marquee.setOnMouseExited(event -> {	marquee.setCursor(Cursor.DEFAULT);		});
-		
-		marquee.setOnMousePressed(event -> {
+//	private void makeSelectionRect(Rectangle marquee)
+//	{
+//		marquee.getStyleClass().add("selection");
+//		marquee.setOpacity(0.3);
+//		marquee.setFill(Color.CYAN);
+//
+//		marquee.setOnMouseReleased(event -> {
+//			if (resizing && isRectangleSizeTooSmall())
+//				return;
+//			setAxisBounds();		// send new bounds to the controller
+//			selRectStart = selRectEnd = null;
+//			resizing = false;
+//			requestFocus(); // needed for the key event handler to receive events
+//			event.consume();
+//		});
+//
+////		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
+//
+//	marquee.setOnMouseEntered(event -> { setCursor(marquee, event); } );
+//	marquee.setOnMouseMoved(event -> { setCursor(marquee, event); });
+//	marquee.setOnMouseExited(event -> {	marquee.setCursor(Cursor.DEFAULT);		});
+//		
+//		marquee.setOnMousePressed(event -> {
+////			if (event.isSecondaryButtonDown()) 	return;
+//			Pos pos = RectangleUtil.getPos(event, marquee);
+//			resizing = RectangleUtil.inCorner(pos);
+//			if (resizing)
+//				selRectStart = RectangleUtil.oppositeCorner(event,marquee);
+//			else
+//			{
+//				selRectStart = new Point2D(event.getX(), event.getY());
+//				offsetX = event.getX() - marquee.getX();
+//				offsetY = event.getY() - marquee.getY();
+//			}
+//			event.consume();
+//
+//		});
+//
+//		marquee.setOnMouseDragged(event -> {
 //			if (event.isSecondaryButtonDown()) 	return;
-			Pos pos = RectangleUtil.getPos(event, marquee);
-			resizing = RectangleUtil.inCorner(pos);
-			if (resizing)
-				selRectStart = RectangleUtil.oppositeCorner(event,marquee);
-			else
-			{
-				selRectStart = new Point2D(event.getX(), event.getY());
-				offsetX = event.getX() - marquee.getX();
-				offsetY = event.getY() - marquee.getY();
-			}
-			event.consume();
-
-		});
-
-		marquee.setOnMouseDragged(event -> {
-			if (event.isSecondaryButtonDown()) 	return;
-			double h = event.getX();
-			double v = event.getY();
-			if (resizing)
-			{
-				// store current cursor position
-				selRectEnd = computeRectanglePoint(h, v);
-				if (selRectStart == null)
-					selRectStart = RectangleUtil.oppositeCorner(event, marquee);
-				if (selRectStart == null) return;
-				if (selRectEnd == null)
-					selRectEnd = new Point2D(event.getX(), event.getY());
-
-				marquee.setX(Math.min(selRectStart.getX(), selRectEnd.getX()));
-				marquee.setY(Math.min(selRectStart.getY(), selRectEnd.getY()));
-				marquee.setWidth(Math.abs(selRectStart.getX() - selRectEnd.getX()));
-				marquee.setHeight(Math.abs(selRectStart.getY() - selRectEnd.getY()));
-//				System.out.println("x:" + x + " y:" + y);
-			} else
-			{
-				Bounds chartPlotArea = getPlotBounds();
-				double minAllowed = chartPlotArea.getMinX();
-				double maxAllowed = minAllowed + chartPlotArea.getWidth()-30;
-				boolean inRange = h >= minAllowed && h <= maxAllowed;
-				if (!inRange) return;
-
-				double minAllowedY = chartPlotArea.getMinY();
-				double maxAllowedY = minAllowedY + chartPlotArea.getHeight()-30;		
-				inRange = v >= minAllowedY && v <= maxAllowedY;
-				if (!inRange) return;
-				
- 				double oldX = selRectStart.getX();
-				double oldY = selRectStart.getY();
-				double dx = h - oldX - offsetX;
-				double dy = v - oldY - offsetY;
-
-				if (selectionRectangle.getX() < minAllowed && dx < 0) return;
-				if ((selectionRectangle.getX() + selectionRectangle.getWidth() > maxAllowed) && dx > 0) return;
-				if (selectionRectangle.getY() < minAllowedY && dy < 0) return;
-				if ((selectionRectangle.getY() + selectionRectangle.getHeight() > maxAllowedY) && dy > 0) return;
-
-				marquee.setX(oldX + dx);
-				marquee.setY(oldY + dy);
-				selRectStart = new Point2D(h, v);
-			}
-			event.consume();
-		});
-		
-		
-		marquee.setOnMouseReleased(event -> {
-//			if (selRectStart == null || selRectEnd == null) 		return;
-//			if (isRectangleSizeTooSmall()) 							return;
-//			gateDef  = rectDef(displayGate, getPlotFrame());
-			setAxisBounds();
-			selRectStart = selRectEnd = null;
-			requestFocus();		// needed for the key event handler to receive events
-			event.consume();
-		
-		});
-		
-	}
-
+//			double h = event.getX();
+//			double v = event.getY();
+//			if (resizing)
+//			{
+//				// store current cursor position
+//				selRectEnd = computeRectanglePoint(h, v);
+//				if (selRectStart == null)
+//					selRectStart = RectangleUtil.oppositeCorner(event, marquee);
+//				if (selRectStart == null) return;
+//				if (selRectEnd == null)
+//					selRectEnd = new Point2D(event.getX(), event.getY());
+//
+//				marquee.setX(Math.min(selRectStart.getX(), selRectEnd.getX()));
+//				marquee.setY(Math.min(selRectStart.getY(), selRectEnd.getY()));
+//				marquee.setWidth(Math.abs(selRectStart.getX() - selRectEnd.getX()));
+//				marquee.setHeight(Math.abs(selRectStart.getY() - selRectEnd.getY()));
+////				System.out.println("x:" + x + " y:" + y);
+//			} else
+//			{
+//				Bounds chartPlotArea = controller.getPlotBounds();
+//				double minAllowed = chartPlotArea.getMinX();
+//				double maxAllowed = minAllowed + chartPlotArea.getWidth()-30;
+//				boolean inRange = h >= minAllowed && h <= maxAllowed;
+//				if (!inRange) return;
+//
+//				double minAllowedY = chartPlotArea.getMinY();
+//				double maxAllowedY = minAllowedY + chartPlotArea.getHeight()-30;		
+//				inRange = v >= minAllowedY && v <= maxAllowedY;
+//				if (!inRange) return;
+//				
+// 				double oldX = selRectStart.getX();
+//				double oldY = selRectStart.getY();
+//				double dx = h - oldX - offsetX;
+//				double dy = v - oldY - offsetY;
+//
+//				if (selectionRectangle.getX() < minAllowed && dx < 0) return;
+//				if ((selectionRectangle.getX() + selectionRectangle.getWidth() > maxAllowed) && dx > 0) return;
+//				if (selectionRectangle.getY() < minAllowedY && dy < 0) return;
+//				if ((selectionRectangle.getY() + selectionRectangle.getHeight() > maxAllowedY) && dy > 0) return;
+//
+//				marquee.setX(oldX + dx);
+//				marquee.setY(oldY + dy);
+//				selRectStart = new Point2D(h, v);
+//			}
+//			event.consume();
+//		});
+//		
+//		
+//		marquee.setOnMouseReleased(event -> {
+////			if (selRectStart == null || selRectEnd == null) 		return;
+////			if (isRectangleSizeTooSmall()) 							return;
+////			gateDef  = rectDef(displayGate, getPlotFrame());
+//			setAxisBounds();
+//			selRectStart = selRectEnd = null;
+//			requestFocus();		// needed for the key event handler to receive events
+//			event.consume();
+//		
+//		});
+//		
+//	}
+//
 	//-------------------------------------------------------------------------------
 	void setCursor(Rectangle r, MouseEvent event)
 	{

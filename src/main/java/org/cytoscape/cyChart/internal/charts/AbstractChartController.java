@@ -12,6 +12,9 @@ import java.util.ResourceBundle;
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.NumberField;
 import org.cytoscape.model.CyColumn;
@@ -20,6 +23,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -30,6 +34,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -63,13 +68,33 @@ abstract public class AbstractChartController implements Initializable {
 	protected CheckBox logXTransform;
 	protected ChoiceBox<String> yAxisChoices;
 	protected CheckBox logYTransform;
+	protected CheckBox interactive;
+	public boolean isInteractive() {			return interactive.isSelected();	}
+
 	protected ValueAxis<Number> xAxis;
 	protected ValueAxis<Number> yAxis;
 	XYChart<Number,Number> theChart;
-	protected void setChart(XYChart<Number,Number> c) { theChart = c; }
+	public void setChart(XYChart<Number,Number> c) { theChart = c; }
 	protected XYChart<Number,Number> getChart() 	{ return theChart; }
-	public Node getPlotAreaNode() 		{		return theChart.lookup(".chart-plot-background");	}	
-	public Bounds getPlotBounds()		{		return getPlotAreaNode().getBoundsInParent();		}
+	public Node getPlotAreaNode() 		{		return theChart == null ? null : theChart.lookup(".chart-plot-background");	}	
+	public Bounds getPlotBounds()		{		return theChart == null ? null : getPlotAreaNode().getBoundsInParent();		}
+	public int getDataSize()			
+	{		
+		if (theChart == null)	return 0;
+
+		ObservableList<Series<Number,Number>> data = theChart.getData();
+		if (data.size() == 0)  return 0;
+		 Series<Number,Number> series = data.get(0);
+		if (series == null) return 0;
+		return series.getData().size();		
+	}
+	
+//	public Rectangle getPlotBoundsRect()		
+//	{
+//		Bounds b= getPlotBounds();
+//		return new Rectangle(b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight());		
+//		
+//	}
 	HBox header1, footer1, footer2, footer3;
 	
 	static Font numberFont = new Font("SansSerif", 10);
@@ -139,7 +164,10 @@ abstract public class AbstractChartController implements Initializable {
 		copyImage.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent event) {	copyImage();	}
 		});
-		header1 = new HBox(8, makeFilter, copyImage);
+		interactive = new CheckBox("Interactive");
+		interactive.setAlignment(Pos.CENTER);
+		interactive.setTranslateY(4);
+		header1 = new HBox(8, makeFilter, copyImage, interactive);
 		header1.setMinHeight(30);
 		header1.setMaxHeight(30);
 		header1.setBorder(Borders.emptyBorder);
@@ -152,7 +180,8 @@ abstract public class AbstractChartController implements Initializable {
 		xAxisChoices = new ChoiceBox<String>();
 		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
 		    @Override public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
-		        setLogXDistribution(new_val);    } 	};
+		        setLogXDistribution(new_val);
+		        System.out.println("log changed");} 	};
 
 		logXTransform = new CheckBox("Log");
 		logXTransform.selectedProperty().addListener(logXChange);
@@ -233,8 +262,22 @@ abstract public class AbstractChartController implements Initializable {
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
 	    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX), y, new Range(startY, endY));
 	    builder.makeCompositeFilter(registrar);
+	    selectLegendPanel();
 	 }
 	 
+	//-------------------------------------------------------------
+	protected void selectLegendPanel() {
+
+	CySwingApplication desktopApp = registrar.getService(CySwingApplication.class);
+		if (desktopApp == null) return;
+		CytoPanel cytoPanelWest = desktopApp.getCytoPanel(CytoPanelName.WEST);
+		if (cytoPanelWest == null) return;
+		int index = cytoPanelWest.indexOfComponent("org.cytoscape.Filter");
+		if (index >= 0)
+			cytoPanelWest.setSelectedIndex(index);
+	}
+	
+	//-------------------------------------------------------------
 	private void copyImage() {
 	    FileChooser fileChooser = new FileChooser();	
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
@@ -385,16 +428,17 @@ abstract public class AbstractChartController implements Initializable {
 	public double getSelectionTop()		{ 	return startY;	}
 	public double getSelectionBottom()	{ 	return endY;	}
 
-	// ------------------------------------------------------
-	public void setRangeValues(Range r) {
-		if (r == null) return;
-		setRangeValues(r.min, r.max);
-	}
 
+	// ------------------------------------------------------
 	public Range getXRange()
 	{
 		if (xAxis == null) xAxis = (ValueAxis<Number>) theChart.getXAxis();  //return Range.EMPTY;
 		return new Range(xAxis.getLowerBound(), xAxis.getUpperBound());
+	}
+	// ------------------------------------------------------
+	public void setRangeValues(Range r) {
+		if (r == null) return;
+		setRangeValues(r.min, r.max);
 	}
 	public void setRangeValues(double selStart, double selEnd) {
 		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;
@@ -413,7 +457,7 @@ abstract public class AbstractChartController implements Initializable {
 	}
 
 	// ------------------------------------------------------
-	protected void anchor(Node n)					{	anchor(n,0);	}
+	public void anchor(Node n)					{	anchor(n,0);	}
 	private void anchor(Node n, double margin)	{	anchor(n, margin, margin, margin, margin);	}
 	private void anchor(Node n, double top, double left, double bottom, double right )
 	{
@@ -421,6 +465,5 @@ abstract public class AbstractChartController implements Initializable {
 		AnchorPane.setLeftAnchor(n, left);
 		AnchorPane.setBottomAnchor(n, bottom);
 		AnchorPane.setRightAnchor(n, right);
-		
 	}
 }

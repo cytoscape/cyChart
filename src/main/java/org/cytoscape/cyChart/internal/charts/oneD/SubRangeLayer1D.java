@@ -70,7 +70,7 @@ public class SubRangeLayer1D
 		selectionH = getSubRangeGroup(); 
 		selectionH.setVisible(true);
 		selectionH.setManaged(false);
-		update(0);
+		update(0, false);
 		selectionH.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
 		selectionH.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
 		stackPane.getChildren().add(selectionH);
@@ -80,6 +80,7 @@ public class SubRangeLayer1D
 	    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> chartBoundsChanged();
 	    stackPane.widthProperty().addListener(paneSizeListener);
 	    stackPane.heightProperty().addListener(paneSizeListener);  	    
+		hideSelection();
 	}
 
 
@@ -224,7 +225,7 @@ public class SubRangeLayer1D
 			selectionH.setVisible(true);
 			dragging = true;
 			setSelection(event.getX()-2, event.getX()+2);
-			update(y);
+			update(y, controller.isInteractive());
 		}
 		event.consume();
 	}
@@ -263,7 +264,8 @@ public class SubRangeLayer1D
 			offsetSelection(delta);
 		else 		
 			selectionMovingEnd = h;
-		update(v);
+		
+		update(v, controller.isInteractive());
 		reportRange();
 		previousH = h;
 	}
@@ -285,6 +287,7 @@ public class SubRangeLayer1D
 	
 	
 	private void onReleased(MouseEvent event) {
+//		System.out.println("onReleased: " + dragging);
 		if (!dragging) return;
 		boolean ok = selectionAnchor > 0 && selectionMovingEnd > 0;
 		if (ok && isSelectionSizeTooSmall()) 
@@ -297,10 +300,11 @@ public class SubRangeLayer1D
 		Node chartPlotArea = controller.getPlotAreaNode();
 		double maxYAllowed = chartPlotArea.getLayoutBounds().getHeight();
 		boolean inVRange = v >= minYAllowed && v <= maxYAllowed;
+//		System.out.println("onReleased ok: " + ok);
 		if (!inVRange) 	return;
 		if (ok)
 		{
-			update(v);
+			update(v, true);
 			reportRange();
 			setSelection(-1, -1); 
 			previousH = -1;
@@ -316,13 +320,10 @@ public class SubRangeLayer1D
 	public void setRangeValues() {
 		Range r = converter.frameToScaleRange(selectionAnchor, selectionMovingEnd, chart);
 		controller.setRangeValues(r);	
-		System.out.println("setRangeValues1D");
+//		System.out.println("setRangeValues1D");
 	}
 	
 	public void setRangeValues(double v) {
-		double left = Math.min(selectionAnchor, selectionMovingEnd);
-		double right = Math.max(selectionAnchor, selectionMovingEnd);
-		setRangeValues(left, right, v);
 	}
 	
 	public void setRangeValues(double selAnchorH, double selEndH, double v) {
@@ -351,14 +352,14 @@ public class SubRangeLayer1D
 		
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
-		System.out.println(String.format("setAxisBounds: %.2f -  %.2f ", xMin, xMax));
+//		System.out.println(String.format("setAxisBounds: %.2f -  %.2f ", xMin, xMax));
 		if (Double.isNaN(xMin) || Double.isNaN(xMax)) return;
 		if (Double.isInfinite(xMin) || Double.isInfinite(xMax)) return;
 		double h0 = converter.scaleToFrame(xMin, chart, false);
 		double h1 = converter.scaleToFrame(xMax, chart, false);
 		double v0 = converter.scaleToFrame(controller.getSelectionTop(), chart, true);
 		setSelection(h0, h1);
-		update(v0);
+		update(v0, false);
 	}
 
 	//-----------------------------------------------------------------
@@ -383,14 +384,14 @@ public class SubRangeLayer1D
 //		selectRange(chart, controller.getSelectionStart(), controller.getSelectionEnd());
 //	}
 	
-	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
-	{
-		List<XYChart.Series<Number, Number>> dataList = chart.getData();
-		if (dataList==null || dataList.isEmpty()) return;
-//		XYChart.Series<Number, Number> data = chart.getData().get(0);
-		controller.selectRange(xAxis.getLabel(), xMin, xMax);
-	}
-	
+//	private void selectRange(XYChart<Number, Number> chart, double xMin, double xMax)
+//	{
+//		List<XYChart.Series<Number, Number>> dataList = chart.getData();
+//		if (dataList==null || dataList.isEmpty()) return;
+////		XYChart.Series<Number, Number> data = chart.getData().get(0);
+//		controller.selectRange(xAxis.getLabel(), xMin, xMax);
+//	}
+//	
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
 		selectionH.setVisible(false);
@@ -425,7 +426,7 @@ public class SubRangeLayer1D
 	//-----------------------------------------------------------------
 	// selectionAnchor and selectionMovingEnd hold positions we use to position the H
 	
-	public void update(double v)			// these are in frame (mouse) coords
+	public void update(double v, boolean interactive)			// these are in frame (mouse) coords
 	{
 		Bounds bounds = controller.getPlotBounds();
 		double offX = bounds.getMinX();
@@ -449,7 +450,9 @@ public class SubRangeLayer1D
 		setLine(leftBar, x1, top, x1, bottom);
 		setLine(rightBar, x2, top, x2, bottom);
 		setLine(crossBar, x1, y, x2, y);
-		setRangeValues(v);
+		double min = Math.min(selectionAnchor, selectionMovingEnd);
+		double max = Math.max(selectionAnchor, selectionMovingEnd);
+		if (interactive) setRangeValues(min, max, v);
 	}
 
 	private void setLine(Line bar, double x1, double y1, double x2, double y2) {

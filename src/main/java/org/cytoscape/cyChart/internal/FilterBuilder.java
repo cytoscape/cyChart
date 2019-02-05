@@ -26,7 +26,7 @@ public class FilterBuilder {
 		yColumnName = yCol;
 		yRange = inYRange;
 	}
-	
+	//---------------------------------------------------------------
 	public void makeCompositeFilter(CyServiceRegistrar registrar)
 	{
 		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
@@ -37,6 +37,19 @@ public class FilterBuilder {
 		
 	}
 	
+	private String makeComposite() {
+		
+		String filter1 = makeString(true);
+		String filter2 = makeString(false);
+		StringBuilder compos = new StringBuilder();
+		compos.append("{\n\"id\" : \"CompositeFilter\",\n");
+		compos.append("\"parameters\" : {\n \"type\" : \"ALL\"\n},\n");
+		compos.append("\"transformers\" : [ \n");
+		compos.append(filter1 + ", \n" + filter2);
+		compos.append("] \n}\n");		
+		return compos.toString();
+	}	
+	//---------------------------------------------------------------
 	public void makeSingleFilter(CyServiceRegistrar registrar)
 	{
 		CommandExecutorTaskFactory commandTF = registrar.getService(CommandExecutorTaskFactory.class);
@@ -46,7 +59,7 @@ public class FilterBuilder {
 		else System.err.println("CommandExecutorTaskFactory or TaskManager is null");
 		
 	}
-	
+	//---------------------------------------------------------------
 	private void execFilterCommand(TaskManager<?,?> taskManager, CommandExecutorTaskFactory commandTF, String json)
 	{
 //		System.out.println(json);
@@ -55,13 +68,9 @@ public class FilterBuilder {
 		args.put("json",json);
 		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
 		taskManager.execute(ti);
-		showControlPanel();
 	}
+	//---------------------------------------------------------------
 	
-	private void showControlPanel() {
-		// TODO issue #15   https://github.com/cytoscape/cyChart/issues/15
-		
-	}
 	public String makeString(boolean isX)
 	{
 		String criterion, columnName;
@@ -96,19 +105,6 @@ public class FilterBuilder {
 	{
 		b.append(inQuotes(attr) + " : " + value  );
 		if (addComma)  b.append(",\n");
-	}
-	
-	public String makeComposite() {
-		
-		String filter1 = makeString(true);
-		String filter2 = makeString(false);
-		StringBuilder compos = new StringBuilder();
-		compos.append("{\n\"id\" : \"CompositeFilter\",\n");
-		compos.append("\"parameters\" : {\n \"type\" : \"ALL\"\n},\n");
-		compos.append("\"transformers\" : [ \n");
-		compos.append(filter1 + ", \n" + filter2);
-		compos.append("] \n}\n");		
-		return compos.toString();
 	}
 		
 }
