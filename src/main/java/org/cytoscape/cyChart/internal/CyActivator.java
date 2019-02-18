@@ -49,24 +49,24 @@ public class CyActivator extends AbstractCyActivator {
 		Properties props = new Properties();
 		props.setProperty(MENU_GRAVITY, "0.1");
 		props.setProperty(PREFERRED_MENU, "Tools");
-		props.setProperty(TITLE, "Histogram Filter...");
+		props.setProperty(TITLE, "Plot Histogram...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "dialog");
-		props.setProperty(COMMAND_DESCRIPTION, "Launch a histogram filter in a separate window");
-		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch Cytoscape's internal CyChart in a separate window.  " );
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a histogram chart in a separate window");
+		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch a Cytoscap CyChart in a separate window.  " );
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
 		registerService(bc, histoChart, TaskFactory.class, props);
 
 		ColumnFilterTaskFactory histoChart2 = new ColumnFilterTaskFactory(manager);
 		props = new Properties();
-		props.setProperty(TITLE, "Histogram filter...");
+		props.setProperty(TITLE, "Plot Histogram...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "dialog");
-		props.setProperty(COMMAND_DESCRIPTION, "Launch a Chart Filter in a separate window");
-		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch Cytoscape's internal CyChart in a separate window.  "       );
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a Histogram chart in a separate window");
+		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch a Cytoscap CyChart in a separate window.  "       );
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
 		registerService(bc, histoChart2, TableColumnTaskFactory.class, props);
@@ -74,25 +74,25 @@ public class CyActivator extends AbstractCyActivator {
 		ScatterFilterTaskFactory scatChart = new ScatterFilterTaskFactory(manager);
 		props = new Properties();
 		props.setProperty(PREFERRED_MENU, "Tools");
-		props.setProperty(TITLE, "Scatter Filter...");
+		props.setProperty(TITLE, "Plot Scatter...");
 		props.setProperty(MENU_GRAVITY, "0.3");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "scatter");
-		props.setProperty(COMMAND_DESCRIPTION, "Launch a Scatter Filter in a separate window");
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a Scatter chart in a separate window");
 		props.setProperty(COMMAND_LONG_DESCRIPTION, 
-		                  "Launch Cytoscape's internal 2D CyChart in a separate window.  ");
+		                  "Launch a Cytoscap CyChart in a separate window.  ");
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"id\":\"my window\"}");
 		registerService(bc, scatChart, TaskFactory.class, props);
 	
 		Column2DFilterTaskFactory scatChart2 = new Column2DFilterTaskFactory(manager);
 		props = new Properties();
-		props.setProperty(TITLE, "Scatter filter...");
+		props.setProperty(TITLE, "Plot Scatter...");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
 		props.setProperty(COMMAND, "column");
-		props.setProperty(COMMAND_DESCRIPTION, "Launch a two dimenional graphical filter.");
-		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch Cytoscape's 2D CyChart in a separate window.  "       );
+		props.setProperty(COMMAND_DESCRIPTION, "Launch a Scatter chart in a separate window");
+		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch a Cytoscap CyChart in a separate window.  "       );
 		props.setProperty(COMMAND_SUPPORTS_JSON, "false");
 		registerService(bc, scatChart2, TableColumnTaskFactory.class, props);
 
