@@ -64,7 +64,7 @@ public class FilterBuilder {
 	{
 //		System.out.println(json);
 		Map<String, Object> args = new HashMap<>();
-		args.put("name","scatter filter");
+		args.put("name","cychart filter");
 		args.put("json",json);
 		TaskIterator ti = commandTF.createTaskIterator("filter","create", args, null);
 		taskManager.execute(ti);
