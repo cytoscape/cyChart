@@ -7,7 +7,7 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 
 public class HistogramFilterTask extends AbstractEmptyObservableTask {
-	final private String title = "Histogram Filter";
+	final private String title = "Histogram Plot";
 
 	@ProvidesTitle
 	public String getTitle() {		return title;	}
