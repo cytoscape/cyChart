@@ -10,7 +10,7 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 	public String title = null;
 
 	@ProvidesTitle
-	public String getTitle() {		return "Starting Cytoscape Scatter Filter";	}
+	public String getTitle() {		return "Starting Cytoscape Scatter Plot";	}
 
 	@Override	public <R> R getResults(Class<? extends R> type) {		return getIDResults(type, null);	}
 
