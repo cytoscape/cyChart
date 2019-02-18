@@ -52,7 +52,7 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(TITLE, "Plot Histogram...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
-		props.setProperty(COMMAND, "dialog");
+		props.setProperty(COMMAND, "histogram");
 		props.setProperty(COMMAND_DESCRIPTION, "Launch a histogram chart in a separate window");
 		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch a Cytoscap CyChart in a separate window.  " );
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -64,7 +64,7 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(TITLE, "Plot Histogram...");
 		props.setProperty(IN_MENU_BAR, "true");
 		props.setProperty(COMMAND_NAMESPACE, "cychart");
-		props.setProperty(COMMAND, "dialog");
+		props.setProperty(COMMAND, "histogram");
 		props.setProperty(COMMAND_DESCRIPTION, "Launch a Histogram chart in a separate window");
 		props.setProperty(COMMAND_LONG_DESCRIPTION,  "Launch a Cytoscap CyChart in a separate window.  "       );
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
