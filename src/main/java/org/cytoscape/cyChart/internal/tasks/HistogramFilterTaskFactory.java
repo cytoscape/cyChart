@@ -13,6 +13,10 @@ public class HistogramFilterTaskFactory extends AbstractTaskFactory {
 	}
 
 	public boolean isReady() {		return true;	}
-	public TaskIterator createTaskIterator() {		return new TaskIterator(new HistogramFilterTask(manager));	}
+	
+	public TaskIterator createTaskIterator() 
+	{		
+		return new TaskIterator(new HistogramFilterTask(manager));
+	}
 }
 

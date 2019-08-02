@@ -147,11 +147,11 @@ abstract public class AbstractChartController implements Initializable {
 			{   setYParameters(newV);   }	
 		};
 		populateColumnChoices();
-		xAxisChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
 		xAxisChoices.getSelectionModel().select(0);
-		yAxisChoices.getSelectionModel().selectedIndexProperty().addListener(yListener);
 		yAxisChoices.getSelectionModel().select(1);
 		setParameters();
+		xAxisChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
+		yAxisChoices.getSelectionModel().selectedIndexProperty().addListener(yListener);
 	}
 	// ------------  
 	private HBox makeHeader() {
@@ -262,11 +262,11 @@ abstract public class AbstractChartController implements Initializable {
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
 	    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX), y, new Range(startY, endY));
 	    builder.makeCompositeFilter(registrar);
-	    selectLegendPanel();
+	    selectFilterPanel();
 	 }
 	 
 	//-------------------------------------------------------------
-	protected void selectLegendPanel() {
+	protected void selectFilterPanel() {
 
 	CySwingApplication desktopApp = registrar.getService(CySwingApplication.class);
 		if (desktopApp == null) return;
@@ -417,8 +417,9 @@ abstract public class AbstractChartController implements Initializable {
 	}
 
 	// ------------------------------------------------------
-	protected double safelog(double d) {
-		if (d <= 0) return 0;
+	protected double safelog(double d) {			//  BAD STATS!
+		if (d <= 0) 			return 0;			
+		if (Double.isNaN(d)) 	return 0;
 		return Math.log(d);
 	}
 	// ------------------------------------------------------
@@ -427,7 +428,6 @@ abstract public class AbstractChartController implements Initializable {
 	public double getSelectionEnd()		{	return endX;	}
 	public double getSelectionTop()		{ 	return startY;	}
 	public double getSelectionBottom()	{ 	return endY;	}
-
 
 	// ------------------------------------------------------
 	public Range getXRange()

@@ -57,7 +57,8 @@ public class NumberField extends TextField
  * NumberFormat
  */
         private void parseAndFormatInput() {
-            try {                String input = getText();
+            try {                
+            	String input = getText();
                 if (input == null || input.length() == 0)     return;
                 Number parsedNumber = nf.parse(input);
                 BigDecimal newValue = new BigDecimal(parsedNumber.toString());

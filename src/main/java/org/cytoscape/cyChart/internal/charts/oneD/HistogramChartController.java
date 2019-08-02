@@ -38,7 +38,7 @@ public class HistogramChartController extends AbstractChartController
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
 		    builder.makeSingleFilter(registrar);
-		    selectLegendPanel();
+		    selectFilterPanel();
 		}
 	 }
 	// ------------------------------------------------------
@@ -50,6 +50,7 @@ public class HistogramChartController extends AbstractChartController
 	// this recreates the entire chart, axes, data series, etc.
 	public void setXParameter(String name)
 	{
+	System.out.println(name);	
 		Histogram1D h1 = getHistogram(name, isXLog);
 		if (h1 == null)  { noHistogram();	return;  }
 		chartBox.getChildren().clear();

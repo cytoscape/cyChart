@@ -12,16 +12,21 @@ public class HistogramFilterTask extends AbstractEmptyObservableTask {
 	@ProvidesTitle
 	public String getTitle() {		return title;	}
 	final private CyChartManager manager;
+	final private CyColumn column;
 
 	//----------------------------------------------------
 	public HistogramFilterTask(CyChartManager mgr) 	{ 	this(mgr, null);	}	
 	
-	public HistogramFilterTask(CyChartManager mgr, CyColumn column) {
+	public HistogramFilterTask(CyChartManager mgr, CyColumn col) {
 		manager = mgr;
-		if (mgr.getCurrentNetwork() == null) return;
-		HistogramFilterDialog	dlog = new HistogramFilterDialog(manager, title, column);
-		dlog.setVisible(true);
+		column = col;
 	}
 
-	public void run(TaskMonitor monitor) {	}
+	public void run(TaskMonitor monitor) 
+	{	
+		if (manager.getCurrentNetwork() == null) return;
+		HistogramFilterDialog	dlog = new HistogramFilterDialog(manager, title, column);
+		dlog.setVisible(true);
+		
+	}
 }

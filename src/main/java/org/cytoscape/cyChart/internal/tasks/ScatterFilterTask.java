@@ -15,22 +15,24 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 	@Override	public <R> R getResults(Class<? extends R> type) {		return getIDResults(type, null);	}
 
 	final CyChartManager manager;
+	CyColumn column = null;
 
 	//----------------------------------------------------
 	public ScatterFilterTask(CyChartManager mgr) {
 		manager = mgr;
-		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
-		chart.setVisible(true);
+//		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
+//		chart.setVisible(true);
 	}
 
-	public ScatterFilterTask(CyChartManager mgr, CyColumn column) {
+	public ScatterFilterTask(CyChartManager mgr, CyColumn col) {
 		manager = mgr;
-		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title, column);
-		chart.setVisible(true);
+		column = col;
 	}
 
 	public void run(TaskMonitor monitor) {
 //		SwingUtilities.invokeLater(new Runnable() {	public void run() {	}	});	
+		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title, column);
+		chart.setVisible(true);
 		}
 
 }
