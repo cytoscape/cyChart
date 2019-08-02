@@ -27,6 +27,7 @@ public class HistogramChartController extends AbstractChartController
 	private static final int INTERACTIVE = 500;
   	private  LineChart<Number, Number> histogramChart;	
 	private SubRangeLayer1D subrangeLayer;
+	private String inColumn;
 	// ------------------------------------------------------
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyColumn column) {
 		super(parent, reg, false);
@@ -106,31 +107,49 @@ public class HistogramChartController extends AbstractChartController
 		
 	}
 	// ------------------------------------------------------
-	private Histogram1D getHistogram(String item, Boolean isLog) {
-	nodeTable = getCurrentNodeTable(); 
-		List<Double> values = null;
-		CyColumn column = nodeTable.getColumn(item);
-		if (column.getType() == Double.class)
+	private Histogram1D getHistogram(String item, Boolean isLog) 
+	{
+		try 
 		{
-			values = nodeTable.getColumn(item).getValues(Double.class);
-			if (values == null || values.isEmpty()) return null;
-			if (isLog)
-				for (int i=0; i<values.size(); i++)
-				{
-					Double dub = values.get(i);
-					values.set(i, safelog(dub));
-				}
-		}
-		else if (column.getType() == Integer.class)
-		{
-			values = new ArrayList<Double>();
-			for (Integer i : nodeTable.getColumn(item).getValues(Integer.class))
+			nodeTable = getCurrentNodeTable(); 
+	
+			List<Double> values = null;
+			CyColumn column = nodeTable.getColumn(item);
+			if (column == null)
 			{
-				double d = isLog ? safelog((double) i) : new Double(i);
-				values.add(d);
+				System.err.println("column is null for " + item);
+				return null;
 			}
+			if (column.getType() == Double.class)
+			{
+				values = nodeTable.getColumn(item).getValues(Double.class);
+				if (values == null || values.isEmpty()) return null;
+				if (isLog)
+					for (int i=0; i<values.size(); i++)
+					{
+						Double dub = values.get(i);
+						if (dub == null) continue;
+						values.set(i, safelog(dub));
+					}
+			}
+			else if (column.getType() == Integer.class)
+			{
+				values = new ArrayList<Double>();
+				for (Integer i : column.getValues(Integer.class))
+				{
+					if (i == null) continue;
+					double d = isLog ? safelog((double) i) : new Double(i);
+					values.add(d);
+				}
+			}
+			return new Histogram1D(item, values);
 		}
-		return new Histogram1D(item, values);
+		catch (Exception ex)
+		{
+			System.err.println("Exception " + ex.toString());
+			ex.printStackTrace();
+		}
+		return null;
 	}
 	// ------------------------------------------------------
 	public void resized()
