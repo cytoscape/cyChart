@@ -18,6 +18,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.NumberField;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -102,7 +103,7 @@ abstract public class AbstractChartController implements Initializable {
 
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
-	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D) {
+	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyColumn column) {
 		chartContainer = parent;
 //		chartContainer.setBorder(Borders.etchedBorder);
 		if (reg == null)
@@ -116,7 +117,7 @@ abstract public class AbstractChartController implements Initializable {
 			nodeTable = getCurrentNodeTable();
 		}
 		
-		HBox top = makeHeader();
+		HBox top = makeHeader(is2D);
 		chartBox = new AnchorPane();			//  the placeholder to contain the chart
 		anchor(chartBox);		
 		VBox bottom = makeFooter(is2D);
@@ -129,13 +130,16 @@ abstract public class AbstractChartController implements Initializable {
 
 		parent.getChildren().add(page);
 		anchor(parent); 
-		initialize(null, null);
+		initialize(null, null, column);
 		
 	}
 	//-------------------------------------------------------------
-	// the FXML callback to define the chart  (FXML is not in use, but this is called thru the constructor)
-	
-	@Override public void initialize(URL url, ResourceBundle rb)
+	// the FXML callback to define the chart  (FXML is not in use, but this is called thru the constructor, with an extra x column argument)
+	public void initialize(URL url, ResourceBundle rb)
+	{
+		initialize( url,  rb, null);
+	}	
+	public void initialize(URL url, ResourceBundle rb, CyColumn column)
 	{
 	    assert( chartContainer != null);
 		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{	
@@ -147,14 +151,19 @@ abstract public class AbstractChartController implements Initializable {
 			{   setYParameters(newV);   }	
 		};
 		populateColumnChoices();
-		xAxisChoices.getSelectionModel().select(0);
+		int xIndex = 0;
+		if (column != null)
+				xAxisChoices.getSelectionModel().select(column.getName());
+		else 	xAxisChoices.getSelectionModel().select(xIndex);
+		
 		yAxisChoices.getSelectionModel().select(1);
+		
 		setParameters();
 		xAxisChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
 		yAxisChoices.getSelectionModel().selectedIndexProperty().addListener(yListener);
 	}
 	// ------------  
-	private HBox makeHeader() {
+	private HBox makeHeader(boolean is2D) {
 		
 		makeFilter = new Button("Create Filter");
 		makeFilter.setOnAction(new EventHandler<ActionEvent>() {
@@ -167,7 +176,17 @@ abstract public class AbstractChartController implements Initializable {
 		interactive = new CheckBox("Interactive");
 		interactive.setAlignment(Pos.CENTER);
 		interactive.setTranslateY(4);
+
+		if (is2D)
+		{
+			curveFit = new Button("Regression");
+			curveFit.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent event) {	linearRegression();	} });
+		}
+
 		header1 = new HBox(8, makeFilter, copyImage, interactive);
+		if (is2D)
+			header1.getChildren().add(curveFit);
 		header1.setMinHeight(30);
 		header1.setMaxHeight(30);
 		header1.setBorder(Borders.emptyBorder);
@@ -255,6 +274,7 @@ abstract public class AbstractChartController implements Initializable {
 	//-------------------------------------------------------------
 	protected Button makeFilter;
 	protected Button copyImage;
+	protected Button curveFit;
 	
 	protected void makeFilter() {
 		if (registrar == null) {		System.err.println("No registrar found");  return; 	}
@@ -265,6 +285,10 @@ abstract public class AbstractChartController implements Initializable {
 	    selectFilterPanel();
 	 }
 	 
+	protected void linearRegression()
+	{
+		System.err.println("linearRegression should be overriden");
+	}
 	//-------------------------------------------------------------
 	protected void selectFilterPanel() {
 
@@ -358,7 +382,8 @@ abstract public class AbstractChartController implements Initializable {
 	protected CyTable getCurrentNodeTable() {
 		if (applicationManager == null)
 			return null;
-		return applicationManager.getCurrentNetwork().getDefaultNodeTable();
+		CyNetwork net = applicationManager.getCurrentNetwork();
+		return net == null ? null : net.getDefaultNodeTable();
 	}
 
 	public void setStatus(String s)	{

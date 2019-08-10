@@ -3,6 +3,7 @@ package org.cytoscape.cyChart.internal.charts.twoD;
 import java.util.List;
 
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
+import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -21,7 +22,7 @@ public class ScatterChartController extends AbstractChartController
 {
 
 	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn col) {
-		super(parent, reg, true);
+		super(parent, reg, true, col);
 		if (col != null) 
 			xAxisChoices.getSelectionModel().select(col.getName());
 	}
@@ -60,13 +61,35 @@ public class ScatterChartController extends AbstractChartController
 			setChart(scatterChartHome.getScatterChart());
 			chartBox.getChildren().add(scatterChartHome);
 
-		    Node legend = scatterChartHome.lookup(".chart-legend");
+     		    Node legend = scatterChartHome.lookup(".chart-legend");
 		    if (legend != null && legend.isVisible()) 
 		    	legend.setVisible(false);
 		}
 	}
 	
+//alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
+	protected void linearRegression()
+	{
+		System.out.println("linearRegression");
+		String x = xAxisChoices.getSelectionModel().getSelectedItem();
+		String y = yAxisChoices.getSelectionModel().getSelectedItem();
+	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+		XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+		int seriesSize = series1.getData().size();
+		double[] X = new double[seriesSize];
+		double[] Y = new double[seriesSize];
+		for (int i=0; i<seriesSize; i++)
+		{
+			Data<Number, Number> d = series1.getData().get(i);
+			X[i] = (double) d.getXValue();
+			Y[i] = (double) d.getYValue();
+		}
+		scatterChartHome.setRegression(new LinearRegression(X, Y));
+	}
 
+	
+	
+	
 	private XYChart.Series<Number, Number>  getDataSeries(String xName, String yName) {
 		nodeTable = getCurrentNodeTable(); 
 		if (nodeTable == null) return null;

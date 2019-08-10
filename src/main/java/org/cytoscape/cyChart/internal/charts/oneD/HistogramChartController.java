@@ -1,7 +1,9 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
@@ -30,9 +32,15 @@ public class HistogramChartController extends AbstractChartController
 	private String inColumn;
 	// ------------------------------------------------------
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyColumn column) {
-		super(parent, reg, false);
+		super(parent, reg, false, column);
 	}
  	
+
+	@Override
+	public void initialize(URL url, ResourceBundle bundle) {
+		super.initialize(url, bundle);
+		
+	}
 	// ------------------------------------------------------
 	@Override protected void makeFilter() {
 		if (registrar != null) {		
@@ -74,7 +82,7 @@ public class HistogramChartController extends AbstractChartController
 		if (chartPlotArea != null)
 		{
 			Region rgn = (Region) chartPlotArea;
-			rgn.setStyle("-fx-background-color: #CCCCCC;");
+			rgn.setStyle("-fx-background-color: #F8F8F8;  -fx-legend-visible: false;");
 			rgn.setBorder(Borders.thinEtchedBorder);
 		}
 

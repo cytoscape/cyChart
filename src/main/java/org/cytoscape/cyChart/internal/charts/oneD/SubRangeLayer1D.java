@@ -22,6 +22,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 
 
 public class SubRangeLayer1D
@@ -39,7 +40,7 @@ public class SubRangeLayer1D
 	private ValueAxis<Number> yAxis;
 	double chartOffsetX, chartOffsetY;
 	private HistogramChartController controller;
-	private Group selectionH;
+	private Group selectionGroup;
 //	private Label infoLabel;
 	private Label positionLabel;
 	FrameScaleConverter converter = new FrameScaleConverter();
@@ -67,13 +68,13 @@ public class SubRangeLayer1D
 		xAxis = (ValueAxis<Number>) chart.getXAxis();
 		yAxis = (ValueAxis<Number>) chart.getYAxis();
 		
-		selectionH = getSubRangeGroup(); 
-		selectionH.setVisible(true);
-		selectionH.setManaged(false);
+		selectionGroup = getSubRangeGroup(); 
+		selectionGroup.setVisible(true);
+		selectionGroup.setManaged(false);
 		update(0, false);
-		selectionH.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
-		selectionH.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
-		stackPane.getChildren().add(selectionH);
+		selectionGroup.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
+		selectionGroup.setStyle("-fx-fillcolor: CYAN; -fx-strokewidth: 4;");
+		stackPane.getChildren().add(selectionGroup);
 
 		addDragSelectionMechanism();
 		addInfoLabel();
@@ -172,7 +173,7 @@ public class SubRangeLayer1D
 		hitSpot = testHit(x);
 //		System.out.println(hitSpot);
 		Cursor c = Cursor.DEFAULT;
-		if (selectionH.isVisible())
+		if (selectionGroup.isVisible())
 		{
 			switch (hitSpot)
 			{
@@ -204,7 +205,7 @@ public class SubRangeLayer1D
 		
 		
 		
-		boolean vis = selectionH.isVisible();
+		boolean vis = selectionGroup.isVisible();
 		hitSpot = testHit(x + chartOffsetX);
 		double right = Math.max(selectionAnchor, selectionMovingEnd);
 		double left = Math.min(selectionAnchor, selectionMovingEnd);
@@ -222,7 +223,7 @@ public class SubRangeLayer1D
 		}
 		else
 		{
-			selectionH.setVisible(true);
+			selectionGroup.setVisible(true);
 			dragging = true;
 			setSelection(event.getX()-2, event.getX()+2);
 			update(y, controller.isInteractive());
@@ -346,8 +347,8 @@ public class SubRangeLayer1D
 		disableAutoRanging();
 		if (selectionAnchor < 0 || selectionMovingEnd < 0)
 		{
-			selectionAnchor = selectionH.getLayoutX();
-			selectionMovingEnd = selectionH.getLayoutX() + selectionH.getBoundsInLocal().getWidth();
+			selectionAnchor = selectionGroup.getLayoutX();
+			selectionMovingEnd = selectionGroup.getLayoutX() + selectionGroup.getBoundsInLocal().getWidth();
 		}
 		
 		double xMin = controller.getSelectionStart();
@@ -394,12 +395,13 @@ public class SubRangeLayer1D
 //	
 	public void hideSelection() {
 		selectionAnchor = selectionMovingEnd = -1;
-		selectionH.setVisible(false);
+		selectionGroup.setVisible(false);
 	}
 	
 	//-----------------------------------------------------------------
 	private Group groupH = new Group();
 	private Line leftBar, crossBar, rightBar;
+	private Rectangle selection;
 	int resizing = 0;
 	double dragStart = -1;
 	double SLOP = 9;
@@ -413,12 +415,24 @@ public class SubRangeLayer1D
 		leftBar = new Line(20, 10, 20, 399);
 		crossBar = new Line(20, 100, 220, 100);
 		rightBar = new Line(220, 10, 220, 399);
+		selection = new Rectangle(20, 100, 220, 100);
 //		update(0,100, 0);
-		leftBar.setStrokeWidth(2);		leftBar.setStroke(Color.PURPLE);
-		crossBar.setStrokeWidth(4);		crossBar.setStroke(Color.PURPLE);
-		rightBar.setStrokeWidth(2);		rightBar.setStroke(Color.PURPLE);
+		Color c = Color.PURPLE;
+		leftBar.setStrokeWidth(2);		leftBar.setStroke(c);
+		crossBar.setStrokeWidth(4);		crossBar.setStroke(c);
+		rightBar.setStrokeWidth(2);		rightBar.setStroke(c);
+
+		if (selection != null)
+		{
+		selection.setStrokeWidth(4);	selection.setStroke(c);   selection.setFill(c);
+		}
+		
 		groupH.getChildren().clear();
 		groupH.getChildren().addAll(leftBar, crossBar, rightBar);
+		
+		if (selection != null)
+			groupH.getChildren().add(selection);
+			
 		groupH.setOpacity(0.3);
 		groupH.setMouseTransparent(true);
 		return groupH;
@@ -450,6 +464,10 @@ public class SubRangeLayer1D
 		setLine(leftBar, x1, top, x1, bottom);
 		setLine(rightBar, x2, top, x2, bottom);
 		setLine(crossBar, x1, y, x2, y);
+		selection.setX(x1);						// HACKS
+		selection.setLayoutY(top-100);
+		selection.setWidth(x2-x1);
+		selection.setHeight(bottom-top-6);
 		double min = Math.min(selectionAnchor, selectionMovingEnd);
 		double max = Math.max(selectionAnchor, selectionMovingEnd);
 		if (interactive) setRangeValues(min, max, v);

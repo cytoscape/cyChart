@@ -1,5 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
+import java.awt.Label;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Objects;
@@ -10,6 +11,7 @@ import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.charts.Range;
 import org.cytoscape.cyChart.internal.charts.RectangleUtil;
 import org.cytoscape.cyChart.internal.charts.oneD.FrameScaleConverter;
+import org.cytoscape.cyChart.internal.model.LinearRegression;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
@@ -29,6 +31,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 /*
  *   A SelectableScatterChart is a scatter chart that can show a two dimensional data set.
@@ -70,6 +73,7 @@ public class SelectableScatterChart extends AnchorPane
 		yAxis.setLabel(yName);
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
+		scatter.getStylesheets().add("./chart.css");
 		controller.anchor(scatter);
 		controller.setChart(scatter);
 
@@ -77,13 +81,15 @@ public class SelectableScatterChart extends AnchorPane
 		if (chartPlotArea != null)
 		{
 			Region rgn = (Region) chartPlotArea;
-			rgn.setStyle("-fx-background-color: #CCCCCC;");
+//			rgn.setStyle("-fx-background-color: #FCCCFC;");
 			rgn.setBorder(Borders.thinEtchedBorder);
 		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> controller.resized();
 		    scatter.widthProperty().addListener(paneSizeListener);
 		    scatter.heightProperty().addListener(paneSizeListener);  	
 		}
-		scatter.setStyle(scatter.getStyle() + "-fx-legend-visible: false; ");
+		String rootStr = ".root {\n    -fx-font-size: 24pt;\n -fx-font-family: \"Courier New\";\n" + 
+				" -fx-base: rgb(132, 145, 47);\n   -fx-background: rgb(240, 240, 240);\n -fx-legend-visible: false; }";
+		scatter.setStyle(rootStr);
 	}
 	//------------------------------------------------------------------------
 	public void setDataSeries(Series<Number, Number> series1) 
@@ -98,7 +104,6 @@ public class SelectableScatterChart extends AnchorPane
 	{ 	
 		scatter.getXAxis().setLabel(x); 
 		scatter.getYAxis().setLabel(y); 
-
 	}
 
 /*--------------------------------------------------------------------------------------------
@@ -110,7 +115,22 @@ public class SelectableScatterChart extends AnchorPane
 	private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
 	private Rectangle selectionRectangle = new Rectangle(0,0,0,0);
 	private Rectangle mirrorRectangle = new Rectangle(0,0,0,0);
-//	private Label infoLabel;
+	private Line regressionLine =null;
+	private Label regressionLabel;
+	private double regressionSlope = Double.NaN;
+	private double regressioIntercept = Double.NaN;
+	void setRegression(LinearRegression r )
+	{
+		regressionSlope = r.slope(); 
+		regressioIntercept = r.intercept();
+	}
+	void clearRegression()
+	{
+		regressionSlope =  regressioIntercept =  Double.NaN;
+		regressionLine = null;
+	}
+	double getSlope() 		{ return regressionSlope; }
+	double getIntercept() 	{ return regressioIntercept; }
 
 	private Point2D selRectStart = null;
 	private Point2D selRectEnd = null;
@@ -358,7 +378,37 @@ public class SelectableScatterChart extends AnchorPane
 	//			ghostRectangle.toFront();
 			}
 		}
+		drawRegressionLine();
 	}
+	private void drawRegressionLine() {
+		if (!Double.isNaN(regressionSlope))
+		{
+			double xMin =xAxis.getLowerBound();
+			double xMax = xAxis.getUpperBound();
+			double y1 = xMin * regressionSlope + regressioIntercept;
+			double y2 = xMax * regressionSlope + regressioIntercept;
+			double startX = converter.scaleToFrame(xMin, scatter, false);
+			double startY= converter.scaleToFrame(y1, scatter, true);
+			double endX = converter.scaleToFrame(xMax, scatter, false);
+			double  endY= converter.scaleToFrame(y2, scatter, true);
+			if (regressionLine == null) 
+				regressionLine = new Line();
+			else 
+				getChildren().remove(regressionLine);
+
+			regressionLine.setStartX(startX);
+			regressionLine.setStartY(startY);
+			regressionLine.setEndX(endX);
+			regressionLine.setEndY(endY);
+
+//			regressionLine.setManaged(false);
+			regressionLine.setOpacity(0.8);
+			regressionLine.setStroke(Color.PURPLE);
+			regressionLine.setStrokeWidth(4);
+			getChildren().add(regressionLine);
+		}
+	}
+
 	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag) {
 		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag);
 	}
