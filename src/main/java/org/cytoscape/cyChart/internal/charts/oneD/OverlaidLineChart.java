@@ -2,7 +2,7 @@ package org.cytoscape.cyChart.internal.charts.oneD;
 
 import java.util.Objects;
 
-import org.cytoscape.cyChart.internal.charts.Peak;
+import org.cytoscape.cyChart.internal.model.Peak;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

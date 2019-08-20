@@ -1,7 +1,7 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
-import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
-import org.cytoscape.cyChart.internal.charts.Range;
+import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
+import org.cytoscape.cyChart.internal.model.Range;
 
 import javafx.geometry.Bounds;
 import javafx.scene.Node;

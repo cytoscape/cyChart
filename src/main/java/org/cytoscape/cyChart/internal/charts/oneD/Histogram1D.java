@@ -3,8 +3,8 @@ package org.cytoscape.cyChart.internal.charts.oneD;
 import java.util.Collections;
 import java.util.List;
 
-import org.cytoscape.cyChart.internal.charts.Peak;
-import org.cytoscape.cyChart.internal.charts.Range;
+import org.cytoscape.cyChart.internal.model.Peak;
+import org.cytoscape.cyChart.internal.model.Range;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -78,6 +78,14 @@ public class Histogram1D
 		return new Range(min, max);
 	}
 	
+	public Histogram1D(String inName, Range inX, int nBins)
+	{
+		name = inName;
+		size = nBins;
+		counts = new int[nBins];
+		range = inX;
+		
+	}
 	public Histogram1D(String inName, int len, Range inX)
 	{
 		name = inName;
@@ -87,6 +95,8 @@ public class Histogram1D
 		if (range.width() == 0)	
 			range.set(0, size);	 
 	}
+
+
 
 	public Histogram1D(String inName,int len, Range inX, boolean log)
 	{
@@ -158,7 +168,7 @@ public class Histogram1D
 	
 	public int valToBin(double d)
 	{
-		double binWidth = range.width() / size;
+		double binWidth = (1+range.width()) / size;
 		if (isLog)
 			return (int) Math.round(((Math.log(d) - Math.log(range.min())) / Math.log(range.width())) * size);
 		return (int) Math.round((d - range.min()) / binWidth);
@@ -705,6 +715,11 @@ static double SQRT2 = Math.sqrt(2.0);  // the threshold for full width at half m
         return slope;
     }
 //  ---------------------------------------------------
+
+public void dump() {
+	System.out.println(toString());
+	
+}
 
 }
 

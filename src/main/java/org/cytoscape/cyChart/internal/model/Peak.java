@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.model;
 
 import org.cytoscape.cyChart.internal.charts.oneD.Histogram1D;
 

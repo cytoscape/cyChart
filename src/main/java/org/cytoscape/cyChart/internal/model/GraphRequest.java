@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.model;
 
 import java.io.File;
 

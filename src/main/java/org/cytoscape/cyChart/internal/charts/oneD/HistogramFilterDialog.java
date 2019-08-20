@@ -10,6 +10,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.cyChart.internal.model.CyChart;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
+import org.cytoscape.cyChart.internal.view.SwingPanel;
 import org.cytoscape.model.CyColumn;
 
 public class HistogramFilterDialog extends JDialog implements CyChart, ChangeListener {

@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts.oneD;
+package org.cytoscape.cyChart.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -12,7 +12,8 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cyChart.internal.charts.Borders;
+import org.cytoscape.cyChart.internal.charts.oneD.AppHistograms;
+import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;

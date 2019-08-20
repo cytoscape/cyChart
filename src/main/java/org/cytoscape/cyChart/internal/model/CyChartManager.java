@@ -7,6 +7,7 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -55,6 +56,14 @@ public class CyChartManager {
 	public Frame getOwner() {
 		final CySwingApplication swingApplication = registrar.getService(CySwingApplication.class);
 		return swingApplication == null ? null : swingApplication.getJFrame();
+	}
+	CyColumn xColumn;
+	CyColumn yColumn;
+
+	public void setXColumn(CyColumn c) 	{	xColumn = c;	}
+	public void setYColumn(CyColumn c) 	{	yColumn = c;	}
+	public CyColumn getXColumn() 		{	return xColumn;	}
+	public CyColumn getYColumn() 		{	return yColumn;
 	}
 	
 	

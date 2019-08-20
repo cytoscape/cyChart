@@ -1,4 +1,6 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.model;
+
+import org.cytoscape.cyChart.internal.view.Cursors;
 
 import javafx.event.EventTarget;
 import javafx.geometry.Bounds;

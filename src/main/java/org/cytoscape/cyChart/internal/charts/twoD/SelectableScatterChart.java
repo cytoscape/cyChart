@@ -1,17 +1,17 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
-import java.awt.Label;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Objects;
 
-import org.cytoscape.cyChart.internal.charts.Borders;
-import org.cytoscape.cyChart.internal.charts.Cursors;
-import org.cytoscape.cyChart.internal.charts.LogarithmicAxis;
-import org.cytoscape.cyChart.internal.charts.Range;
-import org.cytoscape.cyChart.internal.charts.RectangleUtil;
 import org.cytoscape.cyChart.internal.charts.oneD.FrameScaleConverter;
 import org.cytoscape.cyChart.internal.model.LinearRegression;
+import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
+import org.cytoscape.cyChart.internal.model.Range;
+import org.cytoscape.cyChart.internal.model.RectangleUtil;
+import org.cytoscape.cyChart.internal.view.Borders;
+import org.cytoscape.cyChart.internal.view.Cursors;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
@@ -26,6 +26,7 @@ import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
@@ -57,6 +58,7 @@ public class SelectableScatterChart extends AnchorPane
 		addLayer("X", "Y", 0);
 		getChildren().addAll(scatter);
 		selectionLayerBuilder();
+		clearRegression();
 	}
 
 	//------------------------------------------------------------------------
@@ -73,22 +75,37 @@ public class SelectableScatterChart extends AnchorPane
 		yAxis.setLabel(yName);
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
-		scatter.getStylesheets().add("./chart.css");
+		
+		URL sheet = getClass().getResource("/resources/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getResource("./resources/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getResource("../resources/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getResource("../../resources/chart.css");
+		if (sheet == null)
+			sheet = SelectableScatterChart.class.getResource("resources/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getResource("chart.css");
+		if (sheet != null)
+			scatter.getStylesheets().add(sheet.toExternalForm());
+//		scatter.getStylesheets().add("chart.css");
 		controller.anchor(scatter);
 		controller.setChart(scatter);
 
-		Node chartPlotArea = controller.getPlotAreaNode();
-		if (chartPlotArea != null)
-		{
-			Region rgn = (Region) chartPlotArea;
-//			rgn.setStyle("-fx-background-color: #FCCCFC;");
-			rgn.setBorder(Borders.thinEtchedBorder);
-		    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> controller.resized();
-		    scatter.widthProperty().addListener(paneSizeListener);
-		    scatter.heightProperty().addListener(paneSizeListener);  	
-		}
 		String rootStr = ".root {\n    -fx-font-size: 24pt;\n -fx-font-family: \"Courier New\";\n" + 
 				" -fx-base: rgb(132, 145, 47);\n   -fx-background: rgb(240, 240, 240);\n -fx-legend-visible: false; }";
+
+		Node chartPlotArea = controller.getPlotAreaNode();
+		if (chartPlotArea == null) return;
+
+		Region rgn = (Region) chartPlotArea;
+			rgn.setStyle("-fx-background-color: #FCFCFC;");
+//			rgn.setBorder(Borders.thinEtchedBorder);
+	    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> controller.resized();
+	    scatter.widthProperty().addListener(paneSizeListener);
+	    scatter.heightProperty().addListener(paneSizeListener);  	
+
 		scatter.setStyle(rootStr);
 	}
 	//------------------------------------------------------------------------
@@ -106,32 +123,18 @@ public class SelectableScatterChart extends AnchorPane
 		scatter.getYAxis().setLabel(y); 
 	}
 
-/*--------------------------------------------------------------------------------------------
- * This adds a layer on top of a the XY chart named "scatter". 
- *
- */
-	private ValueAxis<Number> xAxis;
-	private ValueAxis<Number> yAxis;
-	private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
-	private Rectangle selectionRectangle = new Rectangle(0,0,0,0);
-	private Rectangle mirrorRectangle = new Rectangle(0,0,0,0);
-	private Line regressionLine =null;
-	private Label regressionLabel;
-	private double regressionSlope = Double.NaN;
-	private double regressioIntercept = Double.NaN;
-	void setRegression(LinearRegression r )
-	{
-		regressionSlope = r.slope(); 
-		regressioIntercept = r.intercept();
-	}
-	void clearRegression()
-	{
-		regressionSlope =  regressioIntercept =  Double.NaN;
-		regressionLine = null;
-	}
-	double getSlope() 		{ return regressionSlope; }
-	double getIntercept() 	{ return regressioIntercept; }
+	/*--------------------------------------------------------------------------------------------
+	 * This adds a layer on top of a the XY chart named "scatter". 
+	 *
+	 */
+		private ValueAxis<Number> xAxis;
+		private ValueAxis<Number> yAxis;
+		private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
+		private Rectangle selectionRectangle = new Rectangle(0,0,0,0);
+		private Rectangle mirrorRectangle = new Rectangle(0,0,0,0);
 
+	
+	
 	private Point2D selRectStart = null;
 	private Point2D selRectEnd = null;
 	private boolean isRectangleSizeTooSmall() {
@@ -380,32 +383,106 @@ public class SelectableScatterChart extends AnchorPane
 		}
 		drawRegressionLine();
 	}
+
+	private Line regressionLine =null;
+	private Label regressionLabel=null;
+	private double regressionSlope = Double.NaN;
+	private double regressionIntercept = Double.NaN;
+	private double regressionCorrelation = Double.NaN;
+	void setRegression(LinearRegression r )
+	{
+		regressionSlope = r.slope(); 
+		regressionIntercept = r.intercept();
+		regressionCorrelation = r.R2();
+	}
+	void clearRegression()
+	{
+		if (regressionLine != null) getChildren().remove(regressionLine);
+		if (regressionLabel != null) getChildren().remove(regressionLabel);
+		regressionSlope =  regressionIntercept = regressionCorrelation = Double.NaN;
+		regressionLine = null;
+		regressionLabel=null;
+	}
+	double getSlope() 		{ return regressionSlope; }
+	double getIntercept() 	{ return regressionIntercept; }
+	double getCorrelation() { return regressionCorrelation; }
+	//----------------------------------------------------------------------------
+	
+	
 	private void drawRegressionLine() {
 		if (!Double.isNaN(regressionSlope))
 		{
 			double xMin =xAxis.getLowerBound();
 			double xMax = xAxis.getUpperBound();
-			double y1 = xMin * regressionSlope + regressioIntercept;
-			double y2 = xMax * regressionSlope + regressioIntercept;
-			double startX = converter.scaleToFrame(xMin, scatter, false);
+			double yMin =yAxis.getLowerBound();
+			double yMax = yAxis.getUpperBound();
+			double y1 = xMin * regressionSlope + regressionIntercept;
+			double y2 = xMax * regressionSlope + regressionIntercept;
+			double x1 = 0;
+			double x2 = 0;
+			
+			if (y1 < yMin)
+			{
+				x1 = (yMin - regressionIntercept) / regressionSlope;
+				y1 = yMin;
+			}
+			else if (y1 > yMax)
+			{
+				x1 = (yMax - regressionIntercept) / regressionSlope;
+				y1 = yMax;
+			}
+			else x1 = xMin;
+			
+			if (y2 < yMin)
+			{
+				x2 = (yMin - regressionIntercept) / regressionSlope;
+				y2 = yMin;
+			}
+			else if (y2 > yMax)
+			{
+				x2 = (yMax - regressionIntercept) / regressionSlope;
+				y2 = yMax;
+			}
+			else x2 = xMax;
+			
+			double startX = converter.scaleToFrame(x1, scatter, false);
 			double startY= converter.scaleToFrame(y1, scatter, true);
-			double endX = converter.scaleToFrame(xMax, scatter, false);
+			double endX = converter.scaleToFrame(x2, scatter, false);
 			double  endY= converter.scaleToFrame(y2, scatter, true);
+			
 			if (regressionLine == null) 
+			{
 				regressionLine = new Line();
+				regressionLabel = new Label();
+			}
 			else 
+			{
 				getChildren().remove(regressionLine);
+				getChildren().remove(regressionLabel);
+			}
 
-			regressionLine.setStartX(startX);
-			regressionLine.setStartY(startY);
-			regressionLine.setEndX(endX);
-			regressionLine.setEndY(endY);
-
-//			regressionLine.setManaged(false);
+			Bounds b = controller.getPlotBounds();
+			double left = b.getMinX();		
+			double top = b.getMinY();
+			
+			regressionLine.setStartX(startX + left);
+			regressionLine.setStartY(startY + top);
+			regressionLine.setEndX(endX + left);
+			regressionLine.setEndY(endY + top);
 			regressionLine.setOpacity(0.8);
 			regressionLine.setStroke(Color.PURPLE);
 			regressionLine.setStrokeWidth(4);
 			getChildren().add(regressionLine);
+			
+			String text = String.format("m=%.2f, b=%.2f \n R=%.4f", 
+					regressionSlope, regressionIntercept, regressionCorrelation);
+			double textWidth = 100;
+			double offset = 50;
+			regressionLabel.setText(text);
+			regressionLabel.setTranslateX(endX + left - textWidth);
+			regressionLabel.setTranslateY(endY + top + (regressionSlope > 0 ? offset : -offset));
+			regressionLabel.setVisible(true);
+			getChildren().add(regressionLabel);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.model;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.cyChart.internal.charts.StringUtil;
+import org.cytoscape.cyChart.internal.charts.StringUtil.TYPES;
 import org.cytoscape.cyChart.internal.charts.oneD.Histogram1D;
 import org.cytoscape.cyChart.internal.charts.oneD.OverlaidLineChart;
 

@@ -16,23 +16,32 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 
 	final CyChartManager manager;
 	CyColumn column = null;
+	CyColumn yColumn = null;
 
 	//----------------------------------------------------
 	public ScatterFilterTask(CyChartManager mgr) {
 		manager = mgr;
-//		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
-//		chart.setVisible(true);
+		column = mgr.getXColumn();
+		yColumn = mgr.getYColumn();
 	}
 
-	public ScatterFilterTask(CyChartManager mgr, CyColumn col) {
+	public ScatterFilterTask(CyChartManager mgr, CyColumn col, CyColumn ycol) {
 		manager = mgr;
-		column = col;
+		mgr.setXColumn(col);
+		mgr.setYColumn(ycol);
 	}
 
-	public void run(TaskMonitor monitor) {
-//		SwingUtilities.invokeLater(new Runnable() {	public void run() {	}	});	
-		ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title, column);
-		chart.setVisible(true);
-		}
+	public void run(TaskMonitor monitor) 
+	{
+//		if (monitor instanceof TFExecutor)
+//		{
+//			TFExecutor exec = (TFExecutor) monitor;
+//			exec.interceptor.
+			
+			ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
+			chart.setVisible(true);
+//		}
+				
+	}
 
 }

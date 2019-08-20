@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.view;
 
 import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderStroke;

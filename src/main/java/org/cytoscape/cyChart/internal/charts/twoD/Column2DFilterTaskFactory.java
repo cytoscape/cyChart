@@ -16,7 +16,10 @@ public class Column2DFilterTaskFactory extends AbstractTableColumnTaskFactory {
 	public boolean isReady() {		return true;	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyColumn column) { return new TaskIterator(new ScatterFilterTask(manager, column)); 	}
+	public TaskIterator createTaskIterator(CyColumn column)
+	{ 
+		return new TaskIterator(new ScatterFilterTask(manager, column, null)); 	
+	}
 
 
 }

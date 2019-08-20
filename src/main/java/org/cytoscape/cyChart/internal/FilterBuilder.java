@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.cyChart.internal.charts.Range;
+import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;

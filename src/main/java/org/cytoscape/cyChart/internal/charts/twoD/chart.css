@@ -1,0 +1,14 @@
+
+.chart-symbol.default-color0 { 
+	-fx-background-radius: 26px; 
+	-fx-background-color: #39e220;  
+	-fx-shape: "M0,4 L2,4 L4,8 L7,0 L9,0 L4,11 Z";
+}
+
+.root {
+	-fx-font-size: 48pt;
+	-fx-font-family: \"Courier New\";
+	-fx-base: rgb(132, 145, 47);
+	-fx-background: rgb(200, 240, 240);
+	-fx-legend-visible: false; 
+}

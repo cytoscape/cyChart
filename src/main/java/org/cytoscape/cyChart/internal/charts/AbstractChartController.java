@@ -17,6 +17,8 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.NumberField;
+import org.cytoscape.cyChart.internal.model.Range;
+import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -62,6 +64,7 @@ abstract public class AbstractChartController implements Initializable {
 	protected NumberField xMin, xMax;
 	protected NumberField yMin, yMax;
 	protected Label statusLabel = new Label();
+	protected CyColumn xColumn, yColumn;
 	
 	protected AnchorPane chartBox;
 	protected StackPane chartContainer;
@@ -96,14 +99,14 @@ abstract public class AbstractChartController implements Initializable {
 //		return new Rectangle(b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight());		
 //		
 //	}
-	HBox header1, footer1, footer2, footer3;
+	protected HBox header1, footer1, footer2, footer3;
 	
 	static Font numberFont = new Font("SansSerif", 10);
 	abstract public void setParameters(); 
 
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
-	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyColumn column) {
+	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyColumn xCol, CyColumn yCol) {
 		chartContainer = parent;
 //		chartContainer.setBorder(Borders.etchedBorder);
 		if (reg == null)
@@ -130,16 +133,19 @@ abstract public class AbstractChartController implements Initializable {
 
 		parent.getChildren().add(page);
 		anchor(parent); 
-		initialize(null, null, column);
+		xColumn = xCol;
+		yColumn = yCol;
+		initialize(null, null, xCol, yCol);
 		
 	}
 	//-------------------------------------------------------------
 	// the FXML callback to define the chart  (FXML is not in use, but this is called thru the constructor, with an extra x column argument)
 	public void initialize(URL url, ResourceBundle rb)
 	{
-		initialize( url,  rb, null);
+		initialize( url,  rb, null, null);
 	}	
-	public void initialize(URL url, ResourceBundle rb, CyColumn column)
+	
+	public void initialize(URL url, ResourceBundle rb, CyColumn xCol, CyColumn yCol)
 	{
 	    assert( chartContainer != null);
 		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{	
@@ -152,11 +158,13 @@ abstract public class AbstractChartController implements Initializable {
 		};
 		populateColumnChoices();
 		int xIndex = 0;
-		if (column != null)
-				xAxisChoices.getSelectionModel().select(column.getName());
+		if (xCol != null)
+				xAxisChoices.getSelectionModel().select(xCol.getName());
 		else 	xAxisChoices.getSelectionModel().select(xIndex);
 		
-		yAxisChoices.getSelectionModel().select(1);
+		if (yCol != null)
+			yAxisChoices.getSelectionModel().select(yCol.getName());
+		else yAxisChoices.getSelectionModel().select(1);
 		
 		setParameters();
 		xAxisChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
@@ -177,21 +185,17 @@ abstract public class AbstractChartController implements Initializable {
 		interactive.setAlignment(Pos.CENTER);
 		interactive.setTranslateY(4);
 
-		if (is2D)
-		{
-			curveFit = new Button("Regression");
-			curveFit.setOnAction(new EventHandler<ActionEvent>() {
-				@Override public void handle(ActionEvent event) {	linearRegression();	} });
-		}
-
+		fillInHeader();
+		return header1;
+	}
+	
+	protected void fillInHeader()
+	{
 		header1 = new HBox(8, makeFilter, copyImage, interactive);
-		if (is2D)
-			header1.getChildren().add(curveFit);
 		header1.setMinHeight(30);
 		header1.setMaxHeight(30);
 		header1.setBorder(Borders.emptyBorder);
 		AnchorPane.setLeftAnchor(header1, 12.0);
-		return header1;
 	}
 	// ------------  
 	private VBox makeFooter(boolean is2D) {
@@ -274,7 +278,7 @@ abstract public class AbstractChartController implements Initializable {
 	//-------------------------------------------------------------
 	protected Button makeFilter;
 	protected Button copyImage;
-	protected Button curveFit;
+	protected CheckBox curveFit;
 	
 	protected void makeFilter() {
 		if (registrar == null) {		System.err.println("No registrar found");  return; 	}
@@ -285,7 +289,11 @@ abstract public class AbstractChartController implements Initializable {
 	    selectFilterPanel();
 	 }
 	 
-	protected void linearRegression()
+	protected void clearRegression()
+	{
+		curveFit.setSelected(false);
+	}
+	protected void linearRegression(boolean vis)
 	{
 		System.err.println("linearRegression should be overriden");
 	}
@@ -463,7 +471,7 @@ abstract public class AbstractChartController implements Initializable {
 	// ------------------------------------------------------
 	public void setRangeValues(Range r) {
 		if (r == null) return;
-		setRangeValues(r.min, r.max);
+		setRangeValues(r.min(), r.max());
 	}
 	public void setRangeValues(double selStart, double selEnd) {
 		if (Double.isNaN(selStart) || Double.isNaN(selEnd)) return;

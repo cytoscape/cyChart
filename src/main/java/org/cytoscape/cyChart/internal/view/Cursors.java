@@ -1,6 +1,8 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.view;
 
 import java.util.HashMap;
+
+import org.cytoscape.cyChart.internal.model.NodeUtil;
 
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;

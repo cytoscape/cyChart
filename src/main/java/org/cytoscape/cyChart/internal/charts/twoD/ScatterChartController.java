@@ -9,11 +9,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
+import javafx.scene.control.CheckBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 
@@ -21,20 +24,41 @@ import javafx.scene.layout.StackPane;
 public class ScatterChartController extends AbstractChartController
 {
 
-	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn col) {
-		super(parent, reg, true, col);
-		if (col != null) 
-			xAxisChoices.getSelectionModel().select(col.getName());
+//	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn xCol) {
+//		this(parent, reg, xCol, null);
+//	}
+	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn xcol, CyColumn ycol) {
+		super(parent, reg, true, xcol, ycol);
+		if (xcol != null) 
+			xAxisChoices.getSelectionModel().select(xcol.getName());
+		if (ycol != null) 
+			yAxisChoices.getSelectionModel().select(ycol.getName());
 	}
 	// ------------------------------------------------------
 
 	static int DOT_SIZE = 4; 
 	private SelectableScatterChart scatterChartHome;
 
+	@Override protected void fillInHeader()
+	{
+		super.fillInHeader();
+		curveFit = new CheckBox("Regression");
+			ChangeListener<? super Boolean> regressCheckChange = new ChangeListener<Boolean>() {
+			    @Override
+			    public void changed(ObservableValue<? extends Boolean> ov,
+			        Boolean old_val, Boolean new_val) {
+			        linearRegression(new_val);	
+			    }};
+		curveFit.selectedProperty().addListener(regressCheckChange);
+		curveFit.setTranslateY(4);
+		header1.getChildren().add(curveFit);
+	}
+
 	public void setParameters()
 	{
 		if (chartBox != null)
 		{
+			curveFit.setSelected(false);
 			chartBox.getChildren().clear();
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
@@ -61,16 +85,23 @@ public class ScatterChartController extends AbstractChartController
 			setChart(scatterChartHome.getScatterChart());
 			chartBox.getChildren().add(scatterChartHome);
 
-     		    Node legend = scatterChartHome.lookup(".chart-legend");
+     		Node legend = scatterChartHome.lookup(".chart-legend");
 		    if (legend != null && legend.isVisible()) 
 		    	legend.setVisible(false);
 		}
 	}
 	
 //alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
-	protected void linearRegression()
+	protected void linearRegression(boolean visible)
 	{
-		System.out.println("linearRegression");
+		System.out.println("linearRegression " + (visible ? "on" : "off"));
+	
+		if (!visible)
+		{
+			scatterChartHome.clearRegression();
+			return;
+
+		}
 		String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
 	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
@@ -84,7 +115,9 @@ public class ScatterChartController extends AbstractChartController
 			X[i] = (double) d.getXValue();
 			Y[i] = (double) d.getYValue();
 		}
+		
 		scatterChartHome.setRegression(new LinearRegression(X, Y));
+		scatterChartHome.resized();
 	}
 
 	

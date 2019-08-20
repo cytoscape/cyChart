@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal.charts;
+package org.cytoscape.cyChart.internal.model;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;

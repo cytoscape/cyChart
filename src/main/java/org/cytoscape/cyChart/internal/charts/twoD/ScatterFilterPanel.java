@@ -28,12 +28,12 @@ public class ScatterFilterPanel extends JPanel {
 
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
  
-	public ScatterFilterPanel(CyChartManager manager, ScatterFilterDialog parentDialog, CyColumn defaulX) {
+	public ScatterFilterPanel(CyChartManager manager, ScatterFilterDialog parentDialog, CyColumn defaulX, CyColumn defaultY) {
 		super(new BorderLayout());
 		registrar = manager.getRegistrar();
 //		System.out.println("ScatterFilterPanel");
 		setPreferredSize(new Dimension(520, 500));
-		initComponents(defaulX);
+		initComponents(defaulX, defaultY);
 //		Platform.setImplicitExit(false);
 	}
 
@@ -49,11 +49,9 @@ public class ScatterFilterPanel extends JPanel {
 		return returnVal[0];
 	}
 
-	private void initComponents(CyColumn defaultX) {
+	private void initComponents(CyColumn defaultX, CyColumn defaultY) {
 		jfxPanel = new JFXPanel();
-		StackPane appPane = AppScatters.getStackPane(registrar, defaultX);
-//		AnchorPane anchor = new AnchorPane();
-//		anchor.getChildren().add(appPane);
+		StackPane appPane = AppScatters.getStackPane(registrar, defaultX, defaultY);
 		if (appPane != null) 
 		{
 			Scene scene = new Scene(appPane);
@@ -61,25 +59,7 @@ public class ScatterFilterPanel extends JPanel {
 //			System.out.println("scene created");
 		}
 		else System.out.println("appPane came back null");
-
-
-//		JPanel topBar = new JPanel(new BorderLayout(5, 5));
-//		topBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
-
-//		JPanel statusBar = new JPanel(new BorderLayout(5, 0));
-//		statusBar.add(lblStatus, BorderLayout.CENTER);
-//		lblStatus.setMinimumSize(new Dimension(20, 20));
-//		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-//		lblStatus.setText("The status bar reports the range and percentage selected");
-//		add(topBar, BorderLayout.NORTH);
-//		add(statusBar, BorderLayout.SOUTH);
-//		JPanel container = new JPanel();
-//		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-//		container.add(jfxPanel);
 		add(jfxPanel, BorderLayout.CENTER);
-//		jfxPanel.setBorder(Borders.blueBorder1);
-//		jfxPanel.setStyle("-fx-border-color: orange");
 	}
 
 }

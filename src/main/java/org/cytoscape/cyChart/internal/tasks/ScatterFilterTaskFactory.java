@@ -13,6 +13,9 @@ public class ScatterFilterTaskFactory extends AbstractTaskFactory {
 	}
 
 	public boolean isReady() {		return true;	}
-	public TaskIterator createTaskIterator() {		return new TaskIterator(new ScatterFilterTask(manager));	}
+	public TaskIterator createTaskIterator() 
+	{		
+		return new TaskIterator(new ScatterFilterTask(manager));	
+	}
 }
 

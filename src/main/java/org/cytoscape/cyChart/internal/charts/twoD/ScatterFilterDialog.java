@@ -17,16 +17,16 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 	private ScatterFilterPanel currentPanel;
 	private String initialTitle = null;
 
-
-	public ScatterFilterDialog(CyChartManager mgr, String title ) {
+	public ScatterFilterDialog(CyChartManager mgr, String title) {
 		super(mgr.getOwner());
+		
 		manager = mgr;
 		if (title != null) {
 			setTitle(title);
 			initialTitle = title;
 		} else  setTitle("CyChart");
 
-		currentPanel = new ScatterFilterPanel(manager, this, null);
+		currentPanel = new ScatterFilterPanel(manager, this, mgr.getXColumn(), mgr.getYColumn());
 		getContentPane().add(currentPanel);
 		setPreferredSize(new Dimension(520, 600));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -34,32 +34,8 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 
 	}
 
-	public ScatterFilterDialog(CyChartManager mgr, String title, CyColumn col) {
-		super(mgr.getOwner());
-		manager = mgr;
-		if (title != null) {
-			setTitle(title);
-			initialTitle = title;
-		} else  setTitle("CyChart");
-
-		currentPanel = new ScatterFilterPanel(manager, this, col);
-		getContentPane().add(currentPanel);
-		setPreferredSize(new Dimension(520, 600));
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		pack();
-
-	}
-
-	public String getTitle(String id) { 
-		if (id == null)
-			return initialTitle;
-		return null;
-	}
-
-	public ScatterFilterPanel getPanel(String id) { 
-		if (id == null) 				return currentPanel; 
-		return null;
-	}
+	public String getTitle(String id) 				{ 	return (id == null)?  initialTitle : null;	}
+	public ScatterFilterPanel getPanel(String id) 	{ 	return (id == null)?  currentPanel : null; }
 
 	@Override public void stateChanged(ChangeEvent e) {
 		String ttl = currentPanel.getTitle();

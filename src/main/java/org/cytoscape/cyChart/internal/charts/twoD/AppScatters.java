@@ -19,18 +19,18 @@ public class AppScatters extends Application
 //	    URL url = getClass().getResource("ScatterChart.fxml");
 //	    fxmlLoader.setLocation(url);
 //	    AnchorPane appPane = fxmlLoader.load();
-    	StackPane pane = getStackPane(null, null);
+    	StackPane pane = getStackPane(null, null, null);
     	Scene scene = new Scene(pane, 520, 550);
 	    stage.setScene(scene);
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col, CyColumn ycol)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(550);
-	    new ScatterChartController(pane, registrar, col);
+	    new ScatterChartController(pane, registrar, col, ycol);
 	    return pane;
     }  
     

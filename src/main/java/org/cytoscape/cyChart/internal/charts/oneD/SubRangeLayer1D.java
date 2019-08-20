@@ -3,7 +3,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 
-import org.cytoscape.cyChart.internal.charts.Range;
+import org.cytoscape.cyChart.internal.model.Range;
 
 import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
