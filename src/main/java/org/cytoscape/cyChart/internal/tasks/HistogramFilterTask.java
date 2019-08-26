@@ -13,7 +13,8 @@ import org.cytoscape.work.Tunable;
 public class HistogramFilterTask extends AbstractEmptyObservableTask {
 	final private String title = "Histogram Plot";
 
-	@Tunable(description = "X Axis Parameter")
+	@Tunable(description = "X Axis Parameter", context= Tunable.NOGUI_CONTEXT)
+	
 	public String xColumn = "Degree";
 
 	

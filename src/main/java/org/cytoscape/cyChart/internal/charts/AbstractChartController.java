@@ -42,6 +42,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -158,17 +159,19 @@ abstract public class AbstractChartController implements Initializable {
 		};
 		populateColumnChoices();
 		int xIndex = 0;
+		SingleSelectionModel<String> xSelector = xAxisChoices.getSelectionModel();
+		SingleSelectionModel<String> ySelector = yAxisChoices.getSelectionModel();
 		if (xCol != null)
-				xAxisChoices.getSelectionModel().select(xCol.getName());
-		else 	xAxisChoices.getSelectionModel().select(xIndex);
+			xSelector.select(xCol.getName());
+		else 	xSelector.select(xIndex);
 		
 		if (yCol != null)
-			yAxisChoices.getSelectionModel().select(yCol.getName());
-		else yAxisChoices.getSelectionModel().select(1);
+			ySelector.select(yCol.getName());
+		else ySelector.select(1);
 		
 		setParameters();
-		xAxisChoices.getSelectionModel().selectedIndexProperty().addListener(xListener);
-		yAxisChoices.getSelectionModel().selectedIndexProperty().addListener(yListener);
+		xSelector.selectedIndexProperty().addListener(xListener);
+		ySelector.selectedIndexProperty().addListener(yListener);
 	}
 	// ------------  
 	private HBox makeHeader(boolean is2D) {

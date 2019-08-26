@@ -1,9 +1,6 @@
 package org.cytoscape.cyChart.internal.model;
 
 import java.awt.Frame;
-import java.awt.Window;
-
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -64,6 +61,24 @@ public class CyChartManager {
 	public void setYColumn(CyColumn c) 	{	yColumn = c;	}
 	public CyColumn getXColumn() 		{	return xColumn;	}
 	public CyColumn getYColumn() 		{	return yColumn;
+	}
+
+	public void setXColumnName(String x) {
+		CyNetwork net = getCurrentNetwork();
+		if (net == null) return;
+		CyTable tab = net.getDefaultNodeTable();
+		if (tab == null) return;
+		xColumn = tab.getColumn(x);
+		
+	}
+	
+
+	public void setYColumnName(String y) {
+		CyNetwork net = getCurrentNetwork();
+		if (net == null) return;
+		CyTable tab = net.getDefaultNodeTable();
+		if (tab == null) return;
+		yColumn = tab.getColumn(y);
 	}
 	
 	

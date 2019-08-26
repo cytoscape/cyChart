@@ -5,9 +5,15 @@ import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 public class ScatterFilterTask extends AbstractEmptyObservableTask {
 	public String title = null;
+
+	@Tunable(description = "X Axis Parameter", context= Tunable.NOGUI_CONTEXT)
+	public String x = "Degree";
+	@Tunable(description = "Y Axis Parameter", context= Tunable.NOGUI_CONTEXT)
+	public String y = "Betweeenness";
 
 	@ProvidesTitle
 	public String getTitle() {		return "Starting Cytoscape Scatter Plot";	}
@@ -38,6 +44,8 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 //			TFExecutor exec = (TFExecutor) monitor;
 //			exec.interceptor.
 			
+			manager.setXColumnName(x);
+			manager.setYColumnName(y);
 			ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
 			chart.setVisible(true);
 //		}

@@ -75,8 +75,9 @@ public class SwingPanel extends JPanel {
 		{
 //			System.out.println("appPane created");
 			Scene scene = new Scene(appPane);
+			System.out.println("set scene");
 			jfxPanel.setScene(scene);
-//			System.out.println("scene created");
+			System.out.println("scene created");
 		}
 		else System.out.println("appPane came back null");
 

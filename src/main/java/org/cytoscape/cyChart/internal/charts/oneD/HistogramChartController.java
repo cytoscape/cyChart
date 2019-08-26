@@ -59,9 +59,10 @@ public class HistogramChartController extends AbstractChartController
 	// this recreates the entire chart, axes, data series, etc.
 	public void setXParameter(String name)
 	{
-	System.out.println(name);	
-	if (xColumn.getType().equals(Integer.class))
-		System.out.println("INTEGER COLUMN");
+	System.out.println(name);
+//	if (xColumn == null) return;
+//	if (xColumn.getType().equals(Integer.class))
+//		System.out.println("INTEGER COLUMN");
 //		int nBins = column.getRange().
 		
 		Histogram1D h1 = getHistogram(name, isXLog);
@@ -114,7 +115,8 @@ public class HistogramChartController extends AbstractChartController
 			boolean disable = histoRange.contains(0.);
 			logXTransform.setDisable(disable);
 			yAxis.setLowerBound(0);
-			double top = .5 * h1.getMode() / h1.getSize();
+			double top =  h1.getMode();
+			if (!isInt) top = .5 * h1.getMode() / h1.getSize();
 			yAxis.setUpperBound(top);
 			int size = getDataSize();
 			interactive.setSelected(size > 0 && size < INTERACTIVE);

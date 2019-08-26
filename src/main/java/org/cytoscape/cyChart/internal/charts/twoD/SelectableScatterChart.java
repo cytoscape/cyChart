@@ -5,12 +5,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Objects;
 
+import org.cytoscape.cyChart.internal.CyActivator;
 import org.cytoscape.cyChart.internal.charts.oneD.FrameScaleConverter;
 import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.cyChart.internal.model.RectangleUtil;
-import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.cyChart.internal.view.Cursors;
 
 import javafx.beans.value.ChangeListener;
@@ -76,15 +76,29 @@ public class SelectableScatterChart extends AnchorPane
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
 		
-		URL sheet = getClass().getResource("/resources/chart.css");
+		URL sheet = getClass().getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
 		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getResource("./resources/chart.css");
+			sheet = CyActivator.class.getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
 		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getResource("../resources/chart.css");
+			sheet = CyActivator.class.getClassLoader().getResource("../resources/chart.css");
 		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getResource("../../resources/chart.css");
+			sheet = CyActivator.class.getClassLoader().getResource("resources/chart.css");
+		if (sheet == null) 
+			sheet = CyActivator.class.getClassLoader().getResource("/../org/cytoscape/cyChart/internal/chart.css");
+		if (sheet == null) 
+			sheet = CyActivator.class.getClassLoader().getResource("/../../org/cytoscape/cyChart/internal/chart.css");
+		if (sheet == null) 
+			sheet = CyActivator.class.getClassLoader().getResource("/../../../org/cytoscape/cyChart/internal/chart.css");
+		if (sheet == null) 
+			sheet = CyActivator.class.getClassLoader().getResource("/../../../../org/cytoscape/cyChart/internal/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getClassLoader().getResource("../resources/chart.css");
+		if (sheet == null) 
+			sheet = CyActivator.class.getResource("../resources/chart.css");
 		if (sheet == null)
 			sheet = SelectableScatterChart.class.getResource("resources/chart.css");
+		if (sheet == null) 
+			sheet = SelectableScatterChart.class.getResource("./chart.css");
 		if (sheet == null) 
 			sheet = SelectableScatterChart.class.getResource("chart.css");
 		if (sheet != null)
