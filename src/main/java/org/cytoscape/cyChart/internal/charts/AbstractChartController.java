@@ -252,7 +252,7 @@ abstract public class AbstractChartController implements Initializable {
 	}
 	// ------------ 
 	private NumberField makeNumberField(String id) {
-		NumberField fld = new NumberField();
+		NumberField fld = new NumberField(this);
 		fld.setId(id);
 		fld.setAlignment(Pos.BASELINE_RIGHT);
 		fld.setFont(numberFont);
@@ -262,12 +262,12 @@ abstract public class AbstractChartController implements Initializable {
 		return fld;
 	}
 	// ------------  respond to user edits of range values.  
-	private void fieldChanged(String newValue, String fieldId) {
+	public void fieldChanged(String newValue, String fieldId) {
 
-		BigDecimal newXmin = xMin.getNumber();
-		BigDecimal newXmax = xMax.getNumber();
-		BigDecimal newYmin = yMin.getNumber();
-		BigDecimal newYmax = yMax.getNumber();
+		BigDecimal newXmin = xMin == null ? new BigDecimal(0) : xMin.getNumber();
+		BigDecimal newXmax = xMax == null ? new BigDecimal(0) : xMax.getNumber();
+		BigDecimal newYmin = yMin == null ? new BigDecimal(0) : yMin.getNumber();
+		BigDecimal newYmax = yMax == null ? new BigDecimal(0) : yMax.getNumber();
 		
 		double val = Double.parseDouble(newValue);
 		if ("xMin".equals(fieldId))	setXRange(new Range(val, newXmax.doubleValue()));

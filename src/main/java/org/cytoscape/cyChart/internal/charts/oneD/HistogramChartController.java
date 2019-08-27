@@ -190,8 +190,11 @@ public class HistogramChartController extends AbstractChartController
 	// ------------------------------------------------------
 	public void resized()
 	{
-		subrangeLayer.chartBoundsChanged();
-		setStatus("" + subrangeLayer.getYValue());
+		if (subrangeLayer != null)
+		{
+			subrangeLayer.chartBoundsChanged();
+			setStatus("" + subrangeLayer.getYValue());
+		}
 	}
 	
 	// ------------------------------------------------------

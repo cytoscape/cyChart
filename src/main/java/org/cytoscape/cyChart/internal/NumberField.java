@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
+import org.cytoscape.cyChart.internal.charts.AbstractChartController;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.TextField;
@@ -21,15 +23,17 @@ public class NumberField extends TextField
         public final void setNumber(BigDecimal value) 		{       number.set(value);       }
         public final void setNumber(double value) 			{       number.set(new BigDecimal(value));       }
         public ObjectProperty<BigDecimal> numberProperty() 	{       return number;       }
+        AbstractChartController controller;
         
-        public NumberField() {            this(BigDecimal.ZERO);        }
-        public NumberField(BigDecimal value) {
-            this(value, NumberFormat.getInstance());
+        public NumberField(AbstractChartController contrl) {            this(BigDecimal.ZERO, contrl);    }
+        public NumberField(BigDecimal value, AbstractChartController contrl) {
+            this(value, NumberFormat.getInstance(), contrl);
             initHandlers();
         }
-        public NumberField(BigDecimal value, NumberFormat nf) {
+        public NumberField(BigDecimal value, NumberFormat nf, AbstractChartController contrl) {
             super();
             this.nf = nf;
+            controller = contrl; 
             setStyle(getStyle() + "-fx-text-alignment:RIGHT;");			// NOOP  ???
             initHandlers();
             setNumber(value);
@@ -41,7 +45,7 @@ public class NumberField extends TextField
             setOnAction(arg0-> {    parseAndFormatInput();  }   );
             focusedProperty().addListener((obs, old, nVal) ->{ if (!nVal.booleanValue())  parseAndFormatInput();        });
             // Set text in field if BigDecimal property is changed from outside.
-            numberProperty().addListener((obs, old, nVal) ->{   setText(nf.format(nVal));      });
+            numberProperty().addListener((obs, old, nVal) ->{  textChanged(nVal);      });
 
             setOnKeyTyped(event ->			 // watch out for bad key input
             {
@@ -52,6 +56,12 @@ public class NumberField extends TextField
             });
         }
 
+        private void textChanged(BigDecimal nVal) {
+        	String str = nf.format(nVal);
+        	setText(str);
+        	controller.fieldChanged(str,getId());
+	
+		}
 /**
  * Tries to parse the user input to a number according to the provided
  * NumberFormat

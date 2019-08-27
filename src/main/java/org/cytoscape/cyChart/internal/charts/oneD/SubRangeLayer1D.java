@@ -216,9 +216,9 @@ public class SubRangeLayer1D
 			if (hitSpot == 1)  			setSelection(right, x);
 			else if (hitSpot == 2)  	setSelection(left, right);
 			else if (hitSpot == 3)  	setSelection(left, x);
-			else if (x < leftBar.getStartX())
+			else if (x < leftBar.getStartX()-SLOP)
 				setSelection(right, x);
-			else if (x > rightBar.getStartX()-SLOP)
+			else if (x > rightBar.getStartX()+SLOP)
 				setSelection(left, x);
 		}
 		else
