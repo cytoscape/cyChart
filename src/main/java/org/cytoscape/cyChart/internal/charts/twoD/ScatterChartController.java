@@ -3,6 +3,7 @@ package org.cytoscape.cyChart.internal.charts.twoD;
 import java.util.List;
 
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
+import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -27,12 +28,19 @@ public class ScatterChartController extends AbstractChartController
 //	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn xCol) {
 //		this(parent, reg, xCol, null);
 //	}
-	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyColumn xcol, CyColumn ycol) {
-		super(parent, reg, true, xcol, ycol);
-		if (xcol != null) 
+	public ScatterChartController(StackPane parent, CyServiceRegistrar reg, CyChartManager mgr) {
+		super(parent, reg, true, mgr);
+		CyColumn xcol = mgr.getXColumn();
+		CyColumn ycol = mgr.getYColumn();
+		if (xcol != null)
 			xAxisChoices.getSelectionModel().select(xcol.getName());
+		else
+			xAxisChoices.getSelectionModel().select(0);
+		
 		if (ycol != null) 
 			yAxisChoices.getSelectionModel().select(ycol.getName());
+		else
+			yAxisChoices.getSelectionModel().select(1);
 	}
 	// ------------------------------------------------------
 
@@ -62,7 +70,7 @@ public class ScatterChartController extends AbstractChartController
 			chartBox.getChildren().clear();
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 			scatterChartHome = new SelectableScatterChart(this);
 			AnchorPane.setLeftAnchor(scatterChartHome, 0.);
@@ -94,7 +102,7 @@ public class ScatterChartController extends AbstractChartController
 //alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
 	protected void linearRegression(boolean visible)
 	{
-		System.out.println("linearRegression " + (visible ? "on" : "off"));
+//		System.out.println("linearRegression " + (visible ? "on" : "off"));
 	
 		if (!visible)
 		{
@@ -104,7 +112,7 @@ public class ScatterChartController extends AbstractChartController
 		}
 		String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
-	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+//	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 		XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 		int seriesSize = series1.getData().size();
 		double[] X = new double[seriesSize];
@@ -157,8 +165,11 @@ public class ScatterChartController extends AbstractChartController
 	//------------------------------------------------------------------
 	public void resized()
 	{
-		scatterChartHome.resized();
-		setStatus("" + scatterChartHome.offsetX);
+		if (scatterChartHome != null) 
+		{
+			scatterChartHome.resized();
+			setStatus("" + scatterChartHome.offsetX);
+		}
 	}
 	
 //	//------------------------------------------------------------------

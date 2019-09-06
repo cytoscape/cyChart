@@ -26,6 +26,7 @@ import javafx.scene.layout.StackPane;
 public class SwingPanel extends JPanel {
  
 	protected JFXPanel jfxPanel;
+	private CyChartManager manager;
  
 	public static final String EVENT_TYPE_CLICK = "click";
 	public static final String EVENT_TYPE_CONTEXT_MENU = "contextmenu";
@@ -43,13 +44,13 @@ public class SwingPanel extends JPanel {
 //		initComponents(null);
 //		Platform.setImplicitExit(false);
 //	}
-
-	public SwingPanel(CyChartManager manager, HistogramFilterDialog parentDialog, CyColumn column) {
+	public SwingPanel(CyChartManager mgr, HistogramFilterDialog parentDialog) {
 		super(new BorderLayout());
+		manager = mgr;
 		registrar = manager.getRegistrar();
 //		System.out.println("SwingPanel");
 		setPreferredSize(new Dimension(600, 500));
-		initComponents(column);
+		initComponents();
 		Platform.setImplicitExit(false);
 	}
 
@@ -65,19 +66,19 @@ public class SwingPanel extends JPanel {
 		return returnVal[0];
 	}
 
-	private void initComponents(CyColumn column) {
+	private void initComponents() {
 //		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
-		StackPane appPane = AppHistograms.getStackPane(registrar, column);
+		StackPane appPane = AppHistograms.getStackPane(registrar, manager);
 //		appPane.setBorder(Borders.magentaBorder);
 		if (appPane != null) 
 		{
 //			System.out.println("appPane created");
 			Scene scene = new Scene(appPane);
-			System.out.println("set scene");
+//			System.out.println("set scene");
 			jfxPanel.setScene(scene);
-			System.out.println("scene created");
+//			System.out.println("scene created");
 		}
 		else System.out.println("appPane came back null");
 

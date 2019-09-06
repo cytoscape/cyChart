@@ -8,9 +8,9 @@ import java.util.ResourceBundle;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
 import org.cytoscape.cyChart.internal.charts.StringUtil;
+import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.model.Range;
-import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -31,8 +31,8 @@ public class HistogramChartController extends AbstractChartController
   	private  LineChart<Number, Number> histogramChart;	
 	private SubRangeLayer1D subrangeLayer;
 	// ------------------------------------------------------
-	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyColumn col) {
-		super(parent, reg, false, col, null);
+	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyChartManager mgr) {
+		super(parent, reg, false, mgr);
 	}
  	
 
@@ -64,7 +64,8 @@ public class HistogramChartController extends AbstractChartController
 //	if (xColumn.getType().equals(Integer.class))
 //		System.out.println("INTEGER COLUMN");
 //		int nBins = column.getRange().
-		
+		xColumn = findColumn(name);
+		if (xColumn == null)  { noHistogram();	return;  }
 		Histogram1D h1 = getHistogram(name, isXLog);
 		if (h1 == null)  { noHistogram();	return;  }
 		chartBox.getChildren().clear();
@@ -106,7 +107,7 @@ public class HistogramChartController extends AbstractChartController
 			h1.dump();
 			histogramChart.getData().clear();
 			
-			boolean isInt = xColumn.getType().equals(Integer.class);
+			boolean isInt = xColumn != null && xColumn.getType().equals(Integer.class);
 			double area = isInt ? 1 : h1.getArea();
 			XYChart.Series<Number, Number> data = h1.getDataSeries(name,0.,area);
 			histogramChart.getData().add(data);
@@ -224,8 +225,8 @@ public class HistogramChartController extends AbstractChartController
 	}
 	
 	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
-		if (row == null) {		System.out.println("row is null");		return false;	}
-		if (col == null) {		System.out.println("col is null");		return false;	}
+		if (row == null) {		System.err.println("row is null");		return false;	}
+		if (col == null) {		System.err.println("col is null");		return false;	}
 		
 		Object val = row.get(col.getName(), col.getType());
 		if (val == null) return false;

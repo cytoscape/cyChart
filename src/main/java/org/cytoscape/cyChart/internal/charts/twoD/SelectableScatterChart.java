@@ -75,34 +75,34 @@ public class SelectableScatterChart extends AnchorPane
 		yAxis.setLabel(yName);
 		
 		scatter = new ScatterChart<Number, Number>(xAxis, yAxis);
-		
-		URL sheet = getClass().getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("../resources/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("resources/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("/../org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("/../../org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("/../../../org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getClassLoader().getResource("/../../../../org/cytoscape/cyChart/internal/chart.css");
-		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getClassLoader().getResource("../resources/chart.css");
-		if (sheet == null) 
-			sheet = CyActivator.class.getResource("../resources/chart.css");
-		if (sheet == null)
-			sheet = SelectableScatterChart.class.getResource("resources/chart.css");
-		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getResource("./chart.css");
-		if (sheet == null) 
-			sheet = SelectableScatterChart.class.getResource("chart.css");
-		if (sheet != null)
-			scatter.getStylesheets().add(sheet.toExternalForm());
+//		
+//		URL sheet = getClass().getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("/org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("../resources/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("resources/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("/../org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("/../../org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("/../../../org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getClassLoader().getResource("/../../../../org/cytoscape/cyChart/internal/chart.css");
+//		if (sheet == null) 
+//			sheet = SelectableScatterChart.class.getClassLoader().getResource("../resources/chart.css");
+//		if (sheet == null) 
+//			sheet = CyActivator.class.getResource("../resources/chart.css");
+//		if (sheet == null)
+//			sheet = SelectableScatterChart.class.getResource("resources/chart.css");
+//		if (sheet == null) 
+//			sheet = SelectableScatterChart.class.getResource("./chart.css");
+//		if (sheet == null) 
+//			sheet = SelectableScatterChart.class.getResource("chart.css");
+//		if (sheet != null)
+//			scatter.getStylesheets().add(sheet.toExternalForm());
 //		scatter.getStylesheets().add("chart.css");
 		controller.anchor(scatter);
 		controller.setChart(scatter);
@@ -152,9 +152,9 @@ public class SelectableScatterChart extends AnchorPane
 	private Point2D selRectStart = null;
 	private Point2D selRectEnd = null;
 	private boolean isRectangleSizeTooSmall() {
-		if (selectionRectangle == null) 		return true;
-		if (selectionRectangle.getWidth() < 10)	return true;
-		if (selectionRectangle.getHeight() < 10) return true;
+		if (selectionRectangle == null) 			return true;
+		if (selectionRectangle.getWidth() < 10)		return true;
+		if (selectionRectangle.getHeight() < 10) 	return true;
 		return false;
 	}
 
@@ -177,9 +177,9 @@ public class SelectableScatterChart extends AnchorPane
 	{
 
 		selectionRectangle = new Rectangle(); 
-		selectionRectangle.setOnMouseEntered(event -> { setCursor(selectionRectangle, event); } );
-		selectionRectangle.setOnMouseMoved(event -> { setCursor(selectionRectangle, event); });
-		selectionRectangle.setOnMouseExited(event -> {	setCursor(Cursor.DEFAULT);		});
+		selectionRectangle.setOnMouseEntered(	event -> { setCursor(selectionRectangle, event); } );
+		selectionRectangle.setOnMouseMoved(		event -> { setCursor(selectionRectangle, event); });
+		selectionRectangle.setOnMouseExited(	event ->  { setCursor(Cursor.DEFAULT);		});
 
 		selectionRectangle.setManaged(false);
 		selectionRectangle.setOpacity(0.3);
@@ -249,7 +249,7 @@ public class SelectableScatterChart extends AnchorPane
 			double width = Math.abs(selRectStart.getX() - selRectEnd.getX());
 			double height = Math.abs(selRectStart.getY() - selRectEnd.getY());
 			drawSelectionRectangle(x, y, width, height, option);
-//			System.out.println("x:" + x + " y:" + y);
+//			System.out.println("x:" + x + " y:" + y + " width:" + width + " height:" + height);
 		} else
 		{
 			double oldX = selRectStart.getX();
@@ -322,6 +322,7 @@ public class SelectableScatterChart extends AnchorPane
 			selRectEnd = computeRectanglePoint(ev.getX()+offsetX, ev.getY()+offsetY);		// store current cursor position
 			Rectangle2D r = union(selRectStart, selRectEnd);
 			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight(), optionDrag);
+			selectionRectangleScaleDef = rectDef(selectionRectangle, getPlotFrame());
 			setAxisBounds();
 			ev.consume();
 		});

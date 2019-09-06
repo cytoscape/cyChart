@@ -2,6 +2,7 @@ package org.cytoscape.cyChart.internal.charts.oneD;
 
 import javax.swing.JLabel;
 
+import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -24,12 +25,12 @@ public class AppHistograms extends Application
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, CyChartManager mgr)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(500);
-	    new HistogramChartController(pane, registrar, col);
+	    new HistogramChartController(pane, registrar, mgr);
 	    return pane;
     }  
     

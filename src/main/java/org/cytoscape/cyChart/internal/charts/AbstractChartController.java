@@ -17,6 +17,7 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.NumberField;
+import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.model.CyColumn;
@@ -60,7 +61,8 @@ abstract public class AbstractChartController implements Initializable {
 	
 	protected CyApplicationManager applicationManager = null;
 	protected CyServiceRegistrar registrar;
-
+	protected CyChartManager manager;
+	
 	protected CyTable nodeTable;
 	protected NumberField xMin, xMax;
 	protected NumberField yMin, yMax;
@@ -107,8 +109,9 @@ abstract public class AbstractChartController implements Initializable {
 
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
-	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyColumn xCol, CyColumn yCol) {
+	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
 		chartContainer = parent;
+		manager = mgr;
 //		chartContainer.setBorder(Borders.etchedBorder);
 		if (reg == null)
 		{
@@ -134,19 +137,18 @@ abstract public class AbstractChartController implements Initializable {
 
 		parent.getChildren().add(page);
 		anchor(parent); 
-		xColumn = xCol;
-		yColumn = yCol;
-		initialize(null, null, xCol, yCol);
+		xColumn = manager.getXColumn();
+		yColumn = manager.getYColumn();
+		initialize();
 		
 	}
 	//-------------------------------------------------------------
-	// the FXML callback to define the chart  (FXML is not in use, but this is called thru the constructor, with an extra x column argument)
-	public void initialize(URL url, ResourceBundle rb)
+	@Override public void initialize(URL uri, ResourceBundle rb)
 	{
-		initialize( url,  rb, null, null);
-	}	
+		initialize();
+	}
 	
-	public void initialize(URL url, ResourceBundle rb, CyColumn xCol, CyColumn yCol)
+	public void initialize()
 	{
 	    assert( chartContainer != null);
 		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{	
@@ -161,12 +163,12 @@ abstract public class AbstractChartController implements Initializable {
 		int xIndex = 0;
 		SingleSelectionModel<String> xSelector = xAxisChoices.getSelectionModel();
 		SingleSelectionModel<String> ySelector = yAxisChoices.getSelectionModel();
-		if (xCol != null)
-			xSelector.select(xCol.getName());
+		if (xColumn != null)
+			xSelector.select(xColumn.getName());
 		else 	xSelector.select(xIndex);
 		
-		if (yCol != null)
-			ySelector.select(yCol.getName());
+		if (yColumn != null)
+			ySelector.select(yColumn.getName());
 		else ySelector.select(1);
 		
 		setParameters();
@@ -207,11 +209,13 @@ abstract public class AbstractChartController implements Initializable {
 		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
 		    @Override public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
 		        setLogXDistribution(new_val);
-		        System.out.println("log changed");} 	};
+//		        System.out.println("log changed");} 	
+		    }  };
 
 		logXTransform = new CheckBox("Log");
 		logXTransform.selectedProperty().addListener(logXChange);
 		logXTransform.setAlignment(Pos.CENTER);
+		logXTransform.setDisable(false);
 		xMin = makeNumberField("xMin");
 		xMax = makeNumberField("xMax");	
 		
@@ -227,6 +231,7 @@ abstract public class AbstractChartController implements Initializable {
 		logYTransform = new CheckBox("Log");
 		logYTransform.selectedProperty().addListener(logYChange);
 		logYTransform.setAlignment(Pos.CENTER);
+		logYTransform.setDisable(false);
 		yMin = makeNumberField("yMin");
 		yMax = makeNumberField("yMax");
 		
@@ -235,10 +240,10 @@ abstract public class AbstractChartController implements Initializable {
 		footer2 = makeNumberRangeLine(yAxisChoices, logYTransform, yMin, yMax);
 		footer3 = new HBox(statusLabel); 
 		VBox bottom = new VBox();
-		bottom.getChildren().add(footer1);
-		if (is2D)
-			bottom.getChildren().add(footer2);
-		bottom.getChildren().add(footer3);
+		List<Node> children = bottom.getChildren();
+		children.add(footer1);
+		if (is2D) 		children.add(footer2);
+		children.add(footer3);
 		return bottom;
 	}
 	// ------------ 

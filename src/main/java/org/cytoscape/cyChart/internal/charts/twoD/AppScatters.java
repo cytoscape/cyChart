@@ -1,5 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
+import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -19,18 +20,18 @@ public class AppScatters extends Application
 //	    URL url = getClass().getResource("ScatterChart.fxml");
 //	    fxmlLoader.setLocation(url);
 //	    AnchorPane appPane = fxmlLoader.load();
-    	StackPane pane = getStackPane(null, null, null);
+    	StackPane pane = getStackPane(null, null);
     	Scene scene = new Scene(pane, 520, 550);
 	    stage.setScene(scene);
 	    stage.show();
    }
 
-    public static StackPane getStackPane(CyServiceRegistrar registrar, CyColumn col, CyColumn ycol)
+    public static StackPane getStackPane(CyServiceRegistrar registrar, CyChartManager mgr)
     {
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(550);
-	    new ScatterChartController(pane, registrar, col, ycol);
+	    new ScatterChartController(pane, registrar, mgr);
 	    return pane;
     }  
     

@@ -199,16 +199,18 @@ public class SubRangeLayer1D
 //		debugH(x);
 		if (event.isSecondaryButtonDown()) 		return;		// do nothing for a right-click
 		double scaleStart = controller.getSelectionStart();
-		selectionAnchor = converter.scaleToFrame(scaleStart, chart, false);
 		double scaleEnd = controller.getSelectionEnd();
-		selectionMovingEnd = converter.scaleToFrame(scaleEnd, chart, false);
-		
+		selectionAnchor = converter.scaleToFrame(((hitSpot == 1) ? scaleEnd : scaleStart), chart, false);
+		selectionMovingEnd = converter.scaleToFrame(((hitSpot == 1) ? scaleStart : scaleEnd), chart, false);
 		
 		
 		boolean vis = selectionGroup.isVisible();
 		hitSpot = testHit(x + chartOffsetX);
-		double right = Math.max(selectionAnchor, selectionMovingEnd);
 		double left = Math.min(selectionAnchor, selectionMovingEnd);
+		double right = Math.max(selectionAnchor, selectionMovingEnd);
+		
+//		System.out.println(String.format("Hit: %d LR:[ %.2f ->  %.2f ] anchor: %.2f " , hitSpot, left, right, selectionAnchor));	
+		
 		if (vis)		//   && hitSpot > 0
 		{
 			previousH = x;
@@ -217,9 +219,9 @@ public class SubRangeLayer1D
 			else if (hitSpot == 2)  	setSelection(left, right);
 			else if (hitSpot == 3)  	setSelection(left, x);
 			else if (x < leftBar.getStartX()-SLOP)
-				setSelection(right, x);
+				setSelection(x, x-1);
 			else if (x > rightBar.getStartX()+SLOP)
-				setSelection(left, x);
+				setSelection(x+1, x );
 		}
 		else
 		{
@@ -245,6 +247,23 @@ public class SubRangeLayer1D
 		event.consume();
 		if (!dragging) 							return;
 
+		
+		if (hitSpot == 0) 
+		{
+			double curH = event.getX();
+			if (curH < previousH)
+			{
+				setSelection(previousH, curH);
+				hitSpot = 1;
+			}
+			else
+			{
+				setSelection(previousH, curH);
+				hitSpot = 3;
+			
+			}
+			
+		}
 		Node chartPlotArea = controller.getPlotAreaNode();
 		double minAllowed = -1;   //chartPlotArea.getLayoutX();
 		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth() + 2;		//+ 6
@@ -359,7 +378,8 @@ public class SubRangeLayer1D
 		double h0 = converter.scaleToFrame(xMin, chart, false);
 		double h1 = converter.scaleToFrame(xMax, chart, false);
 		double v0 = converter.scaleToFrame(controller.getSelectionTop(), chart, true);
-		setSelection(h0, h1);
+		if (hitSpot == 1)	setSelection(h1, h0); 
+		else 				setSelection(h0, h1);
 		update(v0, false);
 	}
 

@@ -9,9 +9,9 @@ import javax.swing.JPanel;
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -25,15 +25,16 @@ public class ScatterFilterPanel extends JPanel {
 
 	private String title = null;
 	private CyServiceRegistrar registrar;
-
+	private CyChartManager manager; 
 	final Logger logger = Logger.getLogger(CyUserLog.NAME);
  
-	public ScatterFilterPanel(CyChartManager manager, ScatterFilterDialog parentDialog, CyColumn defaulX, CyColumn defaultY) {
+	public ScatterFilterPanel(CyChartManager mgr, ScatterFilterDialog parentDialog) {
 		super(new BorderLayout());
-		registrar = manager.getRegistrar();
 //		System.out.println("ScatterFilterPanel");
 		setPreferredSize(new Dimension(520, 500));
-		initComponents(defaulX, defaultY);
+		manager = mgr;
+		registrar = manager.getRegistrar();
+		initComponents();
 //		Platform.setImplicitExit(false);
 	}
 
@@ -49,17 +50,19 @@ public class ScatterFilterPanel extends JPanel {
 		return returnVal[0];
 	}
 
-	private void initComponents(CyColumn defaultX, CyColumn defaultY) {
+	private void initComponents() {
 		jfxPanel = new JFXPanel();
-		StackPane appPane = AppScatters.getStackPane(registrar, defaultX, defaultY);
+		StackPane appPane = AppScatters.getStackPane(registrar, manager);
 		if (appPane != null) 
+		
 		{
 			Scene scene = new Scene(appPane);
-			jfxPanel.setScene(scene);
+			Platform.runLater(() -> { jfxPanel.setScene(scene); });
+			//https://stackoverflow.com/questions/52832861/jfxpanel-freezing-awt-thread-the-second-time
 //			System.out.println("scene created");
+			add(jfxPanel, BorderLayout.CENTER);
 		}
 		else System.out.println("appPane came back null");
-		add(jfxPanel, BorderLayout.CENTER);
 	}
 
 }

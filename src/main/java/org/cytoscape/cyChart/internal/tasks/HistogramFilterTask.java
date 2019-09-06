@@ -5,13 +5,12 @@ import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
 public class HistogramFilterTask extends AbstractEmptyObservableTask {
-	final private String title = "Histogram Plot";
+	private String title = "Histogram Plot";
 
 	@Tunable(description = "X Axis Parameter", context= Tunable.NOGUI_CONTEXT)
 	
@@ -35,13 +34,22 @@ public class HistogramFilterTask extends AbstractEmptyObservableTask {
 			if (net == null) return;
 			CyTable table = net.getDefaultNodeTable();
 			column = table.getColumn(xColumn);
+			if (column == null)
+				column = table.getColumn("EdgeCount");
+			if (column == null)
+				column = table.getColumn("OutDegree");
+
 		}
 	}
 
 	public void run(TaskMonitor monitor) 
 	{	
 		if (manager.getCurrentNetwork() == null) return;
-		HistogramFilterDialog	dlog = new HistogramFilterDialog(manager, title, column);
+		manager.setXColumn(column);
+		monitor.setStatusMessage("Building histogram");
+		CyNetwork net = manager.getCurrentNetwork();
+		title = net.getDefaultNetworkTable().getTitle();
+		HistogramFilterDialog	dlog = new HistogramFilterDialog(manager, title);
 		dlog.setVisible(true);
 		
 	}

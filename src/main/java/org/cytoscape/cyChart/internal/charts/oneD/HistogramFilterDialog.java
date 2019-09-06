@@ -20,15 +20,13 @@ public class HistogramFilterDialog extends JDialog implements CyChart, ChangeLis
 	private SwingPanel currentPanel;
 
 
-	public HistogramFilterDialog(CyChartManager mgr,String title, CyColumn column ) {
+	public HistogramFilterDialog(CyChartManager mgr,String title ) {
 		super(mgr.getOwner());
 		manager = mgr;
 		setTitle((title != null) ? title : "CyChart");
-		currentPanel = new SwingPanel(manager, this, column);
+		currentPanel = new SwingPanel(manager, this);
 		getContentPane().add(currentPanel);
 		setPreferredSize(new Dimension(520, 500));
-		if (column != null)
-			System.out.println("Column is " + column.getName());
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		pack();
 	}

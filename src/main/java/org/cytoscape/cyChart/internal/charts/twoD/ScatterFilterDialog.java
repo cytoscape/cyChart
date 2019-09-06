@@ -26,7 +26,7 @@ public class ScatterFilterDialog extends JDialog implements CyChart, ChangeListe
 			initialTitle = title;
 		} else  setTitle("CyChart");
 
-		currentPanel = new ScatterFilterPanel(manager, this, mgr.getXColumn(), mgr.getYColumn());
+		currentPanel = new ScatterFilterPanel(manager, this);
 		getContentPane().add(currentPanel);
 		setPreferredSize(new Dimension(520, 600));
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);

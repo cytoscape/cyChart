@@ -56,19 +56,34 @@ public class CyChartManager {
 	}
 	CyColumn xColumn;
 	CyColumn yColumn;
+	boolean isDirected;
 
 	public void setXColumn(CyColumn c) 	{	xColumn = c;	}
 	public void setYColumn(CyColumn c) 	{	yColumn = c;	}
-	public CyColumn getXColumn() 		{	return xColumn;	}
-	public CyColumn getYColumn() 		{	return yColumn;
+	public CyColumn getXColumn() 		
+	{
+		if (xColumn == null)
+			{} //setXColumnName();
+		 return xColumn;
+	}
+	public CyColumn getYColumn()	{
+//		if (yColumn != null) 
+			return yColumn;	
 	}
 
 	public void setXColumnName(String x) {
 		CyNetwork net = getCurrentNetwork();
 		if (net == null) return;
-		CyTable tab = net.getDefaultNodeTable();
+		boolean edgeAttribute = x.startsWith("Edge") && !x.startsWith("EdgeCount");
+		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
 		if (tab == null) return;
 		xColumn = tab.getColumn(x);
+		if (xColumn == null && "Degree".equals(x))
+		{
+			x = "EdgeCount";
+			xColumn = tab.getColumn(x);
+		}
+	
 		
 	}
 	
@@ -76,9 +91,17 @@ public class CyChartManager {
 	public void setYColumnName(String y) {
 		CyNetwork net = getCurrentNetwork();
 		if (net == null) return;
-		CyTable tab = net.getDefaultNodeTable();
+		if (isDirected && "Degree".equals(y))
+			y = "EdgeCount";
+		boolean edgeAttribute = y.startsWith("Edge") && !y.startsWith("EdgeCount");
+		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
 		if (tab == null) return;
 		yColumn = tab.getColumn(y);
+		if (yColumn == null && "Degree".equals(y))
+		{
+			y = "EdgeCount";
+			yColumn = tab.getColumn(y);
+		}
 	}
 	
 	
