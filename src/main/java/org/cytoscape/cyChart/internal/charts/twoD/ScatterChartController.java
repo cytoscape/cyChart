@@ -128,8 +128,33 @@ public class ScatterChartController extends AbstractChartController
 		scatterChartHome.resized();
 	}
 
+	protected void logRegression(boolean visible)
+	{
+//		System.out.println("linearRegression " + (visible ? "on" : "off"));
 	
-	
+		if (!visible)
+		{
+			scatterChartHome.clearRegression();
+			return;
+		}
+		String x = xAxisChoices.getSelectionModel().getSelectedItem();
+		String y = yAxisChoices.getSelectionModel().getSelectedItem();
+//	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+		XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+		int seriesSize = series1.getData().size();
+		double[] X = new double[seriesSize];
+		double[] Y = new double[seriesSize];
+		for (int i=0; i<seriesSize; i++)
+		{
+			Data<Number, Number> d = series1.getData().get(i);
+			X[i] = Math.log((double) d.getXValue());
+			Y[i] = Math.log((double) d.getYValue());
+		}
+		
+		scatterChartHome.setRegression(new LinearRegression(X, Y));
+		scatterChartHome.resized();
+	}
+
 	
 	private XYChart.Series<Number, Number>  getDataSeries(String xName, String yName) {
 		nodeTable = getCurrentNodeTable(); 

@@ -67,18 +67,20 @@ public class SwingPanel extends JPanel {
 	}
 
 	private void initComponents() {
-//		System.out.println("initComponents");
+		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
 		StackPane appPane = AppHistograms.getStackPane(registrar, manager);
 //		appPane.setBorder(Borders.magentaBorder);
 		if (appPane != null) 
 		{
-//			System.out.println("appPane created");
+			System.out.println("appPane created");
 			Scene scene = new Scene(appPane);
-//			System.out.println("set scene");
-			jfxPanel.setScene(scene);
-//			System.out.println("scene created");
+			System.out.println("set scene");
+			Platform.runLater(() -> {
+				jfxPanel.setScene(scene);
+			    System.out.println("scene Created");
+			});	
 		}
 		else System.out.println("appPane came back null");
 

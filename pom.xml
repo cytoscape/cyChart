@@ -4,10 +4,12 @@
 	<properties>
 		<bundle.symbolicName>cyChart</bundle.symbolicName>
 		<bundle.namespace>org.cytoscape.cyChart.internal</bundle.namespace>
-		<cytoscape.api.version>3.6.0</cytoscape.api.version>
+		<cytoscape.api.version>3.7.0</cytoscape.api.version>
 		
-		<maven-bundle-plugin.version>2.5.4</maven-bundle-plugin.version>
+ 		<maven-bundle-plugin.version>3.5.0</maven-bundle-plugin.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
+    <maven.compiler.source>10</maven.compiler.source>
+    <maven.compiler.target>10</maven.compiler.target>
 	</properties>
 
 	<groupId>org.cytoscape</groupId>
@@ -15,17 +17,26 @@
 	<packaging>bundle</packaging>
 	<name>${bundle.symbolicName}</name>
 
-	<version>0.1.5</version>
+	<version>0.2.1</version>
 
 	<build>
 		<plugins>
+	      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+ 			 <version>3.8.0</version>
+            <configuration>
+                <encoding>UTF-8</encoding>
+            </configuration>
+        </plugin>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
 				<version>${maven-bundle-plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
-					<instructions>
+					<instructions> 
+           				 <_noee>true</_noee>
 						<Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
@@ -37,15 +48,6 @@
  					</instructions>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
 		</plugins>
 	</build>
 
@@ -100,7 +102,8 @@
 		</snapshotRepository>
 	</distributionManagement>
 
-	<dependencies>	
+
+	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>command-executor-api</artifactId>
@@ -114,12 +117,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>core-task-api</artifactId>
-			<version>${cytoscape.api.version}</version>
-			<scope>provided</scope>
-		</dependency>
-        <dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
 			<version>${cytoscape.api.version}</version>
@@ -144,6 +141,13 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5</version>
+      <optional>true</optional>
+    </dependency>
+
+		<dependency>
 			<groupId>org.ops4j.pax.logging</groupId>
 			<artifactId>pax-logging-api</artifactId>
 			<version>1.5.2</version>
@@ -155,6 +159,58 @@
 			<version>${osgi.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		</dependencies>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>core-task-api</artifactId>
+			<version>${cytoscape.api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+
+								<!-- JavaFX Linux -->
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-base</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-controls</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-fxml</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-graphics</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-media</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-swing</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+								<dependency>
+									<groupId>org.openjfx</groupId>
+    								<artifactId>javafx-web</artifactId>
+    								<version>11</version>
+    								<scope>provided</scope>
+								</dependency>
+
+	</dependencies>
 
 </project>

@@ -260,7 +260,6 @@ public class SubRangeLayer1D
 			{
 				setSelection(previousH, curH);
 				hitSpot = 3;
-			
 			}
 			
 		}

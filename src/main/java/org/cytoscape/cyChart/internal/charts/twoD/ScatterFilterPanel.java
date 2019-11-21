@@ -18,6 +18,8 @@ import javafx.scene.layout.StackPane;
 
 public class ScatterFilterPanel extends JPanel {
  
+	private static final long serialVersionUID = 1L;
+
 	protected JFXPanel jfxPanel;
  
 	public static final String EVENT_TYPE_CLICK = "click";
