@@ -1,7 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
 import org.cytoscape.cyChart.internal.model.CyChartManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.application.Application;

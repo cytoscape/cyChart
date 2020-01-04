@@ -27,7 +27,16 @@ public class AppHistograms extends Application
 	    StackPane pane = new StackPane();
 	    pane.setPrefWidth(520);
 	    pane.setPrefHeight(500);
-	    new HistogramChartController(pane, registrar, mgr);
+	    try
+	    {
+System.out.println("preconstruction");
+new HistogramChartController(pane, registrar, mgr);
+	    	
+	    }
+	    catch (Exception e)
+	    {
+	    	e.printStackTrace();
+	    }
 	    return pane;
     }  
     

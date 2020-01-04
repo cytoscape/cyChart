@@ -21,7 +21,6 @@ import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -57,13 +56,13 @@ import javafx.stage.FileChooser;
  * This is the parent class of the histogram and scatter controllers.
  * It builds the panel, with header / chart / footer
  */
-abstract public class AbstractChartController implements Initializable {
+abstract public class AbstractChartController {		// implements Initializable
 	
 	protected CyApplicationManager applicationManager = null;
 	protected CyServiceRegistrar registrar;
 	protected CyChartManager manager;
 	
-	protected CyTable nodeTable;
+	protected CyTable table;
 	protected NumberField xMin, xMax;
 	protected NumberField yMin, yMax;
 	protected Label statusLabel = new Label();
@@ -110,18 +109,19 @@ abstract public class AbstractChartController implements Initializable {
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
 	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
+		System.out.println("AbstractChartController");
 		chartContainer = parent;
 		manager = mgr;
 //		chartContainer.setBorder(Borders.etchedBorder);
 		if (reg == null)
 		{
 			applicationManager = null;
-			nodeTable = null;
+			table = null;
 		}
 		else
 		{	registrar = reg;
 			applicationManager = registrar.getService(CyApplicationManager.class);
-			nodeTable = getCurrentNodeTable();
+			table = manager.getCurrentTable();
 		}
 		
 		HBox top = makeHeader(is2D);
@@ -140,13 +140,13 @@ abstract public class AbstractChartController implements Initializable {
 		xColumn = manager.getXColumn();
 		yColumn = manager.getYColumn();
 		initialize();
-		
+//		
 	}
 	//-------------------------------------------------------------
-	@Override public void initialize(URL uri, ResourceBundle rb)
-	{
-		initialize();
-	}
+//	@Override public void initialize(URL uri, ResourceBundle rb)
+//	{
+//		initialize();
+//	}
 	
 	public void initialize()
 	{
@@ -167,9 +167,13 @@ abstract public class AbstractChartController implements Initializable {
 			xSelector.select(xColumn.getName());
 		else 	xSelector.select(xIndex);
 		
-		if (yColumn != null)
-			ySelector.select(yColumn.getName());
-		else ySelector.select(1);
+		if (yColumn == null)
+		{
+			ySelector.select(1);
+			manager.setYColumnName(ySelector.getSelectedItem());
+		}
+		else	ySelector.select(yColumn.getName());
+			
 		
 		setParameters();
 		xSelector.selectedIndexProperty().addListener(xListener);
@@ -274,14 +278,19 @@ abstract public class AbstractChartController implements Initializable {
 		BigDecimal newYmin = yMin == null ? new BigDecimal(0) : yMin.getNumber();
 		BigDecimal newYmax = yMax == null ? new BigDecimal(0) : yMax.getNumber();
 		
-		double val = Double.parseDouble(newValue);
+		double val = 0;
+		try {
+			val = Double.parseDouble(newValue);
+		}
+		catch (NumberFormatException e) {}
 		if ("xMin".equals(fieldId))	setXRange(new Range(val, newXmax.doubleValue()));
 		if ("xMax".equals(fieldId))	setXRange(new Range(newXmin.doubleValue(), val));
 		if ("yMin".equals(fieldId))	setYRange(new Range(val, newYmax.doubleValue()));
 		if ("yMax".equals(fieldId))	setYRange(new Range(newYmin.doubleValue(), val));
-		resized();
+		resizeRangeFields();
 //		System.out.println(fieldId + " = " + val);
 }
+	protected abstract void resizeRangeFields();
 	abstract public void resized();
 	//-------------------------------------------------------------
 	protected Button makeFilter;
@@ -354,8 +363,8 @@ abstract public class AbstractChartController implements Initializable {
 	 
 	 
 	protected void populateColumnChoices() {
-		if (nodeTable != null && !nodeTable.getColumns().isEmpty()) {
-			for (CyColumn col : nodeTable.getColumns()) {
+		if (table != null && !table.getColumns().isEmpty()) {
+			for (CyColumn col : table.getColumns()) {
 				if (!isNumericColumn(col))
 					continue;
 				xAxisChoices.getItems().add(col.getName());
@@ -367,8 +376,8 @@ abstract public class AbstractChartController implements Initializable {
 
 	protected CyColumn findColumn(String name) {
 		if (name == null) return null;
-		if (nodeTable == null) return null;
-		for (CyColumn column : nodeTable.getColumns())
+		if (table == null) return null;
+		for (CyColumn column : table.getColumns())
 			if (name.equals(column.getName()))
 				return column;
 		return null;
@@ -395,12 +404,7 @@ abstract public class AbstractChartController implements Initializable {
 		setYParameters(yAxisChoices.getSelectionModel().getSelectedIndex());
 	}
 	// -------------------------------------------------------------
-	protected CyTable getCurrentNodeTable() {
-		if (applicationManager == null)
-			return null;
-		CyNetwork net = applicationManager.getCurrentNetwork();
-		return net == null ? null : net.getDefaultNodeTable();
-	}
+
 
 	public void setStatus(String s)	{
 		if ( statusLabel != null)  statusLabel.setText(s);
@@ -412,10 +416,11 @@ abstract public class AbstractChartController implements Initializable {
 		setYRange(yRange);
 	}
 	  
-	public void setXmin(double d)	{ xMin.setNumber(d);	}
+	public void setXmin(double d)	{ if (!Double.isNaN(d))	xMin.setNumber(d);	}
 	public void setXmax(double d)	{ xMax.setNumber(d);	}
 	public void setYmin(double d)	{ yMin.setNumber(d);	}
 	public void setYmax(double d)	{ yMax.setNumber(d);	}
+	
 	
 	public void setXRange(Range r) {
 		if (r == null) return;
@@ -475,6 +480,12 @@ abstract public class AbstractChartController implements Initializable {
 	{
 		if (xAxis == null) xAxis = (ValueAxis<Number>) theChart.getXAxis();  //return Range.EMPTY;
 		return new Range(xAxis.getLowerBound(), xAxis.getUpperBound());
+	}
+	// ------------------------------------------------------
+	public Range getYRange()
+	{
+		if (yAxis == null) yAxis = (ValueAxis<Number>) theChart.getYAxis(); 
+		return new Range(yAxis.getLowerBound(), yAxis.getUpperBound());
 	}
 	// ------------------------------------------------------
 	public void setRangeValues(Range r) {

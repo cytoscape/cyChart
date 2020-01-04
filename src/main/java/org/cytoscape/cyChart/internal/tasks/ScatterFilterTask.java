@@ -3,8 +3,6 @@ package org.cytoscape.cyChart.internal.tasks;
 import org.cytoscape.cyChart.internal.charts.twoD.ScatterFilterDialog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -31,14 +29,21 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 		manager = mgr;
 		column = mgr.getXColumn();
 		yColumn = mgr.getYColumn();
-		CyNetwork net = manager.getCurrentNetwork();
+//		CyNetwork net = manager.getCurrentNetwork();
 	}
 
 	public ScatterFilterTask(CyChartManager mgr, CyColumn col, CyColumn ycol) {
 		manager = mgr;
 		mgr.setXColumn(col);
+//		if (ycol == null) 
+//			ycol = getFirstNumericColumnExcept(col);
 		mgr.setYColumn(ycol);
 	}
+
+//	private CyColumn getFirstNumericColumnExcept(CyColumn col) {
+//		manager.getCurrentNetwork()
+//		return null;
+//	}
 
 	public void run(TaskMonitor monitor) 
 	{

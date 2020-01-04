@@ -50,7 +50,7 @@ public class Histogram1D
 	{
 		this(name, values.size(), new Range(0, values.size()));
 		range = getRange(values);
-		System.out.println("getHistogram constructor " + values.size());		
+//		System.out.println("getHistogram constructor " + values.size());		
 		for (Double d : values)
 		{
 			if (d != null) 
@@ -59,7 +59,7 @@ public class Histogram1D
 				count(dd);
 			}
 		}
-		System.out.println("getHistogram constructor done " + values.size());		
+//		System.out.println("getHistogram constructor done " + values.size());		
 	}
 	
 	Range getRange(List<Double> values)
@@ -69,7 +69,7 @@ public class Histogram1D
 		for (Double d : values)
 		{
 			if (d == null) {
-				System.out.println("null value");
+//				System.out.println("null value");
 				continue;
 			}
 			if (d < min) min = d;
@@ -178,7 +178,7 @@ public class Histogram1D
 	{
 		boolean log = other.isLog;
 		if (log != isLog)	
-			System.out.println("Transform mismatch error");
+			System.err.println("Transform mismatch error");
 		
 		for (int i=0; i<other.getSize(); i++)
 		{
@@ -211,8 +211,8 @@ public class Histogram1D
 			if (counts[row] > max) position = row;
 			max = Math.max(max, counts[row]);
 		}
-		System.out.println("Mode: " + max);	
-		System.out.println("ModeX: " + position);	
+//		System.out.println("Mode: " + max);	
+//		System.out.println("ModeX: " + position);	
 		return range.min() + (range.width() * position) / size;
 	}
 	// ----------------------------------------------------------------------------------------------------
@@ -640,7 +640,7 @@ static double SQRT2 = Math.sqrt(2.0);  // the threshold for full width at half m
 		}
 		catch (Throwable ex)		{			ex.printStackTrace();		}
 		Collections.sort(peaks);
-		for (Peak p: peaks)			System.out.println(toString() + " " + p.toString());
+//		for (Peak p: peaks)			System.out.println(toString() + " " + p.toString());
 	}
 	
 	//------------------------------------------------------------------------------

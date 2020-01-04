@@ -13,12 +13,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//import org.apache.commons.validator.routines.EmailValidator;
-//import org.apache.commons.validator.routines.UrlValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
-
-//import gui.Forms.ValidationType;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
 //import services.RandomSequenceGenerator;

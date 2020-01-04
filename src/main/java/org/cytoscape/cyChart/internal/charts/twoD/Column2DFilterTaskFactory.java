@@ -1,7 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
 import org.cytoscape.cyChart.internal.model.CyChartManager;
-import org.cytoscape.cyChart.internal.tasks.HistogramFilterTask;
 import org.cytoscape.cyChart.internal.tasks.ScatterFilterTask;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;

@@ -1,6 +1,7 @@
 package org.cytoscape.cyChart.internal.model;
 
 import java.awt.Frame;
+import java.util.Collection;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -41,11 +42,11 @@ public class CyChartManager {
 		return appMgr.getCurrentNetwork();	
 	}
 	
-	public CyTable getNodeTable(CyNetwork net) 
-	{	
-		if (net == null) return null;
-		return net.getDefaultNodeTable();	
-	}
+//	public CyTable getNodeTable(CyNetwork net) 
+//	{	
+//		if (net == null) return null;
+//		return net.getDefaultNodeTable();	
+//	}
 //	public Map<String, CyChart> getChartMap() {		return idMap;	}
 	public void setVersion(String v) { this.version = v; }
 	public String getVersion() { return version; }
@@ -72,10 +73,11 @@ public class CyChartManager {
 	}
 
 	public void setXColumnName(String x) {
-		CyNetwork net = getCurrentNetwork();
-		if (net == null) return;
-		boolean edgeAttribute = x.startsWith("Edge") && !x.startsWith("EdgeCount");
-		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
+//		CyNetwork net = getCurrentNetwork();
+//		if (net == null) return;
+		CyTable tab = getCurrentTable();
+//		boolean edgeAttribute = x.startsWith("Edge") && !x.startsWith("EdgeCount");
+//		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
 		if (tab == null) return;
 		xColumn = tab.getColumn(x);
 		if (xColumn == null && "Degree".equals(x))
@@ -83,27 +85,43 @@ public class CyChartManager {
 			x = "EdgeCount";
 			xColumn = tab.getColumn(x);
 		}
-	
-		
 	}
 	
 
 	public void setYColumnName(String y) {
-		CyNetwork net = getCurrentNetwork();
-		if (net == null) return;
+//		CyNetwork net = getCurrentNetwork();
+//		if (net == null) return;
 		if (isDirected && "Degree".equals(y))
 			y = "EdgeCount";
-		boolean edgeAttribute = y.startsWith("Edge") && !y.startsWith("EdgeCount");
-		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
+		CyTable tab = getCurrentTable();
 		if (tab == null) return;
-		yColumn = tab.getColumn(y);
-		if (yColumn == null && "Degree".equals(y))
+
+		if (y == null)
+		{
+			Collection<CyColumn> cols = tab.getColumns();
+			for (CyColumn col : cols)
+				if (col.getType() == Double.class)
+				{
+					y = col.getName();
+					yColumn = col;
+				}
+		}
+		else 		yColumn = tab.getColumn(y);
+//		boolean edgeAttribute = y.startsWith("Edge") && !y.startsWith("EdgeCount");
+//		CyTable tab = edgeAttribute ? net.getDefaultEdgeTable() : net.getDefaultNodeTable();
+
+		
+		if ("Degree".equals(y))
 		{
 			y = "EdgeCount";
 			yColumn = tab.getColumn(y);
 		}
 	}
-	
+
+	public CyTable getCurrentTable() {
+		CyApplicationManager appMgr = registrar.getService(CyApplicationManager.class);
+		return (appMgr == null) ? null : appMgr.getCurrentTable();
+	}	
 	
 //	Map<Long, Double> getColumnDoubleMap(CyTable table, String colName)
 //	{

@@ -8,8 +8,8 @@
 		
  		<maven-bundle-plugin.version>3.5.0</maven-bundle-plugin.version>
 		<osgi.api.version>4.2.0</osgi.api.version>
-    <maven.compiler.source>10</maven.compiler.source>
-    <maven.compiler.target>10</maven.compiler.target>
+  	  <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
 	</properties>
 
 	<groupId>org.cytoscape</groupId>
@@ -171,43 +171,43 @@
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-base</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-controls</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-fxml</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-graphics</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-media</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-swing</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 								<dependency>
 									<groupId>org.openjfx</groupId>
     								<artifactId>javafx-web</artifactId>
-    								<version>11</version>
+    								<version>13</version>
     								<scope>provided</scope>
 								</dependency>
 

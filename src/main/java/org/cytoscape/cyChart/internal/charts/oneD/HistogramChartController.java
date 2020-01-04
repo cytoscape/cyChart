@@ -33,14 +33,14 @@ public class HistogramChartController extends AbstractChartController
 	// ------------------------------------------------------
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyChartManager mgr) {
 		super(parent, reg, false, mgr);
+		System.out.println("HistogramChartController");
 	}
  	
-
-	@Override
-	public void initialize(URL url, ResourceBundle bundle) {
-		super.initialize(url, bundle);
-		
-	}
+//	@Override
+//	public void initialize(URL url, ResourceBundle bundle) {
+//		super.initialize(url, bundle);
+//		
+//	}
 	// ------------------------------------------------------
 	@Override protected void makeFilter() {
 		if (registrar != null) {		
@@ -59,7 +59,7 @@ public class HistogramChartController extends AbstractChartController
 	// this recreates the entire chart, axes, data series, etc.
 	public void setXParameter(String name)
 	{
-	System.out.println(name);
+//	System.out.println(name);
 //	if (xColumn == null) return;
 //	if (xColumn.getType().equals(Integer.class))
 //		System.out.println("INTEGER COLUMN");
@@ -85,6 +85,9 @@ public class HistogramChartController extends AbstractChartController
 		chartBox.getChildren().add(histogramChart);
 		subrangeLayer = new SubRangeLayer1D(histogramChart, chartContainer, this);
 		Node chartPlotArea = getPlotAreaNode();
+		
+		// TODO set the styles from a resource file
+		
 		String rootStr = ".root {\n    -fx-font-size: 24pt;\n -fx-font-family: \"Courier New\";\n" + 
 				" -fx-base: rgb(132, 145, 47);\n   -fx-background: rgb(240, 240, 240);\n -fx-legend-visible: false; }";
 
@@ -95,6 +98,9 @@ public class HistogramChartController extends AbstractChartController
 //			rgn.setBorder(Borders.thinEtchedBorder);
 		}
 		histogramChart.setStyle(rootStr);
+		
+		
+		
 		Group groupH = subrangeLayer.getSubRangeGroup();
 		Bounds bounds = getPlotAreaNode().getBoundsInParent();
 		groupH.setTranslateX(bounds.getMinX());
@@ -104,7 +110,7 @@ public class HistogramChartController extends AbstractChartController
 		if (h1 != null)
 		{
 			Range histoRange = h1.getRange();
-			h1.dump();
+//			h1.dump();
 			histogramChart.getData().clear();
 			
 			boolean isInt = xColumn != null && xColumn.getType().equals(Integer.class);
@@ -136,10 +142,10 @@ public class HistogramChartController extends AbstractChartController
 	{
 		try 
 		{
-			nodeTable = getCurrentNodeTable(); 
+			table = manager.getCurrentTable(); 
 	
 			List<Double> values = null;
-			CyColumn column = nodeTable.getColumn(item);
+			CyColumn column = table.getColumn(item);
 			if (column == null)
 			{
 				System.err.println("column is null for " + item);
@@ -147,7 +153,7 @@ public class HistogramChartController extends AbstractChartController
 			}
 			if (column.getType() == Double.class)
 			{
-				values = nodeTable.getColumn(item).getValues(Double.class);
+				values = table.getColumn(item).getValues(Double.class);
 				if (values == null || values.isEmpty()) return null;
 				if (isLog)
 					for (int i=0; i<values.size(); i++)
@@ -194,7 +200,7 @@ public class HistogramChartController extends AbstractChartController
 		if (subrangeLayer != null)
 		{
 			subrangeLayer.chartBoundsChanged();
-			setStatus("" + subrangeLayer.getYValue());
+			setStatus("");	// + subrangeLayer.getYValue()
 		}
 	}
 	
@@ -216,7 +222,7 @@ public class HistogramChartController extends AbstractChartController
 	
 	public void selectRange(CyColumn col, double xMin, double xMax) 
 	{
-		for (CyRow row : nodeTable.getAllRows())
+		for (CyRow row : table.getAllRows())
 		{	
 			boolean selected = rowMatch(row, col, xMin, xMax);
 			row.set(CyNetwork.SELECTED, selected);
@@ -247,6 +253,12 @@ public class HistogramChartController extends AbstractChartController
 			return hit;
 		}
 		return false;
+		
+	}
+
+	@Override
+	protected void resizeRangeFields() {
+		// TODO Auto-generated method stub
 		
 	}
 }

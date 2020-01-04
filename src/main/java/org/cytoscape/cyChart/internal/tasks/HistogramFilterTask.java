@@ -30,9 +30,10 @@ public class HistogramFilterTask extends AbstractEmptyObservableTask {
 		column = col;
 		if (column == null)
 		{
-			CyNetwork net = manager.getCurrentNetwork();
-			if (net == null) return;
-			CyTable table = net.getDefaultNodeTable();
+//			CyNetwork net = manager.getCurrentNetwork();
+//			if (net == null) return;
+			CyTable table = manager.getCurrentTable();  // net.getDefaultNodeTable();
+			
 			column = table.getColumn(xColumn);
 			if (column == null)
 				column = table.getColumn("EdgeCount");
@@ -44,7 +45,7 @@ public class HistogramFilterTask extends AbstractEmptyObservableTask {
 
 	public void run(TaskMonitor monitor) 
 	{	
-		if (manager.getCurrentNetwork() == null) return;
+//		if (manager.getCurrentNetwork() == null) return;
 		manager.setXColumn(column);
 		monitor.setStatusMessage("Building histogram");
 		CyNetwork net = manager.getCurrentNetwork();

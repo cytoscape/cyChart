@@ -163,7 +163,7 @@ public class SubRangeLayer1D
 	
 	public void dumpPosition(MouseEvent event) {
 	Point2D pt = getPosition(event);
-	System.out.println(String.format("(%.0f , %.0f) ->   %.1f , %.3f ", event.getX(),event.getY(), pt.getX(), pt.getY()));
+//	System.out.println(String.format("(%.0f , %.0f) ->   %.1f , %.3f ", event.getX(),event.getY(), pt.getX(), pt.getY()));
 	
 	}
 
@@ -297,10 +297,13 @@ public class SubRangeLayer1D
 		double maxAllowed = chartPlotArea.getLayoutBounds().getWidth();		//minAllowed + 
 		double left = Math.min(selectionAnchor, selectionMovingEnd) + delta;
 		double right = Math.max(selectionAnchor, selectionMovingEnd) + delta;
-		if (left <= minAllowed || right > maxAllowed) 
-			return;
-		selectionAnchor += delta;		
-		selectionMovingEnd += delta;	
+		if (left <= minAllowed) selectionAnchor = minAllowed;
+		else if ( right > maxAllowed) selectionAnchor = maxAllowed;
+		else
+		{
+			selectionAnchor += delta;		
+			selectionMovingEnd += delta;	
+		}
 //		System.out.println("selection: " + selectionAnchor + " - " + selectionMovingEnd);
 	}
 	
@@ -369,16 +372,20 @@ public class SubRangeLayer1D
 			selectionMovingEnd = selectionGroup.getLayoutX() + selectionGroup.getBoundsInLocal().getWidth();
 		}
 		
+		boolean legalRange = false;
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
 //		System.out.println(String.format("setAxisBounds: %.2f -  %.2f ", xMin, xMax));
 		if (Double.isNaN(xMin) || Double.isNaN(xMax)) return;
 		if (Double.isInfinite(xMin) || Double.isInfinite(xMax)) return;
+		legalRange = xMax > xMin;
 		double h0 = converter.scaleToFrame(xMin, chart, false);
 		double h1 = converter.scaleToFrame(xMax, chart, false);
 		double v0 = converter.scaleToFrame(controller.getSelectionTop(), chart, true);
 		if (hitSpot == 1)	setSelection(h1, h0); 
 		else 				setSelection(h0, h1);
+		selectionGroup.setVisible(legalRange);
+		
 		update(v0, false);
 	}
 
@@ -443,7 +450,7 @@ public class SubRangeLayer1D
 
 		if (selection != null)
 		{
-		selection.setStrokeWidth(4);	selection.setStroke(c);   selection.setFill(c);
+			selection.setStrokeWidth(4);	selection.setStroke(c);   selection.setFill(c);
 		}
 		
 		groupH.getChildren().clear();
@@ -452,7 +459,7 @@ public class SubRangeLayer1D
 		if (selection != null)
 			groupH.getChildren().add(selection);
 			
-		groupH.setOpacity(0.3);
+		groupH.setOpacity(0.25);
 		groupH.setMouseTransparent(true);
 		return groupH;
 	}
@@ -462,7 +469,7 @@ public class SubRangeLayer1D
 	public void update(double v, boolean interactive)			// these are in frame (mouse) coords
 	{
 		Bounds bounds = controller.getPlotBounds();
-		double offX = bounds.getMinX();
+		double offX = bounds.getMinX() + 6;
 		double offY = bounds.getMinY();
 		double top = 14;  
 		double bottom = top + bounds.getHeight();    

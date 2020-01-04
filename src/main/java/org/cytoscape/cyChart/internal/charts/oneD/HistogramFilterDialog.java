@@ -1,8 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
 import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.event.ChangeEvent;
@@ -11,7 +9,6 @@ import javax.swing.event.ChangeListener;
 import org.cytoscape.cyChart.internal.model.CyChart;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.view.SwingPanel;
-import org.cytoscape.model.CyColumn;
 
 public class HistogramFilterDialog extends JDialog implements CyChart, ChangeListener {
 
@@ -31,8 +28,8 @@ public class HistogramFilterDialog extends JDialog implements CyChart, ChangeLis
 		pack();
 	}
 //
-	public String getTitle(String id) { 	return (id == null) ? getTitle() : null;	}
-	public SwingPanel getPanel(String id) { return (id == null) ? currentPanel : null;	}
+	public String getTitle(String id) { 	return getTitle();	}
+	public SwingPanel getPanel(String id) { return currentPanel;	}
 
 	@Override public void stateChanged(ChangeEvent e) {
 		String ttl = currentPanel.getTitle();

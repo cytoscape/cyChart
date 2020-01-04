@@ -1,11 +1,9 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Objects;
 
-import org.cytoscape.cyChart.internal.CyActivator;
 import org.cytoscape.cyChart.internal.charts.oneD.FrameScaleConverter;
 import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
@@ -44,7 +42,7 @@ public class SelectableScatterChart extends AnchorPane
 	FrameScaleConverter converter = new FrameScaleConverter();
 	private ScatterChart<Number, Number> scatter;
 	private final ScatterChartController controller;
-	public ScatterChart<Number, Number> 	getScatterChart()	{ return scatter;	}
+	public ScatterChart<Number, Number> 	getScatterChart()	{ 	return scatter;	}
 
 	//------------------------------------------------------------------------
 	public SelectableScatterChart(ScatterChartController ctlr)
@@ -144,8 +142,8 @@ public class SelectableScatterChart extends AnchorPane
 		private ValueAxis<Number> xAxis;
 		private ValueAxis<Number> yAxis;
 		private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
-		private Rectangle selectionRectangle = new Rectangle(0,0,0,0);
-		private Rectangle mirrorRectangle = new Rectangle(0,0,0,0);
+		private Rectangle selectionRectangle = new Rectangle(0,0,1,1);
+		private Rectangle mirrorRectangle = new Rectangle(0,0,1,1);
 
 	
 	
@@ -513,7 +511,7 @@ public class SelectableScatterChart extends AnchorPane
 	private void showInfo(int found, int total, double xMin, double xMax, double yMin, double yMax ) 
 	{			
 		NumberFormat fmt = new DecimalFormat("0.00");
-		String s = found + " / " + total; //  + " in range X: [ " + fmt.format(xMin) + " - " + fmt.format(xMax) + "] Y: [ " + fmt.format(yMin) + " - " + fmt.format(yMax) + "]";
+		String s = found + " / " + total + " in range X: [ " + fmt.format(xMin) + " - " + fmt.format(xMax) + "] Y: [ " + fmt.format(yMin) + " - " + fmt.format(yMax) + "]";
 //		infoLabel.setText(s);
 //		System.out.println(s);
 		xRange = new Range(xMin, xMax);
@@ -525,11 +523,18 @@ public class SelectableScatterChart extends AnchorPane
 	
 	//-------------------------------------------------------------------------------
 //	boolean verbose = false;
-	public void resized()
+	public void resizedRangeFields()
 	{
+		Range xRange = controller.getXRange();
+		Range yRange = controller.getYRange();
+		System.out.println("yRange: " + yRange.toString());
+		selectionRectangleScaleDef.setX(xRange.min());
+		selectionRectangleScaleDef.setY(yRange.min());
+		Rectangle frame = getPlotFrame();
+		selectionRectangleScaleDef.setWidth(xRange.width() / frame.getWidth());
+		selectionRectangleScaleDef.setHeight(yRange.width() / frame.getHeight());
 		Rectangle r = getScaleRect(selectionRectangleScaleDef, getPlotFrame());
 		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
-//		if (verbose) System.out.println("resized");
 	}
 
 	//-------------------------------------------------------------------------------
@@ -564,25 +569,25 @@ public class SelectableScatterChart extends AnchorPane
 	}
 	
 	//-------------------------------------------------------------------------------
-	public Range getXRange()
-	{
-		if (selRectStart == null || selRectEnd == null) 		return new Range(0,4);
-		double selectionMinX = Math.min(selRectStart.getX(), selRectEnd.getX());
-		double selectionMaxX = Math.max(selRectStart.getX(), selRectEnd.getX());
-		double xMin = converter.frameToScale(selectionMinX, scatter, false);
-		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
-		return new Range(xMin, xMax);
-	}
+//	public Range getXRange()
+//	{
+//		if (selRectStart == null || selRectEnd == null) 		return new Range(0,4);
+//		double selectionMinX = Math.min(selRectStart.getX(), selRectEnd.getX());
+//		double selectionMaxX = Math.max(selRectStart.getX(), selRectEnd.getX());
+//		double xMin = converter.frameToScale(selectionMinX, scatter, false);
+//		double xMax = converter.frameToScale(selectionMaxX, scatter, false);
+//		return new Range(xMin, xMax);
+//	}
 	
-	public Range getYRange()
-	{
-		if (selRectStart == null || selRectEnd == null) 		return  new Range(0,1);
-		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY());
-		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY());
-		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
-		double yMax = converter.frameToScale(selectionMinY, scatter, true);
-		return new Range(yMin, yMax);
-	}
+//	public Range getYRange()
+//	{
+//		if (selRectStart == null || selRectEnd == null) 		return  new Range(0,1);
+//		double selectionMinY = Math.min(selRectStart.getY(), selRectEnd.getY());
+//		double selectionMaxY = Math.max(selRectStart.getY(), selRectEnd.getY());
+//		double yMin = converter.frameToScale(selectionMaxY, scatter, true);
+//		double yMax = converter.frameToScale(selectionMinY, scatter, true);
+//		return new Range(yMin, yMax);
+//	}
 	
 	//-------------------------------------------------------------------------------
 	private int countInRect(XYChart<Number, Number> chart, double xMin, double xMax, double yMin, double yMax)
@@ -609,114 +614,10 @@ public class SelectableScatterChart extends AnchorPane
 		return data.getData().size();
 	}
 	
-	/**-------------------------------------------------------------------------------
-	 *   Mouse handlers for clicks inside the selection rectangle
-	 */
 	boolean resizing = false;
 //	double SLOP = 4;
 	double offsetX = 0, offsetY = 0;
 	
-//	private void makeSelectionRect(Rectangle marquee)
-//	{
-//		marquee.getStyleClass().add("selection");
-//		marquee.setOpacity(0.3);
-//		marquee.setFill(Color.CYAN);
-//
-//		marquee.setOnMouseReleased(event -> {
-//			if (resizing && isRectangleSizeTooSmall())
-//				return;
-//			setAxisBounds();		// send new bounds to the controller
-//			selRectStart = selRectEnd = null;
-//			resizing = false;
-//			requestFocus(); // needed for the key event handler to receive events
-//			event.consume();
-//		});
-//
-////		marquee.setOnMouseClicked(ev -> { 	if (ev.getClickCount() > 1)	controller.selectionDoubleClick(); });	
-//
-//	marquee.setOnMouseEntered(event -> { setCursor(marquee, event); } );
-//	marquee.setOnMouseMoved(event -> { setCursor(marquee, event); });
-//	marquee.setOnMouseExited(event -> {	marquee.setCursor(Cursor.DEFAULT);		});
-//		
-//		marquee.setOnMousePressed(event -> {
-////			if (event.isSecondaryButtonDown()) 	return;
-//			Pos pos = RectangleUtil.getPos(event, marquee);
-//			resizing = RectangleUtil.inCorner(pos);
-//			if (resizing)
-//				selRectStart = RectangleUtil.oppositeCorner(event,marquee);
-//			else
-//			{
-//				selRectStart = new Point2D(event.getX(), event.getY());
-//				offsetX = event.getX() - marquee.getX();
-//				offsetY = event.getY() - marquee.getY();
-//			}
-//			event.consume();
-//
-//		});
-//
-//		marquee.setOnMouseDragged(event -> {
-//			if (event.isSecondaryButtonDown()) 	return;
-//			double h = event.getX();
-//			double v = event.getY();
-//			if (resizing)
-//			{
-//				// store current cursor position
-//				selRectEnd = computeRectanglePoint(h, v);
-//				if (selRectStart == null)
-//					selRectStart = RectangleUtil.oppositeCorner(event, marquee);
-//				if (selRectStart == null) return;
-//				if (selRectEnd == null)
-//					selRectEnd = new Point2D(event.getX(), event.getY());
-//
-//				marquee.setX(Math.min(selRectStart.getX(), selRectEnd.getX()));
-//				marquee.setY(Math.min(selRectStart.getY(), selRectEnd.getY()));
-//				marquee.setWidth(Math.abs(selRectStart.getX() - selRectEnd.getX()));
-//				marquee.setHeight(Math.abs(selRectStart.getY() - selRectEnd.getY()));
-////				System.out.println("x:" + x + " y:" + y);
-//			} else
-//			{
-//				Bounds chartPlotArea = controller.getPlotBounds();
-//				double minAllowed = chartPlotArea.getMinX();
-//				double maxAllowed = minAllowed + chartPlotArea.getWidth()-30;
-//				boolean inRange = h >= minAllowed && h <= maxAllowed;
-//				if (!inRange) return;
-//
-//				double minAllowedY = chartPlotArea.getMinY();
-//				double maxAllowedY = minAllowedY + chartPlotArea.getHeight()-30;		
-//				inRange = v >= minAllowedY && v <= maxAllowedY;
-//				if (!inRange) return;
-//				
-// 				double oldX = selRectStart.getX();
-//				double oldY = selRectStart.getY();
-//				double dx = h - oldX - offsetX;
-//				double dy = v - oldY - offsetY;
-//
-//				if (selectionRectangle.getX() < minAllowed && dx < 0) return;
-//				if ((selectionRectangle.getX() + selectionRectangle.getWidth() > maxAllowed) && dx > 0) return;
-//				if (selectionRectangle.getY() < minAllowedY && dy < 0) return;
-//				if ((selectionRectangle.getY() + selectionRectangle.getHeight() > maxAllowedY) && dy > 0) return;
-//
-//				marquee.setX(oldX + dx);
-//				marquee.setY(oldY + dy);
-//				selRectStart = new Point2D(h, v);
-//			}
-//			event.consume();
-//		});
-//		
-//		
-//		marquee.setOnMouseReleased(event -> {
-////			if (selRectStart == null || selRectEnd == null) 		return;
-////			if (isRectangleSizeTooSmall()) 							return;
-////			gateDef  = rectDef(displayGate, getPlotFrame());
-//			setAxisBounds();
-//			selRectStart = selRectEnd = null;
-//			requestFocus();		// needed for the key event handler to receive events
-//			event.consume();
-//		
-//		});
-//		
-//	}
-//
 	//-------------------------------------------------------------------------------
 	void setCursor(Rectangle r, MouseEvent event)
 	{
@@ -738,12 +639,14 @@ public class SelectableScatterChart extends AnchorPane
 	//-------------------------------------------------------------------------------
 	Rectangle getScaleRect(Rectangle def, Rectangle frame)
 	{
+
 		double frameWidth = frame.getWidth();
 		double frameHeight = frame.getHeight();
-		Rectangle r = new Rectangle(frame.getX() + def.getX() * frameWidth,
+		Rectangle scaler = new Rectangle(frame.getX() + def.getX() * frameWidth,
 				frame.getY() + def.getY() * frameHeight, 
 				def.getWidth() * frameWidth, def.getHeight() * frameHeight);
-		return r;
+		
+		return scaler;
 	}
 
 	//-------------------------------------------------------------------------------
@@ -754,6 +657,8 @@ public class SelectableScatterChart extends AnchorPane
 		Rectangle r = new Rectangle((child.getX() - frame.getX()) / frameWidth,
 				(child.getY() - frame.getY()) / frameHeight, 
 				child.getWidth() / frameWidth, child.getHeight() / frameHeight);
+//		if (r.getWidth() > 4)	
+//			System.out.println("gotit");
 		return r;
 	}
 

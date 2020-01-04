@@ -1,21 +1,17 @@
 package org.cytoscape.cyChart.internal.view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.util.concurrent.CountDownLatch;
 
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.cyChart.internal.charts.oneD.AppHistograms;
+import org.cytoscape.cyChart.internal.charts.oneD.HistogramChartController;
 import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 import javafx.application.Platform;
@@ -67,39 +63,28 @@ public class SwingPanel extends JPanel {
 	}
 
 	private void initComponents() {
-		System.out.println("initComponents");
+//		System.out.println("initComponents");
 		jfxPanel = new JFXPanel();
 //		System.out.println("jfxPanel created");
-		StackPane appPane = AppHistograms.getStackPane(registrar, manager);
+//		StackPane appPane = AppHistograms.getStackPane(registrar, manager);
+	    StackPane pane = new StackPane();
+	    pane.setPrefWidth(520);
+	    pane.setPrefHeight(500);
+	    try
+	    {
+	    	System.out.println("preconstruction");
+	    	HistogramChartController ctrl = new HistogramChartController(pane, registrar, manager);
 //		appPane.setBorder(Borders.magentaBorder);
-		if (appPane != null) 
-		{
-			System.out.println("appPane created");
-			Scene scene = new Scene(appPane);
-			System.out.println("set scene");
-			Platform.runLater(() -> {
-				jfxPanel.setScene(scene);
-			    System.out.println("scene Created");
-			});	
-		}
-		else System.out.println("appPane came back null");
-
-//		JPanel topBar = new JPanel(new BorderLayout(5, 0));
-//		topBar.setBorder(BorderFactory.createEmptyBorder(3, 5, 3, 5));
-
-//		JPanel statusBar = new JPanel(new BorderLayout(5, 0));
-//		statusBar.setBorder(BorderFactory.createLineBorder(Color.RED));
-//		statusBar.add(lblStatus, BorderLayout.CENTER);
-//		lblStatus.setMinimumSize(new Dimension(20, 10));
-//		lblStatus.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 11));
-//		lblStatus.setText("The statRs bar reports the range and percentage selected.");
-//		add(topBar, BorderLayout.NORTH);
-//		add(statusBar, BorderLayout.SOUTH);
-//		JPanel container = new JPanel();
-//		container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
-//		jfxPanel.setBorder(BorderFactory.createLineBorder(Color.RED, 1));
-//		container.add(jfxPanel);
+			Scene scene = new Scene(pane);
+			Platform.runLater(() -> {	jfxPanel.setScene(scene);	});
 		add(jfxPanel, BorderLayout.CENTER);
 	}
+	    catch (Exception e) 
+	    {
+	    	e.printStackTrace();
+	    }
+	}
+	
+	
 
 }

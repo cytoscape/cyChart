@@ -18,7 +18,7 @@ import org.cytoscape.cyChart.internal.charts.oneD.ColumnFilterTaskFactory;
 import org.cytoscape.cyChart.internal.charts.twoD.Column2DFilterTaskFactory;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.tasks.HistogramFilterTaskFactory;
- import org.cytoscape.cyChart.internal.tasks.ScatterFilterTaskFactory;
+import org.cytoscape.cyChart.internal.tasks.ScatterFilterTaskFactory;
 import org.cytoscape.cyChart.internal.tasks.VersionTaskFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;

@@ -3,6 +3,7 @@ package org.cytoscape.cyChart.internal.charts.twoD;
 import java.util.List;
 
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
+import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.model.CyColumn;
@@ -71,6 +72,8 @@ public class ScatterChartController extends AbstractChartController
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
 //		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+			if (StringUtil.isEmpty(x) || StringUtil.isEmpty(y)) 
+				return;
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
 			scatterChartHome = new SelectableScatterChart(this);
 			AnchorPane.setLeftAnchor(scatterChartHome, 0.);
@@ -108,7 +111,6 @@ public class ScatterChartController extends AbstractChartController
 		{
 			scatterChartHome.clearRegression();
 			return;
-
 		}
 		String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		String y = yAxisChoices.getSelectionModel().getSelectedItem();
@@ -125,7 +127,7 @@ public class ScatterChartController extends AbstractChartController
 		}
 		
 		scatterChartHome.setRegression(new LinearRegression(X, Y));
-		scatterChartHome.resized();
+		resized();
 	}
 
 	protected void logRegression(boolean visible)
@@ -152,16 +154,16 @@ public class ScatterChartController extends AbstractChartController
 		}
 		
 		scatterChartHome.setRegression(new LinearRegression(X, Y));
-		scatterChartHome.resized();
+		resized();
 	}
 
 	
 	private XYChart.Series<Number, Number>  getDataSeries(String xName, String yName) {
-		nodeTable = getCurrentNodeTable(); 
-		if (nodeTable == null) return null;
-		CyColumn xcol = nodeTable.getColumn(xName);
+		table = manager.getCurrentTable(); 
+		if (table == null) return null;
+		CyColumn xcol = table.getColumn(xName);
 		if (xcol == null) return null; 
-		CyColumn ycol = nodeTable.getColumn(yName);
+		CyColumn ycol = table.getColumn(yName);
 		if (ycol == null) return null;
 		List<Double> xvalues = getColumnValues(xcol);
 		List<Double> yvalues = getColumnValues(ycol);
@@ -186,14 +188,20 @@ public class ScatterChartController extends AbstractChartController
 		}
 		catch (Exception e)		{			e.printStackTrace();		}
 		return series;
-	}
+ 	}
 	//------------------------------------------------------------------
 	public void resized()
 	{
 		if (scatterChartHome != null) 
 		{
-			scatterChartHome.resized();
-			setStatus("" + scatterChartHome.offsetX);
+//			scatterChartHome.resized();
+//			double x = xMin.getNumber().doubleValue();
+//			double y = yMin.getNumber().doubleValue();
+//			double maxX = xMax.getNumber().doubleValue();
+//			double maxY = yMax.getNumber().doubleValue();
+//			CyColumn xcol = manager.getXColumn();
+//			CyColumn ycol = manager.getYColumn();
+//			selectRange(xcol, x, maxX, ycol, y, maxY);
 		}
 	}
 	
@@ -210,7 +218,7 @@ public class ScatterChartController extends AbstractChartController
 	//------------------------------------------------------------------
 	public void selectRange(String xname, double xMin, double xMax, String yname, double yMin, double yMax) {
 		
-		startX = xMin;	endX = xMax;
+ 		startX = xMin;	endX = xMax;
 		startY = yMin; 	endY = yMax;
 		CyColumn xcol = findColumn(xname);
 		CyColumn ycol = findColumn(yname);
@@ -221,15 +229,20 @@ public class ScatterChartController extends AbstractChartController
 
 	public void selectRange(CyColumn col, double xMin, double xMax, CyColumn ycol, double yMin, double yMax) 
 	{
-		if (nodeTable == null) return;
-		for (CyRow row : nodeTable.getAllRows())
+		if (table == null) return;
+		int ct = 0; 			
+		List<CyRow> rows = table.getAllRows();
+		for (CyRow row : rows)
 		{	
-			boolean selectedX =  (rowMatch(row, col, xMin, xMax));
-			boolean selectedY =  (rowMatch(row, ycol, yMin, yMax));
+			boolean selectedX = rowMatch(row, col, xMin, xMax);
+			boolean selectedY = rowMatch(row, ycol, yMin, yMax);
 			boolean selected = selectedX && selectedY;
 			row.set(CyNetwork.SELECTED, selected);
+			if (selected) ct++;
 //			System.out.println((selected ? "selecting " : "deselecting ") + row.get("SUID", Long.class));
 		}
+		setStatus(ct + " / " + rows.size());
+
 	}
 	//------------------------------------------------------------------
 	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
@@ -256,6 +269,12 @@ public class ScatterChartController extends AbstractChartController
 			return hit;
 		}
 		return false;
+		
+	}
+
+	@Override
+	protected void resizeRangeFields() {
+		scatterChartHome.resizedRangeFields();
 		
 	}
 }

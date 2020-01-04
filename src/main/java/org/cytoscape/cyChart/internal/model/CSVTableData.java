@@ -13,19 +13,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.cyChart.internal.charts.StringUtil;
-import org.cytoscape.cyChart.internal.charts.StringUtil.TYPES;
 import org.cytoscape.cyChart.internal.charts.oneD.Histogram1D;
 import org.cytoscape.cyChart.internal.charts.oneD.OverlaidLineChart;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Point2D;
-import javafx.scene.chart.ScatterChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.layout.StackPane;
 
 public class CSVTableData
 {
@@ -103,12 +100,12 @@ public class CSVTableData
 		catch (IllegalArgumentException e)	{ e.printStackTrace();	return null; 	}
 		catch (FileNotFoundException e)		{ e.printStackTrace();	return null; 	}
 		catch (IOException e)				{ e.printStackTrace();	return null; 	}
-		System.out.println( lineCt + " lines");
+//		System.out.println( lineCt + " lines");
 		
 		tableData.calculateRanges();
 		tableData.generateHistograms();			////	just building a unit file here.  Segment.java has the full code 
 //		tableData.calculateStats();
-		System.out.println(tableData.getName() + " has row count: " + tableData.getCount());
+//		System.out.println(tableData.getName() + " has row count: " + tableData.getCount());
 		return tableData;
 	}
 
@@ -215,7 +212,7 @@ public class CSVTableData
 		{
 			Range r = mins[i] <  maxs[i] ? new Range(mins[i], maxs[i]) : null;
 			ranges.add(r);
-			System.out.println("Range for " + columnNames.get(i) + " is " + r.toString());
+//			System.out.println("Range for " + columnNames.get(i) + " is " + r.toString());
 		}
 	}
 	//--------------------------------------------------------------------------------
@@ -308,7 +305,7 @@ public class CSVTableData
 				}
 			}
 		}
-		System.out.println( "There are " + pointList.size() + " points in " + popName); 
+//		System.out.println( "There are " + pointList.size() + " points in " + popName); 
 		return pointList;
 	}
 
@@ -336,7 +333,7 @@ public class CSVTableData
 			double area = h.getArea(); 
 			double gutter = h.getGutterCount(); 
 			status += " Gutter: " + (int) gutter + " / " + (int) area;
-			System.out.println(status);
+//			System.out.println(status);
 		}
 	}
 
@@ -359,7 +356,7 @@ public class CSVTableData
 
 		int nRows = getData().size();  
 		
-		System.out.println("table is " + nRows + " rows of " + nCols);
+//		System.out.println("table is " + nRows + " rows of " + nCols);
 		for (int row=0; row<nRows; row++)
 		{
 			MixedDataRow newRow = new MixedDataRow(nCols);

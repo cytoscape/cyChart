@@ -60,7 +60,7 @@ public class Cursors
 	    scene.snapshot(img);
 	    curs = new ImageCursor(img, W/2, W/2); 
 	    cursorCache.put(txt, curs);
-	    System.out.println("cursorCache: " + txt);
+//	    System.out.println("cursorCache: " + txt);
 	    return curs; 
     }
 }

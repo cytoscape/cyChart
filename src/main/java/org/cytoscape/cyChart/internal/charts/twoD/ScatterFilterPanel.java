@@ -54,17 +54,17 @@ public class ScatterFilterPanel extends JPanel {
 
 	private void initComponents() {
 		jfxPanel = new JFXPanel();
+		add(jfxPanel, BorderLayout.CENTER);
 		StackPane appPane = AppScatters.getStackPane(registrar, manager);
 		if (appPane != null) 
 		
 		{
 			Scene scene = new Scene(appPane);
-			Platform.runLater(() -> { jfxPanel.setScene(scene); });
+				Platform.runLater(() -> { jfxPanel.setScene(scene); });
 			//https://stackoverflow.com/questions/52832861/jfxpanel-freezing-awt-thread-the-second-time
 //			System.out.println("scene created");
-			add(jfxPanel, BorderLayout.CENTER);
 		}
-		else System.out.println("appPane came back null");
+//		else System.out.println("appPane came back null");
 	}
 
 }
