@@ -1,5 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.twoD;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
@@ -14,6 +15,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
@@ -101,61 +103,6 @@ public class ScatterChartController extends AbstractChartController
 		    	legend.setVisible(false);
 		}
 	}
-	
-//alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
-	protected void linearRegression(boolean visible)
-	{
-//		System.out.println("linearRegression " + (visible ? "on" : "off"));
-	
-		if (!visible)
-		{
-			scatterChartHome.clearRegression();
-			return;
-		}
-		String x = xAxisChoices.getSelectionModel().getSelectedItem();
-		String y = yAxisChoices.getSelectionModel().getSelectedItem();
-//	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
-		XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
-		int seriesSize = series1.getData().size();
-		double[] X = new double[seriesSize];
-		double[] Y = new double[seriesSize];
-		for (int i=0; i<seriesSize; i++)
-		{
-			Data<Number, Number> d = series1.getData().get(i);
-			X[i] = (double) d.getXValue();
-			Y[i] = (double) d.getYValue();
-		}
-		
-		scatterChartHome.setRegression(new LinearRegression(X, Y));
-		resized();
-	}
-
-	protected void logRegression(boolean visible)
-	{
-//		System.out.println("linearRegression " + (visible ? "on" : "off"));
-	
-		if (!visible)
-		{
-			scatterChartHome.clearRegression();
-			return;
-		}
-		String x = xAxisChoices.getSelectionModel().getSelectedItem();
-		String y = yAxisChoices.getSelectionModel().getSelectedItem();
-//	    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
-		XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
-		int seriesSize = series1.getData().size();
-		double[] X = new double[seriesSize];
-		double[] Y = new double[seriesSize];
-		for (int i=0; i<seriesSize; i++)
-		{
-			Data<Number, Number> d = series1.getData().get(i);
-			X[i] = Math.log((double) d.getXValue());
-			Y[i] = Math.log((double) d.getYValue());
-		}
-		
-		scatterChartHome.setRegression(new LinearRegression(X, Y));
-		resized();
-	}
 
 	
 	private XYChart.Series<Number, Number>  getDataSeries(String xName, String yName) {
@@ -195,13 +142,14 @@ public class ScatterChartController extends AbstractChartController
 		if (scatterChartHome != null) 
 		{
 //			scatterChartHome.resized();
-//			double x = xMin.getNumber().doubleValue();
-//			double y = yMin.getNumber().doubleValue();
-//			double maxX = xMax.getNumber().doubleValue();
-//			double maxY = yMax.getNumber().doubleValue();
-//			CyColumn xcol = manager.getXColumn();
-//			CyColumn ycol = manager.getYColumn();
-//			selectRange(xcol, x, maxX, ycol, y, maxY);
+			double x = xMin.getNumber().doubleValue();
+			double y = yMin.getNumber().doubleValue();
+			double maxX = xMax.getNumber().doubleValue();
+			double maxY = yMax.getNumber().doubleValue();
+			CyColumn xcol = manager.getXColumn();
+			CyColumn ycol = manager.getYColumn();
+			selectRange(xcol, x, maxX, ycol, y, maxY);
+			modelToView();
 		}
 	}
 	
@@ -242,6 +190,7 @@ public class ScatterChartController extends AbstractChartController
 //			System.out.println((selected ? "selecting " : "deselecting ") + row.get("SUID", Long.class));
 		}
 		setStatus(ct + " / " + rows.size());
+//		scatterChartHome.showStatus();
 
 	}
 	//------------------------------------------------------------------
@@ -271,10 +220,99 @@ public class ScatterChartController extends AbstractChartController
 		return false;
 		
 	}
-
 	@Override
-	protected void resizeRangeFields() {
-		scatterChartHome.resizedRangeFields();
+	public void 	fieldEdited(String fldId, BigDecimal newValue)
+	{
+		super.fieldEdited(fldId, newValue);
+		modelToView();
+//		resizeRangeFields();
+//		scatterChartHome.setAxisBounds();	
+	}		
+		
+	private void modelToView() {
+		xColumn = manager.getXColumn();
+		yColumn = manager.getYColumn();
+		double xMinVal = xMin.getNumber().doubleValue();
+		double xMaxVal = xMax.getNumber().doubleValue();
+		double yMinVal = yMin.getNumber().doubleValue();
+		double yMaxVal = yMax.getNumber().doubleValue();
+		selectRange(xColumn, xMinVal, xMaxVal, yColumn, yMinVal, yMaxVal );
+		Point2D a = new Point2D(xMinVal, yMinVal);
+		Point2D b = new Point2D(xMaxVal, yMaxVal);
+		Point2D A = scaleToFramePt(a);
+		Point2D B = scaleToFramePt(b);
+		scatterChartHome.drawSelectionRectangle( A, B, false);
 		
 	}
+
+	private Point2D scaleToFramePt(Point2D a) {
+
+		return scatterChartHome.getConverter().scaleToFrame(a, scatterChartHome.getScatterChart());
+	}
+
+	@Override
+	public void resizeRangeFields() {
+		if (scatterChartHome != null)
+			scatterChartHome.resizedRangeFields();
+	}
+	
+	//-------------------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------------------
+	//alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
+		protected void linearRegression(boolean visible)
+		{
+//			System.out.println("linearRegression " + (visible ? "on" : "off"));
+		
+			if (!visible)
+			{
+				scatterChartHome.clearRegression();
+				return;
+			}
+			String x = xAxisChoices.getSelectionModel().getSelectedItem();
+			String y = yAxisChoices.getSelectionModel().getSelectedItem();
+//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+			int seriesSize = series1.getData().size();
+			double[] X = new double[seriesSize];
+			double[] Y = new double[seriesSize];
+			for (int i=0; i<seriesSize; i++)
+			{
+				Data<Number, Number> d = series1.getData().get(i);
+				X[i] = (double) d.getXValue();
+				Y[i] = (double) d.getYValue();
+			}
+			
+			scatterChartHome.setRegression(new LinearRegression(X, Y));
+			resized();
+		}
+
+		protected void logRegression(boolean visible)
+		{
+//			System.out.println("linearRegression " + (visible ? "on" : "off"));
+		
+			if (!visible)
+			{
+				scatterChartHome.clearRegression();
+				return;
+			}
+			String x = xAxisChoices.getSelectionModel().getSelectedItem();
+			String y = yAxisChoices.getSelectionModel().getSelectedItem();
+//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+			int seriesSize = series1.getData().size();
+			double[] X = new double[seriesSize];
+			double[] Y = new double[seriesSize];
+			for (int i=0; i<seriesSize; i++)
+			{
+				Data<Number, Number> d = series1.getData().get(i);
+				X[i] = Math.log((double) d.getXValue());
+				Y[i] = Math.log((double) d.getYValue());
+			}
+			
+			scatterChartHome.setRegression(new LinearRegression(X, Y));
+			resized();
+		}
+
+		
 }

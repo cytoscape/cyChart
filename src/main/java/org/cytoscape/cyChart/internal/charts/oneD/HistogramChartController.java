@@ -1,5 +1,6 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,7 @@ public class HistogramChartController extends AbstractChartController
 	// ------------------------------------------------------
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyChartManager mgr) {
 		super(parent, reg, false, mgr);
-		System.out.println("HistogramChartController");
+//		System.out.println("HistogramChartController");
 	}
  	
 //	@Override
@@ -257,8 +258,23 @@ public class HistogramChartController extends AbstractChartController
 	}
 
 	@Override
-	protected void resizeRangeFields() {
-		// TODO Auto-generated method stub
+	public void 	fieldEdited(String fldId, BigDecimal newValue)
+	{
+		super.fieldEdited(fldId, newValue);
+		subrangeLayer.chartBoundsChanged();	
+		subrangeLayer.reportRange();
+		
+		
+	}
+	
+	@Override
+	public void resizeRangeFields() {
+		if (subrangeLayer  != null)
+		{
+			subrangeLayer.reportRange();
+			subrangeLayer.chartBoundsChanged();	
+		}
+		
 		
 	}
 }

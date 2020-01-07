@@ -109,7 +109,7 @@ abstract public class AbstractChartController {		// implements Initializable
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
 	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
-		System.out.println("AbstractChartController");
+//		System.out.println("AbstractChartController");
 		chartContainer = parent;
 		manager = mgr;
 //		chartContainer.setBorder(Borders.etchedBorder);
@@ -220,6 +220,7 @@ abstract public class AbstractChartController {		// implements Initializable
 		logXTransform.selectedProperty().addListener(logXChange);
 		logXTransform.setAlignment(Pos.CENTER);
 		logXTransform.setDisable(false);
+		logXTransform.setVisible(false);
 		xMin = makeNumberField("xMin");
 		xMax = makeNumberField("xMax");	
 		
@@ -236,6 +237,7 @@ abstract public class AbstractChartController {		// implements Initializable
 		logYTransform.selectedProperty().addListener(logYChange);
 		logYTransform.setAlignment(Pos.CENTER);
 		logYTransform.setDisable(false);
+		logYTransform.setVisible(false);
 		yMin = makeNumberField("yMin");
 		yMax = makeNumberField("yMax");
 		
@@ -267,7 +269,7 @@ abstract public class AbstractChartController {		// implements Initializable
 		fld.setFont(numberFont);
 		fld.setMaxWidth(55);
 //		fld.textProperty().addListener( (obs, oldVal, newVal) -> fieldChanged(newVal, fld.getId()));
-		fld.focusedProperty().addListener((obs, old, nVal) -> { if (!nVal.booleanValue())  fieldChanged(fld.getText(), fld.getId());        });
+		fld.focusedProperty().addListener((obs, old, nVal) -> { if (!nVal.booleanValue()) fieldChanged(fld.getText(), fld.getId());  });
 		return fld;
 	}
 	// ------------  respond to user edits of range values.  
@@ -282,15 +284,20 @@ abstract public class AbstractChartController {		// implements Initializable
 		try {
 			val = Double.parseDouble(newValue);
 		}
-		catch (NumberFormatException e) {}
+		catch (NumberFormatException e) 
+		{
+			return;
+		}
 		if ("xMin".equals(fieldId))	setXRange(new Range(val, newXmax.doubleValue()));
 		if ("xMax".equals(fieldId))	setXRange(new Range(newXmin.doubleValue(), val));
 		if ("yMin".equals(fieldId))	setYRange(new Range(val, newYmax.doubleValue()));
 		if ("yMax".equals(fieldId))	setYRange(new Range(newYmin.doubleValue(), val));
-		resizeRangeFields();
+
+		
+//		resizeRangeFields();
 //		System.out.println(fieldId + " = " + val);
 }
-	protected abstract void resizeRangeFields();
+	public abstract void resizeRangeFields();
 	abstract public void resized();
 	//-------------------------------------------------------------
 	protected Button makeFilter;
@@ -517,5 +524,14 @@ abstract public class AbstractChartController {		// implements Initializable
 		AnchorPane.setLeftAnchor(n, left);
 		AnchorPane.setBottomAnchor(n, bottom);
 		AnchorPane.setRightAnchor(n, right);
+	}
+	// ------------------------------------------------------
+	public void fieldEdited(String fldId, BigDecimal newValue) {
+		
+		double v = newValue.doubleValue();
+		if ("xMin".contentEquals(fldId))	setXmin(v);
+		if ("xMax".contentEquals(fldId))	setXmax(v);
+		if ("yMin".contentEquals(fldId))	setYmin(v);
+		if ("yMax".contentEquals(fldId))	setYmax(v);
 	}
 }

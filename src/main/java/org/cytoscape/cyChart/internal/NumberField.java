@@ -45,7 +45,7 @@ public class NumberField extends TextField
             setOnAction(arg0-> {    parseAndFormatInput();  }   );
             focusedProperty().addListener((obs, old, nVal) ->{ if (!nVal.booleanValue())  parseAndFormatInput();        });
             // Set text in field if BigDecimal property is changed from outside.
-            numberProperty().addListener((obs, old, nVal) ->{  textChanged(nVal);      });
+              numberProperty().addListener((obs, old, nVal) ->{  textChanged(nVal);      });
 
             setOnKeyTyped(event ->			 // watch out for bad key input
             {
@@ -73,6 +73,7 @@ public class NumberField extends TextField
                 Number parsedNumber = nf.parse(input);
                 BigDecimal newValue = new BigDecimal(parsedNumber.toString());
                 setNumber(newValue);
+                controller.fieldEdited(getId(), newValue);
                 selectAll();
             } catch (ParseException ex) {
 // If parsing fails keep old number

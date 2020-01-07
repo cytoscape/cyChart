@@ -4,6 +4,7 @@ import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.model.Range;
 
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
@@ -82,27 +83,39 @@ double FUDGE = 0;
 		}
 		else
 		{
-		Bounds bounds =  getChartPlotBounds(theChart);
-		double widthOrHeight = isYAxis ? bounds.getHeight() : bounds.getWidth();
-		double lower = axis.getLowerBound();
-		double upper = axis.getUpperBound();
-		double relativePosition = 	(scaleValue - lower) / (upper - lower);
-		if (isYAxis) relativePosition = 1 - relativePosition;
-		double frameVal = relativePosition * widthOrHeight;
-		boolean VERBOSE = false;
-		if (VERBOSE) 
-		{
-			String axisName = isYAxis ? "Y" : "X";
-			System.out.println(String.format("scaleToFrame: dim: %s AxisBounds:[%.1f, - %.1f] FrameLength:[%.1f] %.1f <- %.2f", axisName, lower,upper, widthOrHeight, frameVal, scaleValue));
-		}
-		return frameVal;
+			Bounds bounds =  getChartPlotBounds(theChart);
+			double widthOrHeight = isYAxis ? bounds.getHeight() : bounds.getWidth();
+			double lower = axis.getLowerBound();
+			double upper = axis.getUpperBound();
+			double relativePosition = 	(scaleValue - lower) / (upper - lower);
+			if (isYAxis) relativePosition = 1 - relativePosition;
+			double frameVal = relativePosition * widthOrHeight;
+			boolean VERBOSE = false;
+			if (VERBOSE) 
+			{
+				String axisName = isYAxis ? "Y" : "X";
+				System.out.println(String.format("scaleToFrame: dim: %s AxisBounds:[%.1f, - %.1f] FrameLength:[%.1f] %.1f <- %.2f", axisName, lower,upper, widthOrHeight, frameVal, scaleValue));
+			}
+			return frameVal;
 		}
 	}
 	
+	public Point2D scaleToFrame(Point2D pt,  XYChart<Number, Number> theChart)
+	{
+		Point2D offset = getChartOffset(theChart);
+		double x = scaleToFrame(pt.getX(), theChart, false) + offset.getX() + 5;
+		double y = scaleToFrame(pt.getY(), theChart, true) +  + offset.getY() + 5;
+		return new Point2D(x,y);
+	}
 	
 	public Bounds getChartPlotBounds(XYChart<Number, Number> theChart) {
 		Node chartPlotArea = theChart.lookup(".chart-plot-background");
 		return (chartPlotArea == null) ? null : chartPlotArea.getLayoutBounds();
+	}
+
+	public Point2D getChartOffset(XYChart<Number, Number> theChart) {
+		Node chartPlotArea = theChart.lookup(".chart-plot-background");
+		return (chartPlotArea == null) ? null : new Point2D(chartPlotArea.getLayoutX(), chartPlotArea.getLayoutY());
 	}
 
 }

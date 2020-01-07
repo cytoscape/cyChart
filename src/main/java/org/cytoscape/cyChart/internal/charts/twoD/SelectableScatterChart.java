@@ -35,14 +35,19 @@ import javafx.scene.shape.Rectangle;
 /*
  *   A SelectableScatterChart is a scatter chart that can show a two dimensional data set.
  *   Identifying a region in the XY space will take the subset of events in that region
+ *   It consists of a regular ScatterChart<> class in an AnchorPane.  
+ *   selectionRectangle: an overlaid rectangle in the anchor pane, listening to mouse events
+ *   regressionLine: an (optionally visible) overlaid line with slope calculated based on the displayed dataset
  *  
+ *  frame coordinates refer to pixels on the screen, scale coordinates are the model space (as shown on axes)
  */
 public class SelectableScatterChart extends AnchorPane
 {
 	FrameScaleConverter converter = new FrameScaleConverter();
+	public FrameScaleConverter getConverter() 					{		return converter;	}
 	private ScatterChart<Number, Number> scatter;
 	private final ScatterChartController controller;
-	public ScatterChart<Number, Number> 	getScatterChart()	{ 	return scatter;	}
+	public ScatterChart<Number, Number> 	getScatterChart()	{ 		return scatter;	}
 
 	//------------------------------------------------------------------------
 	public SelectableScatterChart(ScatterChartController ctlr)
@@ -112,7 +117,7 @@ public class SelectableScatterChart extends AnchorPane
 		if (chartPlotArea == null) return;
 
 		Region rgn = (Region) chartPlotArea;
-			rgn.setStyle("-fx-background-color: #FCFCFC;");
+		rgn.setStyle("-fx-background-color: #FCFCFC;");
 //			rgn.setBorder(Borders.thinEtchedBorder);
 	    ChangeListener<Number> paneSizeListener = (obs, oldV, newV) -> controller.resized();
 	    scatter.widthProperty().addListener(paneSizeListener);
@@ -139,11 +144,11 @@ public class SelectableScatterChart extends AnchorPane
 	 * This adds a layer on top of a the XY chart named "scatter". 
 	 *
 	 */
-		private ValueAxis<Number> xAxis;
-		private ValueAxis<Number> yAxis;
-		private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
-		private Rectangle selectionRectangle = new Rectangle(0,0,1,1);
-		private Rectangle mirrorRectangle = new Rectangle(0,0,1,1);
+	private ValueAxis<Number> xAxis;
+	private ValueAxis<Number> yAxis;
+	private Rectangle selectionRectangleScaleDef = new Rectangle(0,0,0,0);	// a representation of the selection relative to the bounds
+	private Rectangle selectionRectangle = new Rectangle(0,0,1,1);
+	private Rectangle mirrorRectangle = new Rectangle(0,0,1,1);			// a second selection rectangle used in volcano plots
 
 	
 	
@@ -177,7 +182,7 @@ public class SelectableScatterChart extends AnchorPane
 		selectionRectangle = new Rectangle(); 
 		selectionRectangle.setOnMouseEntered(	event -> { setCursor(selectionRectangle, event); } );
 		selectionRectangle.setOnMouseMoved(		event -> { setCursor(selectionRectangle, event); });
-		selectionRectangle.setOnMouseExited(	event ->  { setCursor(Cursor.DEFAULT);		});
+		selectionRectangle.setOnMouseExited(	event -> { setCursor(Cursor.DEFAULT);		});
 
 		selectionRectangle.setManaged(false);
 		selectionRectangle.setOpacity(0.3);
@@ -226,10 +231,7 @@ public class SelectableScatterChart extends AnchorPane
 		mirrorRectangle.setStrokeWidth(2f);
 
 	}
-	
-//
-//	Node getPlotAreaNode() 	{		return controller.getPlotAreaNode(); }	
-//	Bounds getPlotBounds() 	{		return getPlotAreaNode().getBoundsInParent();	}	
+	// a drag in the chart area, but not in the selection.  creates a selection
 
 	private void onDragged(MouseEvent event) {
 		if (event.isSecondaryButtonDown()) 	return;
@@ -248,7 +250,7 @@ public class SelectableScatterChart extends AnchorPane
 			double height = Math.abs(selRectStart.getY() - selRectEnd.getY());
 			drawSelectionRectangle(x, y, width, height, option);
 //			System.out.println("x:" + x + " y:" + y + " width:" + width + " height:" + height);
-		} else
+		} else		// dragging
 		{
 			double oldX = selRectStart.getX();
 			double oldY = selRectStart.getY();
@@ -341,8 +343,8 @@ public class SelectableScatterChart extends AnchorPane
 		double upperBoundX = lowerBoundX + xAxis.getWidth();
 		double lowerBoundY = computeOffsetInChart(yAxis, true);
 		double upperBoundY = lowerBoundY + yAxis.getHeight();
-		double offsetX = 20;
-		double offsetY = 20;
+		double offsetX = 0;
+		double offsetY = 0;
 		// make sure the rectangle's end point is in the interval defined by the bounds for each dimension
 		double x = Math.max(lowerBoundX, Math.min(eventX +offsetX, upperBoundX));
 		double y = Math.max(lowerBoundY, Math.min(eventY +offsetY, upperBoundY));
@@ -368,8 +370,16 @@ public class SelectableScatterChart extends AnchorPane
 		return offset;
 	}
 	//-------------------------------------------------------------------------------
-
-	private void drawSelectionRectangle(final double x, final double y, final double width, final double height, boolean optionDrag) {
+	public void drawSelectionRectangle(Point2D a, Point2D b, boolean optionDrag) 
+	{
+		double wid = Math.abs(b.getX() - a.getX());
+		double hght = Math.abs(b.getY() - a.getY());
+		double x = Math.min(a.getX(),b.getX());
+		double y = Math.min(a.getY(),b.getY());
+		drawSelectionRectangle(x,y,wid,hght, optionDrag);
+	}	
+	
+	public void drawSelectionRectangle(final double x, final double y, final double width, final double height, boolean optionDrag) {
 		selectionRectangle.setVisible(true);
 		selectionRectangle.setX(x);
 		selectionRectangle.setY(y);
@@ -397,108 +407,6 @@ public class SelectableScatterChart extends AnchorPane
 		drawRegressionLine();
 	}
 
-	private Line regressionLine =null;
-	private Label regressionLabel=null;
-	private double regressionSlope = Double.NaN;
-	private double regressionIntercept = Double.NaN;
-	private double regressionCorrelation = Double.NaN;
-	void setRegression(LinearRegression r )
-	{
-		regressionSlope = r.slope(); 
-		regressionIntercept = r.intercept();
-		regressionCorrelation = r.R2();
-	}
-	void clearRegression()
-	{
-		if (regressionLine != null) getChildren().remove(regressionLine);
-		if (regressionLabel != null) getChildren().remove(regressionLabel);
-		regressionSlope =  regressionIntercept = regressionCorrelation = Double.NaN;
-		regressionLine = null;
-		regressionLabel=null;
-	}
-	double getSlope() 		{ return regressionSlope; }
-	double getIntercept() 	{ return regressionIntercept; }
-	double getCorrelation() { return regressionCorrelation; }
-	//----------------------------------------------------------------------------
-	
-	
-	private void drawRegressionLine() {
-		if (!Double.isNaN(regressionSlope))
-		{
-			double xMin =xAxis.getLowerBound();
-			double xMax = xAxis.getUpperBound();
-			double yMin =yAxis.getLowerBound();
-			double yMax = yAxis.getUpperBound();
-			double y1 = xMin * regressionSlope + regressionIntercept;
-			double y2 = xMax * regressionSlope + regressionIntercept;
-			double x1 = 0;
-			double x2 = 0;
-			
-			if (y1 < yMin)
-			{
-				x1 = (yMin - regressionIntercept) / regressionSlope;
-				y1 = yMin;
-			}
-			else if (y1 > yMax)
-			{
-				x1 = (yMax - regressionIntercept) / regressionSlope;
-				y1 = yMax;
-			}
-			else x1 = xMin;
-			
-			if (y2 < yMin)
-			{
-				x2 = (yMin - regressionIntercept) / regressionSlope;
-				y2 = yMin;
-			}
-			else if (y2 > yMax)
-			{
-				x2 = (yMax - regressionIntercept) / regressionSlope;
-				y2 = yMax;
-			}
-			else x2 = xMax;
-			
-			double startX = converter.scaleToFrame(x1, scatter, false);
-			double startY= converter.scaleToFrame(y1, scatter, true);
-			double endX = converter.scaleToFrame(x2, scatter, false);
-			double  endY= converter.scaleToFrame(y2, scatter, true);
-			
-			if (regressionLine == null) 
-			{
-				regressionLine = new Line();
-				regressionLabel = new Label();
-			}
-			else 
-			{
-				getChildren().remove(regressionLine);
-				getChildren().remove(regressionLabel);
-			}
-
-			Bounds b = controller.getPlotBounds();
-			double left = b.getMinX();		
-			double top = b.getMinY();
-			
-			regressionLine.setStartX(startX + left);
-			regressionLine.setStartY(startY + top);
-			regressionLine.setEndX(endX + left);
-			regressionLine.setEndY(endY + top);
-			regressionLine.setOpacity(0.8);
-			regressionLine.setStroke(Color.PURPLE);
-			regressionLine.setStrokeWidth(4);
-			getChildren().add(regressionLine);
-			
-			String text = String.format("m=%.2f, b=%.2f \n R=%.4f", 
-					regressionSlope, regressionIntercept, regressionCorrelation);
-			double textWidth = 100;
-			double offset = 50;
-			regressionLabel.setText(text);
-			regressionLabel.setTranslateX(endX + left - textWidth);
-			regressionLabel.setTranslateY(endY + top + (regressionSlope > 0 ? offset : -offset));
-			regressionLabel.setVisible(true);
-			getChildren().add(regressionLabel);
-		}
-	}
-
 	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag) {
 		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag);
 	}
@@ -523,22 +431,28 @@ public class SelectableScatterChart extends AnchorPane
 	
 	//-------------------------------------------------------------------------------
 //	boolean verbose = false;
+	// user has typed numbers into the min or max fields, so we have to reverse the normal direction of info (view -> model)
 	public void resizedRangeFields()
 	{
-		Range xRange = controller.getXRange();
-		Range yRange = controller.getYRange();
-		System.out.println("yRange: " + yRange.toString());
-		selectionRectangleScaleDef.setX(xRange.min());
-		selectionRectangleScaleDef.setY(yRange.min());
-		Rectangle frame = getPlotFrame();
-		selectionRectangleScaleDef.setWidth(xRange.width() / frame.getWidth());
-		selectionRectangleScaleDef.setHeight(yRange.width() / frame.getHeight());
-		Rectangle r = getScaleRect(selectionRectangleScaleDef, getPlotFrame());
-		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
+//		Range xRange = controller.getXRange();
+//		Range yRange = controller.getYRange();
+////		System.out.println("yRange: " + yRange.toString());
+//		selectionRectangleScaleDef.setX(xRange.min());
+//		selectionRectangleScaleDef.setY(yRange.min());
+//		Rectangle frame = getPlotFrame();
+//		selectionRectangleScaleDef.setWidth(xRange.width() / frame.getWidth());
+//		selectionRectangleScaleDef.setHeight(yRange.width() / frame.getHeight());
+//		Rectangle scaler = getScaleRect(selectionRectangleScaleDef, frame);
+//		Rectangle r = rectDef(scaler, getPlotFrame());
+//		
+//		System.out.println(r.getLayoutX() + ", " + r.getLayoutY() + ", " + r.getWidth() + ", " + r.getHeight() );
+//		System.out.println(scaler.getLayoutX() + ", " + scaler.getLayoutY() + ", " + scaler.getWidth() + ", " + scaler.getHeight() );
+//		
+//		drawSelectionRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), false);
 	}
 
 	//-------------------------------------------------------------------------------
-	private void setAxisBounds() {			// selection rectange has changed
+	public void setAxisBounds() {			// selection rectangle has changed
 		disableAutoRanging();
 		if (selRectStart == null || selRectEnd == null)
 		{
@@ -660,6 +574,112 @@ public class SelectableScatterChart extends AnchorPane
 //		if (r.getWidth() > 4)	
 //			System.out.println("gotit");
 		return r;
+	}
+
+	//----------------------------------------------------------------------------
+	//----------------------------------------------------------------------------
+	//----------------------------------------------------------------------------
+	//----------------------------------------------------------------------------
+
+	private Line regressionLine =null;
+	private Label regressionLabel=null;
+	private double regressionSlope = Double.NaN;
+	private double regressionIntercept = Double.NaN;
+	private double regressionCorrelation = Double.NaN;
+	void setRegression(LinearRegression r )
+	{
+		regressionSlope = r.slope(); 
+		regressionIntercept = r.intercept();
+		regressionCorrelation = r.R2();
+	}
+	void clearRegression()
+	{
+		if (regressionLine != null) getChildren().remove(regressionLine);
+		if (regressionLabel != null) getChildren().remove(regressionLabel);
+		regressionSlope =  regressionIntercept = regressionCorrelation = Double.NaN;
+		regressionLine = null;
+		regressionLabel=null;
+	}
+	double getSlope() 		{ return regressionSlope; }
+	double getIntercept() 	{ return regressionIntercept; }
+	double getCorrelation() { return regressionCorrelation; }
+	
+	
+	private void drawRegressionLine() {
+		if (!Double.isNaN(regressionSlope))
+		{
+			double xMin =xAxis.getLowerBound();
+			double xMax = xAxis.getUpperBound();
+			double yMin =yAxis.getLowerBound();
+			double yMax = yAxis.getUpperBound();
+			double y1 = xMin * regressionSlope + regressionIntercept;
+			double y2 = xMax * regressionSlope + regressionIntercept;
+			double x1 = 0;
+			double x2 = 0;
+			
+			if (y1 < yMin)
+			{
+				x1 = (yMin - regressionIntercept) / regressionSlope;
+				y1 = yMin;
+			}
+			else if (y1 > yMax)
+			{
+				x1 = (yMax - regressionIntercept) / regressionSlope;
+				y1 = yMax;
+			}
+			else x1 = xMin;
+			
+			if (y2 < yMin)
+			{
+				x2 = (yMin - regressionIntercept) / regressionSlope;
+				y2 = yMin;
+			}
+			else if (y2 > yMax)
+			{
+				x2 = (yMax - regressionIntercept) / regressionSlope;
+				y2 = yMax;
+			}
+			else x2 = xMax;
+			
+			double startX = converter.scaleToFrame(x1, scatter, false);
+			double startY= converter.scaleToFrame(y1, scatter, true);
+			double endX = converter.scaleToFrame(x2, scatter, false);
+			double  endY= converter.scaleToFrame(y2, scatter, true);
+			
+			if (regressionLine == null) 
+			{
+				regressionLine = new Line();
+				regressionLabel = new Label();
+			}
+			else 
+			{
+				getChildren().remove(regressionLine);
+				getChildren().remove(regressionLabel);
+			}
+
+			Bounds b = controller.getPlotBounds();
+			double left = b.getMinX();		
+			double top = b.getMinY();
+			
+			regressionLine.setStartX(startX + left);
+			regressionLine.setStartY(startY + top);
+			regressionLine.setEndX(endX + left);
+			regressionLine.setEndY(endY + top);
+			regressionLine.setOpacity(0.8);
+			regressionLine.setStroke(Color.PURPLE);
+			regressionLine.setStrokeWidth(4);
+			getChildren().add(regressionLine);
+			
+			String text = String.format("m=%.2f, b=%.2f \n R=%.4f", 
+					regressionSlope, regressionIntercept, regressionCorrelation);
+			double textWidth = 100;
+			double offset = 50;
+			regressionLabel.setText(text);
+			regressionLabel.setTranslateX(endX + left - textWidth);
+			regressionLabel.setTranslateY(endY + top + (regressionSlope > 0 ? offset : -offset));
+			regressionLabel.setVisible(true);
+			getChildren().add(regressionLabel);
+		}
 	}
 
 

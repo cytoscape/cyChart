@@ -208,7 +208,6 @@ public class SubRangeLayer1D
 		hitSpot = testHit(x + chartOffsetX);
 		double left = Math.min(selectionAnchor, selectionMovingEnd);
 		double right = Math.max(selectionAnchor, selectionMovingEnd);
-		
 //		System.out.println(String.format("Hit: %d LR:[ %.2f ->  %.2f ] anchor: %.2f " , hitSpot, left, right, selectionAnchor));	
 		
 		if (vis)		//   && hitSpot > 0
@@ -265,9 +264,15 @@ public class SubRangeLayer1D
 		}
 		Node chartPlotArea = controller.getPlotAreaNode();
 		double minAllowed = -1;   //chartPlotArea.getLayoutX();
-		double maxAllowed = minAllowed + chartPlotArea.getLayoutBounds().getWidth() + 2;		//+ 6
+		double maxAllowed = chartPlotArea.getLayoutX() + chartPlotArea.getBoundsInLocal().getWidth();	
 		double h = event.getX(); // - chartPlotArea.getLayoutX();
-		boolean inRange = h >= minAllowed && h <= maxAllowed;
+		
+		boolean tooLow =  h < minAllowed;
+		boolean tooHigh =  h > maxAllowed;
+		if (tooLow)	System.out.println("Too Low");
+		if (tooHigh)	System.out.println("Too High");
+		
+		boolean inRange = !tooLow && !tooHigh;
 		if (!inRange) 							return;
 
 		double v = event.getY();
@@ -279,7 +284,7 @@ public class SubRangeLayer1D
 		double delta = h - previousH;
 		if (delta == 0) 						return;
 		
-		if (hitSpot == 2)
+		if (hitSpot == 2)		// in the middle
 			offsetSelection(delta);
 		else 		
 			selectionMovingEnd = h;
