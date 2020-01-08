@@ -13,11 +13,13 @@ public class AppHistograms extends Application
 {
     public static void main(final String[] args) {    Application.launch(args);    }
 
+    static int WIDTH = 520;
+    static int HEIGHT = 500;
     @Override public  void start(Stage stage) throws Exception 
     {
     	me = this;
     	StackPane appPane = getStackPane(null, null);
-    	Scene scene = new Scene(appPane, 520, 500);
+    	Scene scene = new Scene(appPane, WIDTH, HEIGHT);
 	    stage.setScene(scene);
 	    stage.show();
    }
@@ -25,12 +27,12 @@ public class AppHistograms extends Application
     public static StackPane getStackPane(CyServiceRegistrar registrar, CyChartManager mgr)
     {
 	    StackPane pane = new StackPane();
-	    pane.setPrefWidth(520);
-	    pane.setPrefHeight(500);
+	    pane.setPrefWidth(WIDTH);
+	    pane.setPrefHeight(HEIGHT);
 	    try
 	    {
-System.out.println("preconstruction");
-new HistogramChartController(pane, registrar, mgr);
+	    	//System.out.println("preconstruction");
+	    	new HistogramChartController(pane, registrar, mgr);
 	    	
 	    }
 	    catch (Exception e)

@@ -269,8 +269,8 @@ public class SubRangeLayer1D
 		
 		boolean tooLow =  h < minAllowed;
 		boolean tooHigh =  h > maxAllowed;
-		if (tooLow)	System.out.println("Too Low");
-		if (tooHigh)	System.out.println("Too High");
+//		if (tooLow)	System.out.println("Too Low");
+//		if (tooHigh)	System.out.println("Too High");
 		
 		boolean inRange = !tooLow && !tooHigh;
 		if (!inRange) 							return;

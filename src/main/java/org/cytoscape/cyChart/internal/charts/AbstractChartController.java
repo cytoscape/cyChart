@@ -4,14 +4,15 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
+import java.util.Properties;
 
 import javax.imageio.ImageIO;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -21,16 +22,17 @@ import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.cyChart.internal.view.Borders;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -43,6 +45,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
@@ -51,15 +54,17 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
+import javafx.stage.WindowEvent;
 
 /*
  * This is the parent class of the histogram and scatter controllers.
  * It builds the panel, with header / chart / footer
  */
-abstract public class AbstractChartController {		// implements Initializable
+abstract public class AbstractChartController implements SetCurrentNetworkListener {		// implements Initializable
 	
 	protected CyApplicationManager applicationManager = null;
 	protected CyServiceRegistrar registrar;
+	protected CyNetwork myNetwork = null;		// remember the network that created us, and only enable when it is active
 	protected CyChartManager manager;
 	
 	protected CyTable table;
@@ -105,7 +110,6 @@ abstract public class AbstractChartController {		// implements Initializable
 	
 	static Font numberFont = new Font("SansSerif", 10);
 	abstract public void setParameters(); 
-
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
 	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
@@ -122,6 +126,7 @@ abstract public class AbstractChartController {		// implements Initializable
 		{	registrar = reg;
 			applicationManager = registrar.getService(CyApplicationManager.class);
 			table = manager.getCurrentTable();
+			myNetwork = applicationManager.getCurrentNetwork();
 		}
 		
 		HBox top = makeHeader(is2D);
@@ -140,13 +145,42 @@ abstract public class AbstractChartController {		// implements Initializable
 		xColumn = manager.getXColumn();
 		yColumn = manager.getYColumn();
 		initialize();
+		parentStackPane = parent;
+		parentStackPane.getChildren().add(tip);
+		tip.setVisible(false);
 //		
 	}
+	Label tip = new Label("");
+	StackPane parentStackPane;
+	@Override
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		CyNetwork currentNet = e.getSource().getCurrentNetwork();
+		
+		boolean active = currentNet == myNetwork;
+		parentStackPane.setDisable(!active);
+		parentStackPane.setOpacity(active ? 1 : 0.5);
+		Platform.runLater(() -> 
+		{	
+			String s;
+			if (currentNet == null)
+				s = "This window is disabled \nbecause no network is active.";
+				else
+				{
+					String title = myNetwork.getDefaultNetworkTable().getTitle();
+					s = "This window is disabled because " + title + "\nis not the active network.";
+				}
+			tip.setText(s);
+			tip.setVisible(!active);
+		});
+	}
 	//-------------------------------------------------------------
+//  watch out: fxml support is in a bundle not included in cytoscape
 //	@Override public void initialize(URL uri, ResourceBundle rb)
 //	{
 //		initialize();
 //	}
+	
+	
 	
 	public void initialize()
 	{
@@ -178,6 +212,14 @@ abstract public class AbstractChartController {		// implements Initializable
 		setParameters();
 		xSelector.selectedIndexProperty().addListener(xListener);
 		ySelector.selectedIndexProperty().addListener(yListener);
+		
+		registrar.registerService(this, SetCurrentNetworkListener.class, new Properties());
+	}
+	
+	public void unregister()
+	{
+		System.out.println("unregister");
+		registrar.unregisterService(this, SetCurrentNetworkListener.class);
 	}
 	// ------------  
 	private HBox makeHeader(boolean is2D) {
@@ -411,8 +453,6 @@ abstract public class AbstractChartController {		// implements Initializable
 		setYParameters(yAxisChoices.getSelectionModel().getSelectedIndex());
 	}
 	// -------------------------------------------------------------
-
-
 	public void setStatus(String s)	{
 		if ( statusLabel != null)  statusLabel.setText(s);
 	}
@@ -427,7 +467,6 @@ abstract public class AbstractChartController {		// implements Initializable
 	public void setXmax(double d)	{ xMax.setNumber(d);	}
 	public void setYmin(double d)	{ yMin.setNumber(d);	}
 	public void setYmax(double d)	{ yMax.setNumber(d);	}
-	
 	
 	public void setXRange(Range r) {
 		if (r == null) return;

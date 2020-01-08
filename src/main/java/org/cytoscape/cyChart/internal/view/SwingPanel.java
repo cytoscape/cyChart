@@ -8,7 +8,6 @@ import javax.swing.JPanel;
 
 import org.apache.log4j.Logger;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.cyChart.internal.charts.oneD.AppHistograms;
 import org.cytoscape.cyChart.internal.charts.oneD.HistogramChartController;
 import org.cytoscape.cyChart.internal.charts.oneD.HistogramFilterDialog;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
@@ -18,6 +17,7 @@ import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
+import javafx.stage.WindowEvent;
 
 public class SwingPanel extends JPanel {
  
@@ -72,13 +72,18 @@ public class SwingPanel extends JPanel {
 	    pane.setPrefHeight(500);
 	    try
 	    {
-	    	System.out.println("preconstruction");
+//	    	System.out.println("preconstruction");
 	    	HistogramChartController ctrl = new HistogramChartController(pane, registrar, manager);
 //		appPane.setBorder(Borders.magentaBorder);
 			Scene scene = new Scene(pane);
-			Platform.runLater(() -> {	jfxPanel.setScene(scene);	});
-		add(jfxPanel, BorderLayout.CENTER);
-	}
+			
+			Platform.runLater(() -> 
+			{	
+				jfxPanel.setScene(scene);	
+				scene.getWindow().addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, e -> ctrl.unregister());
+			});
+			add(jfxPanel, BorderLayout.CENTER);
+	    }
 	    catch (Exception e) 
 	    {
 	    	e.printStackTrace();

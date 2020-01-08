@@ -3,6 +3,7 @@ package org.cytoscape.cyChart.internal.charts.twoD;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
 import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
@@ -273,6 +274,7 @@ public class ScatterChartController extends AbstractChartController
 			String y = yAxisChoices.getSelectionModel().getSelectedItem();
 //		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
 			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+			if (series1 == null) return;
 			int seriesSize = series1.getData().size();
 			double[] X = new double[seriesSize];
 			double[] Y = new double[seriesSize];
@@ -313,6 +315,5 @@ public class ScatterChartController extends AbstractChartController
 			scatterChartHome.setRegression(new LinearRegression(X, Y));
 			resized();
 		}
-
 		
 }
