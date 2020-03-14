@@ -213,8 +213,6 @@ public class SelectableScatterChart extends AnchorPane
 		});
 		
 		selectionRectangle.setOnMouseReleased(event -> {
-//			if (selRectStart == null || selRectEnd == null) 		return;
-//			if (isRectangleSizeTooSmall()) 							return;
 			selectionRectangleScaleDef  = rectDef(selectionRectangle, getPlotFrame());
 			setAxisBounds();
 			selRectStart = selRectEnd = null;
@@ -227,7 +225,7 @@ public class SelectableScatterChart extends AnchorPane
 		mirrorRectangle.setOpacity(0.3);
 		mirrorRectangle.setFill(Color.CYAN);
 		mirrorRectangle.getStyleClass().addAll(STYLE_CLASS_SELECTION_BOX);
-		mirrorRectangle.setStroke(Color.WHITE);
+		mirrorRectangle.setStroke(Color.SADDLEBROWN);
 		mirrorRectangle.setStrokeWidth(2f);
 
 	}
@@ -236,6 +234,8 @@ public class SelectableScatterChart extends AnchorPane
 	private void onDragged(MouseEvent event) {
 		if (event.isSecondaryButtonDown()) 	return;
 		boolean option = event.isAltDown();
+		double offsetX = controller.getPlotAreaNode().getLayoutX();
+
 		if (resizing)
 		{
 			// store current cursor position
@@ -243,12 +243,12 @@ public class SelectableScatterChart extends AnchorPane
 			if (selRectStart == null)
 				selRectStart = RectangleUtil.oppositeCorner(event,selectionRectangle);
 			if (selRectStart == null) return;
-//selRectStart = new Point2D(event.getX(), event.getY());			// ERROR -- will reset instead of resize
+
 			double x = Math.min(selRectStart.getX(), selRectEnd.getX());
 			double y = Math.min(selRectStart.getY(), selRectEnd.getY());
 			double width = Math.abs(selRectStart.getX() - selRectEnd.getX());
 			double height = Math.abs(selRectStart.getY() - selRectEnd.getY());
-			drawSelectionRectangle(x, y, width, height, option);
+			drawSelectionRectangle(x, y, width, height, option,offsetX);
 //			System.out.println("x:" + x + " y:" + y + " width:" + width + " height:" + height);
 		} else		// dragging
 		{
@@ -272,7 +272,7 @@ public class SelectableScatterChart extends AnchorPane
 //			offsetRectangle(selectionRectangle, dx, dy);
 			selectionRectangle.setX(selectionRectangle.getX() + dx);	
 			selectionRectangle.setY(selectionRectangle.getY() + dy);
-			drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY, option);
+			drawSelectionRectangleAt(event.getX() - offsetX, event.getY() - offsetY, option, offsetX);
 			selRectStart = new Point2D(event.getX(), event.getY());
 		}
 		if (controller.isInteractive()) 
@@ -321,21 +321,29 @@ public class SelectableScatterChart extends AnchorPane
 			double offsetY = chartRegion.getLayoutY();
 			selRectEnd = computeRectanglePoint(ev.getX()+offsetX, ev.getY()+offsetY);		// store current cursor position
 			Rectangle2D r = union(selRectStart, selRectEnd);
-			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight(), optionDrag);
+			drawSelectionRectangle(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight(), optionDrag, offsetX);
 			selectionRectangleScaleDef = rectDef(selectionRectangle, getPlotFrame());
-			setAxisBounds();
+			if (controller.isInteractive()) 
+				setAxisBounds();
 			ev.consume();
 		});
 		
 		chartRegion.setOnMouseReleased(ev -> {
-			if (selRectStart == null || selRectEnd == null) 		return;
-			if (isRectangleSizeTooSmall()) 							return;
+			if (selRectStart == null || selRectEnd == null) 	{ clearSelection();	return;  }
+			if (isRectangleSizeTooSmall()) 							{ clearSelection();	return;  }
 			setAxisBounds();
 			selRectStart = selRectEnd = null;
 			selectionRectangleScaleDef = rectDef(selectionRectangle, getPlotFrame());
 			requestFocus();		// needed for the key event handler to receive events
 			ev.consume();
 		});
+	}
+
+	private void clearSelection() {
+		selectionRectangle.setWidth(0);
+		selectionRectangle.setHeight(0);
+		setAxisBounds();
+		
 	}
 
 	private Point2D computeRectanglePoint(double eventX, double eventY) {
@@ -376,39 +384,48 @@ public class SelectableScatterChart extends AnchorPane
 		double hght = Math.abs(b.getY() - a.getY());
 		double x = Math.min(a.getX(),b.getX());
 		double y = Math.min(a.getY(),b.getY());
-		drawSelectionRectangle(x,y,wid,hght, optionDrag);
+		drawSelectionRectangle(x,y,wid,hght, optionDrag,0);
 	}	
 	
-	public void drawSelectionRectangle(final double x, final double y, final double width, final double height, boolean optionDrag) {
+	public void drawSelectionRectangle(final double x, final double y,
+			 double width, final double height, boolean optionDrag, final double offsetX) {
 		selectionRectangle.setVisible(true);
-		selectionRectangle.setX(x);
-		selectionRectangle.setY(y);
-		selectionRectangle.setWidth(width);
-		selectionRectangle.setHeight(height);
+		set(selectionRectangle, x,y,width, height);
 //		selectionRectangle.toFront();
 		if (optionDrag)
 		{
 			Range xRange = controller.getXRange();
 			if (xRange.min() < 0 && xRange.max() > 0)
 			{
-				double xScale = converter.frameToScale(x, scatter, false);
-				mirrorRectangle.setVisible(true);
-				double ghostX = converter.scaleToFrame(-1 * xScale, scatter, false);
-				if (xScale > 0)
+				double xScale = converter.frameToScale(x-offsetX, scatter, false);
+				double rightScale = converter.frameToScale(x + width -offsetX, scatter, false);
+				boolean spans0 = (xScale < 0) != (rightScale < 0);
+				mirrorRectangle.setVisible(!spans0);
+				double ghostX = offsetX + converter.scaleToFrame(-1 * xScale, scatter, false);
+				if (xScale >= 0)
 					ghostX -= width;
-
-				mirrorRectangle.setX( ghostX);
-				mirrorRectangle.setY(y);
-				mirrorRectangle.setWidth(width);
-				mirrorRectangle.setHeight(height);
+				if (ghostX < offsetX)
+				{
+					width -= offsetX - ghostX;
+					ghostX = offsetX;
+				}
+				set(mirrorRectangle, ghostX, y, width, height);
 	//			ghostRectangle.toFront();
 			}
 		}
+		else mirrorRectangle.setVisible(false);
 		drawRegressionLine();
 	}
 
-	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag) {
-		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag);
+	void set(Rectangle r, double x, double y, double width, double height){
+		r.setX(x);
+		r.setY(y);
+		r.setWidth(width);
+		r.setHeight(height);
+
+	}
+	private void drawSelectionRectangleAt(final double x, final double y, boolean optionDrag,final double xOffset) {
+		drawSelectionRectangle(x,y,selectionRectangle.getWidth(), selectionRectangle.getHeight(), optionDrag,xOffset);
 	}
 	private void disableAutoRanging() {
 		xAxis.setAutoRanging(false);

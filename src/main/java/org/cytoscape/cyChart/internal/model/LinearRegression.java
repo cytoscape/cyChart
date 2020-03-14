@@ -1,5 +1,6 @@
 package org.cytoscape.cyChart.internal.model;
 
+import java.util.List;
 
 
 /**
@@ -28,6 +29,10 @@ public class LinearRegression {
      * @param  y the corresponding values of the response variable
      * @throws IllegalArgumentException if the lengths of the two arrays are not equal
      */
+    public LinearRegression(List<Double> xList, List<Double> yList) {
+    	this(xList.stream().mapToDouble(Double::doubleValue).toArray(),
+    			yList.stream().mapToDouble(Double::doubleValue).toArray());
+    }
     public LinearRegression(double[] x, double[] y) {
         if (x.length != y.length) {
             throw new IllegalArgumentException("array lengths are not equal");

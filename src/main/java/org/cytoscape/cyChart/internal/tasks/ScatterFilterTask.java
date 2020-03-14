@@ -52,7 +52,8 @@ public class ScatterFilterTask extends AbstractEmptyObservableTask {
 //			TFExecutor exec = (TFExecutor) monitor;
 //			exec.interceptor.
 			
-			manager.setXColumnName(x);
+			CyColumn manCol = manager.getXColumn();
+			manager.setXColumnName(manCol == null ? x : manCol.getName());
 			manager.setYColumnName(y);
 			ScatterFilterDialog	chart = new ScatterFilterDialog(manager, title);
 			chart.setVisible(true);

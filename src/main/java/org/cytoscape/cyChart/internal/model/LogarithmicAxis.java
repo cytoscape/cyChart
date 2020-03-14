@@ -5,15 +5,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.sun.javafx.charts.ChartLayoutAnimator;
+//import com.sun.javafx.charts.ChartLayoutAnimator;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
+//import javafx.animation.KeyFrame;
+//import javafx.animation.KeyValue;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.chart.ValueAxis;
-import javafx.util.Duration;
 
 
 //http://blog.dooapp.com/logarithmic-scale-strikes-back-in-javafx-20
@@ -21,7 +20,7 @@ import javafx.util.Duration;
 public class LogarithmicAxis extends ValueAxis<Number> {
 
   private Object currentAnimationID;
-  private final ChartLayoutAnimator animator = new ChartLayoutAnimator(this);
+//  private final ChartLayoutAnimator animator = new ChartLayoutAnimator(this);
 
 //Create our LogarithmicAxis class that extends ValueAxis<Number> and define two properties that will represent the log lower and upper bounds of our axis.     
   private final DoubleProperty logUpperBound = new SimpleDoubleProperty();
@@ -30,7 +29,7 @@ public class LogarithmicAxis extends ValueAxis<Number> {
 
 //we bind our properties with the default bounds of the value axis. But before, we should verify the given range according to the mathematic logarithmic interval definition.
   public LogarithmicAxis() {
-      super(1, 10000000);
+      super(1, 100000);
       bindLogBoundsToDefaultBounds();
   }
 
@@ -168,15 +167,15 @@ public class LogarithmicAxis extends ValueAxis<Number> {
           setLowerBound(lowerBound);
           setUpperBound(upperBound);
           if (animate) {
-              animator.stop(currentAnimationID);
-              currentAnimationID = animator.animate(
-                      new KeyFrame(Duration.ZERO,
-                              new KeyValue(currentLowerBound, oldLowerBound)
-                      ),
-                      new KeyFrame(Duration.millis(700),
-                              new KeyValue(currentLowerBound, lowerBound)
-                      )
-              );
+//              animator.stop(currentAnimationID);
+//              currentAnimationID = animator.animate(
+//                      new KeyFrame(Duration.ZERO,
+//                              new KeyValue(currentLowerBound, oldLowerBound)
+//                      ),
+//                      new KeyFrame(Duration.millis(700),
+//                              new KeyValue(currentLowerBound, lowerBound)
+//                      )
+//              );
           } else {
               currentLowerBound.set(lowerBound);
           }

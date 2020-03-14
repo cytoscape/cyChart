@@ -51,21 +51,6 @@ public class ScatterChartController extends AbstractChartController
 	static int DOT_SIZE = 4; 
 	private SelectableScatterChart scatterChartHome;
 
-	@Override protected void fillInHeader()
-	{
-		super.fillInHeader();
-		curveFit = new CheckBox("Regression");
-			ChangeListener<? super Boolean> regressCheckChange = new ChangeListener<Boolean>() {
-			    @Override
-			    public void changed(ObservableValue<? extends Boolean> ov,
-			        Boolean old_val, Boolean new_val) {
-			        linearRegression(new_val);	
-			    }};
-		curveFit.selectedProperty().addListener(regressCheckChange);
-		curveFit.setTranslateY(4);
-		header1.getChildren().add(curveFit);
-	}
-
 	public void setParameters()
 	{
 		if (chartBox != null)
@@ -91,11 +76,15 @@ public class ScatterChartController extends AbstractChartController
 		        }
 			}
 			scatterChartHome.setAxes(x, y);
+//			series1.getData().
 			if (xAxis == null) xAxis = (ValueAxis<Number>) scatterChartHome.getScatterChart().getXAxis(); 
 			if (yAxis == null) yAxis = (ValueAxis<Number>) scatterChartHome.getScatterChart().getYAxis(); 
 			logXTransform.setDisable(xAxis == null || xAxis.getLowerBound() <= 0);
 			logYTransform.setDisable(yAxis == null || yAxis.getLowerBound() <= 0);
 
+//			double xLow = xAxis.getLowerBound();
+//			double xHigh = xAxis.getUpperBound();
+			
 			setChart(scatterChartHome.getScatterChart());
 			chartBox.getChildren().add(scatterChartHome);
 
@@ -196,8 +185,8 @@ public class ScatterChartController extends AbstractChartController
 	}
 	//------------------------------------------------------------------
 	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
-		if (row == null) {		System.err.println("row is null");		return false;	}
-		if (col == null) {		System.err.println("col is null");		return false;	}
+		if (row == null) 		return false;		//System.err.println("row is null");	
+		if (col == null) 		return false;		//System.err.println("col is null");	
 		
 //		System.out.println(String.format("col %s (%.2f - %.2f)", col.getName(), xMin, xMax));
 		Object val = row.get(col.getName(), col.getType());
@@ -261,7 +250,7 @@ public class ScatterChartController extends AbstractChartController
 	//-------------------------------------------------------------------------------------------------
 	//-------------------------------------------------------------------------------------------------
 	//alt method:	https://math.stackexchange.com/questions/3625/easy-to-implement-method-to-fit-a-power-function-regression
-		protected void linearRegression(boolean visible)
+		protected void regression(boolean visible)
 		{
 //			System.out.println("linearRegression " + (visible ? "on" : "off"));
 		
@@ -289,31 +278,31 @@ public class ScatterChartController extends AbstractChartController
 			resized();
 		}
 
-		protected void logRegression(boolean visible)
-		{
-//			System.out.println("linearRegression " + (visible ? "on" : "off"));
-		
-			if (!visible)
-			{
-				scatterChartHome.clearRegression();
-				return;
-			}
-			String x = xAxisChoices.getSelectionModel().getSelectedItem();
-			String y = yAxisChoices.getSelectionModel().getSelectedItem();
-//		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
-			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
-			int seriesSize = series1.getData().size();
-			double[] X = new double[seriesSize];
-			double[] Y = new double[seriesSize];
-			for (int i=0; i<seriesSize; i++)
-			{
-				Data<Number, Number> d = series1.getData().get(i);
-				X[i] = Math.log((double) d.getXValue());
-				Y[i] = Math.log((double) d.getYValue());
-			}
-			
-			scatterChartHome.setRegression(new LinearRegression(X, Y));
-			resized();
-		}
+//		protected void logRegression(boolean visible)
+//		{
+////			System.out.println("linearRegression " + (visible ? "on" : "off"));
+//		
+//			if (!visible)
+//			{
+//				scatterChartHome.clearRegression();
+//				return;
+//			}
+//			String x = xAxisChoices.getSelectionModel().getSelectedItem();
+//			String y = yAxisChoices.getSelectionModel().getSelectedItem();
+////		    System.out.println(x + (isXLog ? " (Log)" : " (Lin)") + " v.  " + y + (isYLog ? " (Log)" : " (Lin)"));
+//			XYChart.Series<Number, Number> series1 = getDataSeries(x, y);
+//			int seriesSize = series1.getData().size();
+//			double[] X = new double[seriesSize];
+//			double[] Y = new double[seriesSize];
+//			for (int i=0; i<seriesSize; i++)
+//			{
+//				Data<Number, Number> d = series1.getData().get(i);
+//				X[i] = Math.log((double) d.getXValue());
+//				Y[i] = Math.log((double) d.getYValue());
+//			}
+//			
+//			scatterChartHome.setRegression(new LinearRegression(X, Y));
+//			resized();
+//		}
 		
 }

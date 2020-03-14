@@ -1,4 +1,4 @@
-package org.cytoscape.cyChart.internal;
+package org.cytoscape.cyChart.internal.view;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;

@@ -1,10 +1,10 @@
 org/cytoscape/cyChart/internal/charts/AbstractChartController$6.class
-org/cytoscape/cyChart/internal/NumberField.class
 org/cytoscape/cyChart/internal/view/SwingPanel.class
 org/cytoscape/cyChart/internal/model/LinearRegression.class
 org/cytoscape/cyChart/internal/model/LogarithmicAxis$1.class
 org/cytoscape/cyChart/internal/charts/ReportVersion.class
 org/cytoscape/cyChart/internal/charts/AbstractChartController$2.class
+org/cytoscape/cyChart/internal/view/NumberField.class
 org/cytoscape/cyChart/internal/model/GraphRequest.class
 org/cytoscape/cyChart/internal/charts/oneD/ColumnFilterTaskFactory.class
 org/cytoscape/cyChart/internal/tasks/AbstractEmptyObservableTask.class
@@ -14,7 +14,6 @@ org/cytoscape/cyChart/internal/tasks/HistogramFilterTaskFactory.class
 org/cytoscape/cyChart/internal/charts/AbstractChartController$5.class
 org/cytoscape/cyChart/internal/model/NodeUtil.class
 org/cytoscape/cyChart/internal/model/RectangleUtil.class
-org/cytoscape/cyChart/internal/charts/twoD/ScatterChartController$1.class
 org/cytoscape/cyChart/internal/model/CyChart.class
 org/cytoscape/cyChart/internal/charts/StringUtil.class
 org/cytoscape/cyChart/internal/model/StatisticRequest$Statistic.class
@@ -52,6 +51,7 @@ org/cytoscape/cyChart/internal/tasks/VersionTask.class
 org/cytoscape/cyChart/internal/charts/twoD/ScatterChartController.class
 org/cytoscape/cyChart/internal/view/Borders.class
 org/cytoscape/cyChart/internal/model/LogarithmicAxis$IllegalLogarithmicRangeException.class
+org/cytoscape/cyChart/internal/charts/AbstractChartController$7.class
 org/cytoscape/cyChart/internal/charts/AbstractChartController$1.class
 org/cytoscape/cyChart/internal/charts/oneD/HistogramChartController.class
 org/cytoscape/cyChart/internal/model/Peak.class

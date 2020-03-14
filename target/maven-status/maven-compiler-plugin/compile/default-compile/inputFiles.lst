@@ -28,6 +28,7 @@
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/LogarithmicAxis.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/RectangleUtil.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/CSVTableData.java
+/Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/view/NumberField.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/OverlaidLineChart.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/GraphRequest.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/model/LinearRegression.java
@@ -40,5 +41,4 @@
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/StringUtil.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/twoD/ScatterFilterPanel.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/charts/oneD/AppHistograms.java
-/Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/NumberField.java
 /Users/adamtreister/Development/apps/cyChart/cyChart/src/main/java/org/cytoscape/cyChart/internal/view/Borders.java

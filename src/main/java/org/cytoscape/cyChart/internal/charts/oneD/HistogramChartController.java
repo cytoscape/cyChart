@@ -1,15 +1,14 @@
 package org.cytoscape.cyChart.internal.charts.oneD;
 
 import java.math.BigDecimal;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 import org.cytoscape.cyChart.internal.FilterBuilder;
 import org.cytoscape.cyChart.internal.charts.AbstractChartController;
 import org.cytoscape.cyChart.internal.charts.StringUtil;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
+import org.cytoscape.cyChart.internal.model.LinearRegression;
 import org.cytoscape.cyChart.internal.model.LogarithmicAxis;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.model.CyColumn;
@@ -26,25 +25,36 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 
+/*
+ * Controller class for the one dimensional CyChart
+ */
+
+
 public class HistogramChartController extends AbstractChartController
 {
 	private static final int INTERACTIVE = 500;
   	private  LineChart<Number, Number> histogramChart;	
 	private SubRangeLayer1D subrangeLayer;
+
+	private Histogram1D histogram;			// we'll need to access this to calc stats
+	public Histogram1D getCurrentHistogram()	{ return histogram;	}
 	// ------------------------------------------------------
 	public HistogramChartController(StackPane parent, CyServiceRegistrar reg, CyChartManager mgr) {
 		super(parent, reg, false, mgr);
 //		System.out.println("HistogramChartController");
 	}
- 	
+ 
+	// WATCH OUT:  the class Initializable may not be in the included JavaFX libraries
 //	@Override
 //	public void initialize(URL url, ResourceBundle bundle) {
 //		super.initialize(url, bundle);
 //		
 //	}
 	// ------------------------------------------------------
-	@Override protected void makeFilter() {
-		if (registrar != null) {		
+/*
+ *  Respond to the Create Filter button (top left)
+ */
+	@Override protected void makeFilter() {	if (registrar != null) {		
 			String x = xAxisChoices.getSelectionModel().getSelectedItem();
 		    FilterBuilder builder = new FilterBuilder(x, new Range(startX, endX));
 		    builder.makeSingleFilter(registrar);
@@ -52,23 +62,30 @@ public class HistogramChartController extends AbstractChartController
 		}
 	 }
 	// ------------------------------------------------------
+/*
+ * 	Look at the popup and set the axis accordingly
+ */
 	public void setParameters()
 	{
 		setXParameter(xAxisChoices.getSelectionModel().getSelectedItem());
 	}
 	// ------------------------------------------------------
-	// this recreates the entire chart, axes, data series, etc.
-	public void setXParameter(String name)
+	// this recreates the entire chart, axes, data series, regression, etc.
+	boolean verbose = false;
+	
+	/*
+	 * Assign the parameter to use, and rebuild everything.  
+	 * Only called by the method that checks the ChoiceBox
+	 * 
+	 *  @param name  The column name to go on the domain axis
+	 */
+	
+	private void setXParameter(String name)
 	{
-//	System.out.println(name);
-//	if (xColumn == null) return;
-//	if (xColumn.getType().equals(Integer.class))
-//		System.out.println("INTEGER COLUMN");
-//		int nBins = column.getRange().
 		xColumn = findColumn(name);
 		if (xColumn == null)  { noHistogram();	return;  }
-		Histogram1D h1 = getHistogram(name, isXLog);
-		if (h1 == null)  { noHistogram();	return;  }
+		histogram = getHistogram(name, isXLog);
+		if (histogram == null)  { noHistogram();	return;  }
 		chartBox.getChildren().clear();
 		if (subrangeLayer != null) subrangeLayer.hideSelection();
 		if (isXLog)
@@ -78,7 +95,7 @@ public class HistogramChartController extends AbstractChartController
 		}
 		xAxis = isXLog ? new LogarithmicAxis() : new NumberAxis();
 		xAxis.setLabel(name);
-		yAxis = new NumberAxis();
+		yAxis = new NumberAxis();		//LogarithmicAxis();   
 		histogramChart = new LineChart<Number, Number>(xAxis, yAxis);
 		histogramChart.setCreateSymbols(false);
 		anchor(histogramChart);
@@ -100,38 +117,79 @@ public class HistogramChartController extends AbstractChartController
 		}
 		histogramChart.setStyle(rootStr);
 		
-		
-		
+			
+//		System.out.println("C");
 		Group groupH = subrangeLayer.getSubRangeGroup();
 		Bounds bounds = getPlotAreaNode().getBoundsInParent();
 		groupH.setTranslateX(bounds.getMinX());
 		groupH.setTranslateY(36);
 		if (StringUtil.isEmpty(name)) return;
 		
-		if (h1 != null)
-		{
-			Range histoRange = h1.getRange();
+		if (histogram == null) return;
+
+		Range histoRange = histogram.getRange();
 //			h1.dump();
-			histogramChart.getData().clear();
-			
-			boolean isInt = xColumn != null && xColumn.getType().equals(Integer.class);
-			double area = isInt ? 1 : h1.getArea();
-			XYChart.Series<Number, Number> data = h1.getDataSeries(name,0.,area);
-			histogramChart.getData().add(data);
-			xAxis.setLowerBound(histoRange.min());
-			xAxis.setUpperBound(histoRange.max());
-			boolean disable = histoRange.contains(0.);
-			logXTransform.setDisable(disable);
-			yAxis.setLowerBound(0);
-			double top =  h1.getMode();
-			if (!isInt) top = .5 * h1.getMode() / h1.getSize();
-			yAxis.setUpperBound(top);
-			int size = getDataSize();
-			interactive.setSelected(size > 0 && size < INTERACTIVE);
+		histogramChart.getData().clear();
+		
+		boolean isInt = xColumn != null && xColumn.getType().equals(Integer.class);
+		double area = isInt ? 1 : histogram.getArea();
+		XYChart.Series<Number, Number> data = histogram.getDataSeries(name,0.,area);
+		histogramChart.getData().add(data);
+		int minX = (int) histoRange.min();
+		int maxX = (int) histoRange.max();
+		xAxis.setLowerBound(minX);
+		xAxis.setUpperBound(maxX);
+		
+		boolean disableLog = histoRange.contains(0.);
+		logXTransform.setDisable(disableLog);
+		yAxis.setLowerBound(0);
+		double top =  histogram.getMode();
+		if (!isInt) top = .5 * top / histogram.getSize();
+		yAxis.setUpperBound(top);
+		int size = getDataSize();
+		interactive.setSelected(size > 0 && size < INTERACTIVE);
+		boolean showRegression = curveFit.isSelected();
+
+		if (showRegression)
+		{
+			List<Double> xs = new ArrayList<Double>();
+			List<Double> ys = new ArrayList<Double>();
+			for (int i=minX; i < maxX; i++)
+			{
+				double count = histogram.get(i);
+				if (count <= 0) continue;
+//				xs.add(Math.log(Double.valueOf(i)));
+				xs.add(Double.valueOf(i));
+				ys.add(Math.log(count));
+//				raw.getData().add(new XYChart.Data<Number, Number>(Double.valueOf(i),Math.log(count)));
+				if (verbose)		
+					System.out.println(Double.valueOf(i) + "\t" + count);
+			}
+			LinearRegression foo = new LinearRegression(xs, ys);
+			if (verbose)	
+				System.out.println(foo.toString());
+	
+			XYChart.Series<Number, Number> regression = new XYChart.Series<Number, Number>();
+			histogramChart.getData().add(regression);
+			regression.nameProperty().set("Log Regression");
+
+			for (int i=minX; i < maxX; i++)
+			{
+				double xi = i;
+				double yi = foo.predict(xi);
+				double powx = Math.pow(Math.E, xi);
+				double powy = Math.pow(Math.E, yi);
+				if (verbose)	System.out.println(" -> " + xi + ", " + powy + " - " + yi);
+				regression.getData().add(new XYChart.Data<Number, Number>(xi,powy));
+			}
 		}
 	}
 	
-	
+	//----------------------------------------------------------------------------
+	//----------------------------------------------------------------------------
+/*
+ * Set the dialog to an disabled state, because data is unassigned or network is inactive
+ */
 	private void noHistogram() {
 		logXTransform.setDisable(true);			
 		xMin.setDisable(true);			// number fields should also disable
@@ -139,6 +197,12 @@ public class HistogramChartController extends AbstractChartController
 		
 	}
 	// ------------------------------------------------------
+/*	
+ * Create the Histogram structure from the name of the desired column
+ * 
+ * @param item - the name of the column with the data to bin
+ * @param isLog - switch to enable log binning
+ */
 	private Histogram1D getHistogram(String item, Boolean isLog) 
 	{
 		try 
@@ -196,6 +260,11 @@ public class HistogramChartController extends AbstractChartController
 		return null;
 	}
 	// ------------------------------------------------------
+	/**
+	 *  Reset the parameters after the window has change size
+	 */
+	
+	
 	public void resized()
 	{
 		if (subrangeLayer != null)
@@ -204,7 +273,15 @@ public class HistogramChartController extends AbstractChartController
 			setStatus("");	// + subrangeLayer.getYValue()
 		}
 	}
+	/**
+	 *  In response to the check box, replot with or without regression
+	 */
 	
+	
+	protected void regression(boolean vis)
+	{
+		setParameters();
+	}
 	// ------------------------------------------------------
 	boolean inBounds(double x)
 	{
@@ -230,6 +307,14 @@ public class HistogramChartController extends AbstractChartController
 //			if (selected) System.out.println("selected ");
 		}
 	}
+	/*
+	 * Check if the data at row,col is in bounds
+	 * @param row The CyRow structure
+	 * @param col The CyColumn structure
+	 * @param xMin Lower bounds of the X range
+	 * @param xMax Upper bounds of the X range
+	 * 
+	 */
 	
 	private boolean rowMatch(CyRow row, CyColumn col, double xMin, double xMax) {
 		if (row == null) {		System.err.println("row is null");		return false;	}
@@ -256,6 +341,9 @@ public class HistogramChartController extends AbstractChartController
 		return false;
 		
 	}
+	/*
+	 * Kick the update after user manually edited a value
+	 */
 
 	@Override
 	public void 	fieldEdited(String fldId, BigDecimal newValue)
@@ -263,10 +351,12 @@ public class HistogramChartController extends AbstractChartController
 		super.fieldEdited(fldId, newValue);
 		subrangeLayer.chartBoundsChanged();	
 		subrangeLayer.reportRange();
-		
-		
 	}
 	
+	/*
+	 * Update the UI after user dragged the selection
+	 */
+
 	@Override
 	public void resizeRangeFields() {
 		if (subrangeLayer  != null)

@@ -24,8 +24,6 @@ public class Histogram1D
 	private Range range;
 	boolean isLog = false;
 	private String name;
-	private List<Peak> peaks = FXCollections.observableArrayList();
-	public List<Peak> getPeaks()	{  if (peaks.isEmpty()) scanPeaks(null); return peaks;	}
 // ----------------------------------------------------------------------------------------------------
 	
 	public String toString() 	{ return name + "  " + range.toString(); }
@@ -112,6 +110,12 @@ public class Histogram1D
 	}
 
 	// ----------------------------------------------------------------------------------------------------
+	public int rangeToBin(double scale)
+	{
+		return (int) Math.round( scale * range.width() / size);	
+	}
+
+	
 	public double getPercentile(int perc)
 	{
 		double val = 0;
@@ -131,6 +135,16 @@ public class Histogram1D
 			for (int i=0; i<size; i++)
 				area += counts[i];
 		return area;
+	}
+	/*
+	 * The area of a subrange, in bin numbers
+	 */
+	public int getArea(int min, int max)
+	{
+		int rangeArea = 0;
+		for (int i=min; i<max; i++)
+			rangeArea += counts[i];
+		return rangeArea;
 	}
 	// ----------------------------------------------------------------------------------------------------
 	public int getGutterCount()
@@ -322,7 +336,7 @@ public class Histogram1D
 		series.nameProperty().set(seriesName);
 		try
 		{
-			double[] smoothed = smooth();
+//			double[] smoothed = counts;  //smooth();
 			double scale = range.width() / (size+1);
 			ObservableList<Data<Number, Number>>  data = series.getData();
 			for (int i = 0; i < size; i++)
@@ -330,7 +344,7 @@ public class Histogram1D
 				double x = range.min() + (i * scale);			//valToBin(i);  //   
 //				x =  (x > 0) ? (Math.log(x) - 5) : x;		// resolve this with valtobin
 
-				double y = smoothed[i] / area + yOffset;
+				double y = counts[i] / area + yOffset;
 				data.add(new XYChart.Data<Number, Number>(x,y));
 			}
 		}
@@ -429,11 +443,11 @@ public class Histogram1D
 	private double getRadius(int resolution)	{	return 10.0;	}
 	
 	// ----------------------------------------------------------------------------------------------------
-	public OverlaidLineChart makeChart()
+	public LineChart<Number,Number> makeChart()
 	{
 		NumberAxis  xAxis = new NumberAxis();	
 		NumberAxis  yAxis = new NumberAxis();
-		OverlaidLineChart  chart = new OverlaidLineChart(xAxis, yAxis);
+		LineChart<Number,Number>  chart = new LineChart<Number, Number>(xAxis, yAxis);
 		chart.setTitle(getName());
 		chart.setCreateSymbols(false);
 		chart.getData().add( getDataSeries("All"));	
@@ -443,115 +457,9 @@ public class Histogram1D
 		chart.setMaxWidth(600);
 		VBox.setVgrow(chart, Priority.NEVER);
 		chart.setId(getName());
+//		chart.addLogRegression(1.0, 1.0, Color.BLACK, 5);
 		return chart;
 	}
-	
-//	List<Double> valleys = new ArrayList<Double>();
-	public OverlaidLineChart makePeakFitChart()
-	{
-		OverlaidLineChart chart = makeChart();
-		return chart;
-	}
-
-	public void addPeakMarkers(OverlaidLineChart peakFitChart)
-	{
-		scanPeaks(peakFitChart);
-		for (Peak p : peaks)
-		{
-			p.calcStdev();
-//			int bin  = (int) p.getMean();
-//			double val = binToVal(bin);
-//			peakFitChart.addVerticalValueMarker(new Data<Number, Number>(val, -1), Color.DARKCYAN, 2.8);
-			p.setHistogram(this);
-			p.setChart(peakFitChart);
-			peakFitChart.addBellCurveMarker(p, Color.FORESTGREEN, 0.6);
-		}
-	}
-	
-	// ----------------------------------------------------------------------------------------------------
-//	private void scanPeaks(List<Peak> peaksa, List<Double> valleysa)
-//	{
-//		int NOISE = 5;
-//		boolean ascending = false;
-//		boolean descending = false;
-//		List<Integer> peaks = new ArrayList<Integer>();
-//		List<Integer> valleys = new ArrayList<Integer>();
-//		double[] smoothed = smooth();
-//		for (int i=1; i<size; i++)
-//		{
-//			if (smoothed[i] == smoothed[i-1])		continue;
-//			if (smoothed[i] < NOISE)				continue;
-//			if (smoothed[i] > smoothed[i-1])
-//			{
-//				if (descending) valleys.add(new Integer(i-1));
-//				ascending = true;
-//				descending = false;
-//			}
-//			else if (smoothed[i] < smoothed[i-1])
-//			{
-//				if (ascending) peaks.add(new Integer(i-1));
-//				descending = true;
-//				ascending = false;
-//			}
-//		}
-//		
-//		// needs a pass here to remove minor peaks and valleys (tho' smoothing does much of this)
-//		for (int i=peaks.size()-1; i>0; i--)
-//		{
-//			int cur = peaks.get(i);
-//			int prevPeak = peaks.get(i-1);
-//			int valley = valleys.size() > i ? valleys.get(i-1) : 0;
-//			if ((valley / (cur + prevPeak) > 0.8) && ((cur - prevPeak < 5)))
-//			{
-//				peaks.remove(i);
-//				valleys.remove(i-1);
-//			}
-//		}	
-//		
-//		if (peaks.size() == 0)
-//		{
-//			System.out.println("Error, peaksize = 0, Nothing rose above 5 event noise");
-//			return;
-//		}
-//		
-//		if (peaks.size() == 1)
-//		{
-//			System.out.println("Single Peak at " + peaks.get(0));
-//			double mean =binToVal(peaks.get(0));
-//			double stdev = 0.5 * mean;
-//			double amp = smoothed[peaks.get(0)];
-//			Peak pk = new Peak(mean, stdev, amp);
-//			peaksa.add(pk);
-//			return;
-//		}
-//		for (Integer i : peaks)
-//		{
-//			double mean =binToVal(i);
-//			double stdev = 0.5 * mean;
-//			double amp = smoothed[i];
-//			Peak pk = new Peak(mean, stdev, amp);
-//			peaksa.add(pk);
-//		}
-//		
-//		for (Integer i : valleys)
-//			valleysa.add(new Double(binToVal(i)));
-//		
-//		System.out.println("Found " + peaks.size() + " peaks and " + valleys.size() + " valleys.");
-//	
-//		if (peaks.size() > 1)
-//		{
-//			for (int i=0; i<peaks.size()-1; i++)
-//			{
-//				System.out.println("Peak at " + peaksa.get(i) + " has height of " + counts[peaks.get(i)]);
-//				if (i < valleys.size())
-//					System.out.println("Valley at " + valleysa.get(i) + " has height of " + counts[valleys.get(i)]);
-//			}
-//			System.out.println("----------------------------------------------------------");
-//			System.out.println("");
-//			System.out.println("");
-//		}
-//		
-//	}
 	public LineChart<Number, Number> makeRawDataChart()
 	{
 		NumberAxis  xAxis = new NumberAxis();	
@@ -570,133 +478,6 @@ public class Histogram1D
 		return chart;
 	}
 //------------------------------------------------------------------------------
-//Numerical Recipes in C by Press et. al.:from the section on data fitting.
-//https://en.wikipedia.org/wiki/Full_width_at_half_maximum
-//http://mathworld.wolfram.com/FullWidthatHalfMaximum.html
-//Levenberg Marquardt is a least-squares/gaussian algorithm, so is somewhat noise sensitive.
-static double SQRT2 = Math.sqrt(2.0);  // the threshold for full width at half max
-	
-	public void scanPeaks(OverlaidLineChart peakFitChart)
-	{
-		peaks.clear();
-		boolean allPeaks = false;  	
-
-		int mode = 0; 
-		double[] peakHisto = new double[size];
-		try
-		{
-			int bin;
-			boolean finished = false;
-			int totalPeakArea = 0;
-			int area = 0;
-			for (int i = 0; i < size; i++)
-	            area += (peakHisto[i] = getValue(i));
-			while (!finished && peaks.size() < 10)
-			{
-				double modeValue = 0.;
-				for (bin = 0; bin < size; bin++) 
-					if (peakHisto[bin] > modeValue)		{	modeValue = peakHisto[bin];		mode = bin;	}
-				if (modeValue == 0)						{	finished = true;	break;		}
-
-//				int[] pkBounds = new int[2];			
-				int lowEnd, highEnd;
-				lowEnd = highEnd = mode; // initialize all bounds to mode
-				int sub = mode;
-				int sooper = mode;
-				
-				sub = lowEnd = findBounds(mode, -1, peakHisto, modeValue);
-				sooper = highEnd = findBounds(mode, 1, peakHisto, modeValue);
-				if (lowEnd<= 0)	lowEnd = 0;
-				if (sub <= 0)		sub = 0;
-				
-				Peak peak = new Peak(this, peakFitChart);
-				peak.setBounds(lowEnd, highEnd);
-				peak.setAmplitude( modeValue);
-				for (peak.setArea(0), bin = lowEnd; bin < highEnd; bin++)		peak.addArea(peakHisto[bin]);
-				double peakArea = peak.getArea();
-				
-				double seen = 0.;
-				for (bin = lowEnd; bin <= highEnd && seen < peakArea / 2; bin++)
-					seen += peakHisto[bin];
-				if (bin == 0) peak.setMean(bin);
-				else
-				{
-					double crossover = peakHisto[bin - 1];
-					double intoChannel = seen - peak.getArea() / 2;
-					double ratio = intoChannel / crossover;
-					peak.setMean(bin - ratio);
-				}
-				assert(sooper <= 100);
-				for (bin = sub; bin < sooper; bin++)
-				{
-					totalPeakArea += peakHisto[bin];
-					peakHisto[bin] = 0.;
-				}
-				double minArea = getMinPeakArea(area);
-				if (!allPeaks && (peak.getArea() < minArea)) 
-					finished = (totalPeakArea / peakArea) > 0.95;		// STOP at > 95% classified
-				else peaks.add(peak);
-			}
-		}
-		catch (Throwable ex)		{			ex.printStackTrace();		}
-		Collections.sort(peaks);
-//		for (Peak p: peaks)			System.out.println(toString() + " " + p.toString());
-	}
-	
-	//------------------------------------------------------------------------------
-	// walk from the mode in either positive or negative direction 
-	//	until a return condition is found
-	
-	private int findBounds(int mode, int direction, double[] peakHisto, double modeValue)
-	{
-		double halfMax = modeValue / 2.;
-		boolean shoulderPeaks = false; 
-		double halfWidthHalfMax = 0.;
-		boolean wasBelowThreshold = false;
-		double WIDTHFACTOR = SQRT2;
-		double FLOOR = 0.01;
-		int bin;
-		for (bin = mode; between(bin, 0, size); bin += direction)
-		{
-			int slopeWidth = (int) pin(halfWidthHalfMax, size / 32., size / 8.);
-			int slopeLow = Math.max(0, bin - slopeWidth / 2);
-			int slopeHigh = Math.min(size - 1, bin + slopeWidth / 2);
-			double slope = getSlope(peakHisto, slopeLow, slopeHigh - slopeLow + 1);
-//			boolean rising = (direction == 0) == (slope < 0);
-			boolean rising = (direction == 0) ? slope < 0 : slope > 0;
-
-			if (halfWidthHalfMax > 0) 
-			{
-				double curWidth = Math.abs(bin - mode);
-				double expected = Math.abs(modeValue - peakHisto[bin]) / halfMax * halfWidthHalfMax;
-				if (peakHisto[bin] < FLOOR)					return bin;	
-				else if (curWidth > expected && rising) 	return bin;
-				else if (curWidth > WIDTHFACTOR * expected) return bin;	
-			}
-			else if (halfWidthHalfMax > 0) 			
-			{
-				if (peakHisto[bin] == 0. || rising)	 return bin;		
-			}
-			else if (rising && shoulderPeaks && wasBelowThreshold)		return bin;	
-			else if (peakHisto[bin] < halfMax) 					
-			{
-				int chanMinusOne = Math.max(0, bin - 1);
-				halfWidthHalfMax = Math.abs(bin - mode) - ((halfMax - peakHisto[bin]) / (peakHisto[chanMinusOne] - halfMax));
-			}
-			if (peakHisto[bin] < halfMax * WIDTHFACTOR) wasBelowThreshold = true;			// Sqrt(2) is Welch model of FWHM
-		}
-		return bin;
-		
-	}
-	//------------------------------------------------------------------------------
-	
-	private double getMinPeakArea(int area)	{		return Math.max(100., area / 100.);	}
-		
-	int pin(int x,int min,int max) { return Math.min(max,  Math.max(x, min));  }
-	double pin(double x,double min,double max) { return Math.min(max,  Math.max(x, min));  }
-	boolean between(double x,double min,double max) { return min <= x && x < max;	} 
-	
-//  ---------------------------------------------------
    static public Double getSlope(double[] x, int start, int nValues)
     {
         double totalXY = 0., totalX = 0., totalY = 0., totalXSquared = 0.;

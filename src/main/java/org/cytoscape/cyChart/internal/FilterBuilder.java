@@ -9,6 +9,15 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
+/**
+ *  A utility class to create the filters via the task manager
+ *  execFilterCommand is the method to create the tasks, using CyServiceRegister
+ *  The X and Y axes are each a filter, with a ComposeFilter combining (AND-ing) them
+ *  Most of the code is constructing the string to send to that command.
+ * 
+ * @author adamtreister
+ *
+ */
 public class FilterBuilder {
 	String xColumnName;
 	Range xRange;
@@ -70,7 +79,9 @@ public class FilterBuilder {
 		taskManager.execute(ti);
 	}
 	//---------------------------------------------------------------
-	
+	/*
+	 *  put together all the default values to build the filter for either X or Y
+	 */
 	public String makeString(boolean isX)
 	{
 		String criterion, columnName;

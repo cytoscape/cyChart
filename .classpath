@@ -25,8 +25,5 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/adamtreister/Development/javafx-sdk-13.0.1/lib/javafx.controls.jar"/>
-	<classpathentry kind="lib" path="/Users/adamtreister/Development/javafx-sdk-13.0.1/lib/javafx.swing.jar"/>
-	<classpathentry kind="lib" path="/Users/adamtreister/Development/javafx-sdk-13.0.1/lib/javafx-swt.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

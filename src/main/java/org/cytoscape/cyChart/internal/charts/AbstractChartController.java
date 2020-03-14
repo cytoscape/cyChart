@@ -17,10 +17,10 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.cyChart.internal.FilterBuilder;
-import org.cytoscape.cyChart.internal.NumberField;
 import org.cytoscape.cyChart.internal.model.CyChartManager;
 import org.cytoscape.cyChart.internal.model.Range;
 import org.cytoscape.cyChart.internal.view.Borders;
+import org.cytoscape.cyChart.internal.view.NumberField;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -84,7 +84,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 
 	protected ValueAxis<Number> xAxis;
 	protected ValueAxis<Number> yAxis;
-	XYChart<Number,Number> theChart;
+	protected XYChart<Number,Number> theChart;
 	public void setChart(XYChart<Number,Number> c) { theChart = c; }
 	protected XYChart<Number,Number> getChart() 	{ return theChart; }
 	public Node getPlotAreaNode() 		{		return theChart == null ? null : theChart.lookup(".chart-plot-background");	}	
@@ -112,6 +112,15 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	abstract public void setParameters(); 
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
+	/*
+	 * Constructor
+	 * 
+	 * @param StackPane parent The JavaFX Node that contains us
+	 * @param CyServiceRegistrar reg Access to Cytoscape's registered services
+	 * @param boolean is2D	Both histogram and scatter charts come thru here
+	 * @param CyChartManager mgr  The app's central intelligence
+	 */
+	
 	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
 //		System.out.println("AbstractChartController");
 		chartContainer = parent;
@@ -126,6 +135,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		{	registrar = reg;
 			applicationManager = registrar.getService(CyApplicationManager.class);
 			table = manager.getCurrentTable();
+//			table = manager.getCurrentNetwork().getDefaultNodeTable();
 			myNetwork = applicationManager.getCurrentNetwork();
 		}
 		
@@ -156,22 +166,37 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	public void handleEvent(SetCurrentNetworkEvent e) {
 		CyNetwork currentNet = e.getSource().getCurrentNetwork();
 		
-		boolean active = currentNet == myNetwork;
+		boolean active = currentNet != null && currentNet == myNetwork;
 		parentStackPane.setDisable(!active);
 		parentStackPane.setOpacity(active ? 1 : 0.5);
 		Platform.runLater(() -> 
 		{	
-			String s;
-			if (currentNet == null)
-				s = "This window is disabled \nbecause no network is active.";
-				else
-				{
-					String title = myNetwork.getDefaultNetworkTable().getTitle();
-					s = "This window is disabled because " + title + "\nis not the active network.";
-				}
+			String s = "This window is disabled \nbecause no network is active.";
+			if (currentNet != null)
+			{
+				CyTable networkTable = myNetwork.getDefaultNetworkTable();
+				String title =  (networkTable == null) ? "this" : currentNet.getDefaultNetworkTable().getTitle();
+				s = "This window is disabled because " + title + "\nis not the active network.";
+			}
 			tip.setText(s);
 			tip.setVisible(!active);
 		});
+	}
+	
+	//-------------------------------------------------------------
+	public String getTitle()
+	{
+		String title = "Untitled";
+		CyTable table = manager.getCurrentTable();
+		if (table != null)
+			title = table.getTitle();
+		else if (myNetwork != null)
+		{
+			CyTable networkTable = myNetwork.getDefaultNetworkTable();
+			if (networkTable != null) 
+				title =  myNetwork.getDefaultNetworkTable().getTitle();
+		}
+		return title;
 	}
 	//-------------------------------------------------------------
 //  watch out: fxml support is in a bundle not included in cytoscape
@@ -179,8 +204,6 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 //	{
 //		initialize();
 //	}
-	
-	
 	
 	public void initialize()
 	{
@@ -215,40 +238,50 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		
 		registrar.registerService(this, SetCurrentNetworkListener.class, new Properties());
 	}
+	/*
+	 * Unregister the service when we are inactive
+	 */
 	
 	public void unregister()
 	{
-		System.out.println("unregister");
+//		System.out.println("unregister");
 		registrar.unregisterService(this, SetCurrentNetworkListener.class);
 	}
 	// ------------  
+	/*
+	 * Shared code to make the container of buttons and checkboxes
+	 */
 	private HBox makeHeader(boolean is2D) {
-		
 		makeFilter = new Button("Create Filter");
 		makeFilter.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent event) {	makeFilter();	}
 		});
 		copyImage = new Button("Export Image...");
 		copyImage.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent event) {	copyImage();	}
+			@Override public void handle(ActionEvent event) {	snapshot();	}
 		});
 		interactive = new CheckBox("Interactive");
 		interactive.setAlignment(Pos.CENTER);
 		interactive.setTranslateY(4);
 
-		fillInHeader();
-		return header1;
-	}
-	
-	protected void fillInHeader()
-	{
-		header1 = new HBox(8, makeFilter, copyImage, interactive);
+		curveFit = new CheckBox("Regression");
+		ChangeListener<? super Boolean> regressCheckChange = new ChangeListener<Boolean>() {
+		    @Override public void changed(ObservableValue<? extends Boolean> ov,
+		        Boolean old_val, Boolean val) { regression(val);  }};
+		curveFit.selectedProperty().addListener(regressCheckChange);
+		curveFit.setTranslateY(4);
+
+		header1 = new HBox(8, makeFilter, copyImage, interactive, curveFit);
 		header1.setMinHeight(30);
 		header1.setMaxHeight(30);
 		header1.setBorder(Borders.emptyBorder);
 		AnchorPane.setLeftAnchor(header1, 12.0);
+		return header1;
 	}
 	// ------------  
+	/*
+	 * Shared code to make the container of axis ChoiceBox popup with log and min-max fields
+	 */
 	private VBox makeFooter(boolean is2D) {
 		// -make the x axis choice box and log check box
 		xAxisChoices = new ChoiceBox<String>();
@@ -262,7 +295,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		logXTransform.selectedProperty().addListener(logXChange);
 		logXTransform.setAlignment(Pos.CENTER);
 		logXTransform.setDisable(false);
-		logXTransform.setVisible(false);
+		logXTransform.setVisible(true);
 		xMin = makeNumberField("xMin");
 		xMax = makeNumberField("xMax");	
 		
@@ -279,7 +312,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		logYTransform.selectedProperty().addListener(logYChange);
 		logYTransform.setAlignment(Pos.CENTER);
 		logYTransform.setDisable(false);
-		logYTransform.setVisible(false);
+		logYTransform.setVisible(true);
 		yMin = makeNumberField("yMin");
 		yMax = makeNumberField("yMax");
 		
@@ -359,11 +392,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	{
 		curveFit.setSelected(false);
 	}
-	protected void linearRegression(boolean vis)
-	{
-		System.err.println("linearRegression should be overriden");
-	}
+	abstract protected void regression(boolean vis);
 	//-------------------------------------------------------------
+	/*
+	 * After creating a filter, bring that panel up in the tabs
+	 */
 	protected void selectFilterPanel() {
 
 	CySwingApplication desktopApp = registrar.getService(CySwingApplication.class);
@@ -376,12 +409,16 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	}
 	
 	//-------------------------------------------------------------
-	private void copyImage() {
+	/*
+	 * Take a snapshot of the window and save it as a PNG
+	 */
+	private void snapshot() {
 	    FileChooser fileChooser = new FileChooser();	
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
 	
 	    //Prompt user to select a file
-	    File file = fileChooser.showSaveDialog(null);
+	    fileChooser.setInitialFileName(getTitle());
+	    File file = fileChooser.showSaveDialog(null);		//manager.getOwner()
 	    if(file != null){
 	        try {
 	    		header1.setVisible(false);
@@ -410,6 +447,9 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	 public boolean isXLog()	{ return isXLog;	}
 	 public boolean isYLog()	{ return isYLog;	}
 	 
+		/*
+		 * Go thru the table columns and collect the numerics
+		 */
 	 
 	protected void populateColumnChoices() {
 		if (table != null && !table.getColumns().isEmpty()) {
@@ -422,6 +462,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 			xAxisChoices.getSelectionModel().select(0);
 		}
 	}
+	/*
+	 * Search the active table for a column by name
+	 * 
+	 * @param name The column name
+	 */
 
 	protected CyColumn findColumn(String name) {
 		if (name == null) return null;
@@ -492,6 +537,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	protected boolean isNumericColumn(CyColumn col) {
 		return col.getType() == Double.class || col.getType() == Integer.class;
 	}
+	
 	protected List<Double> getColumnValues(CyColumn col)
 	{
 		if (col.getType() == Double.class)
@@ -509,6 +555,12 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	}
 
 	// ------------------------------------------------------
+/*
+ * Return the log if it's defined, otherwise 0
+ * This is a hack to handle values when plotting on a log axis
+ * 
+ * @return the log(d) or 0
+ */
 	protected double safelog(double d) {			//  BAD STATS!
 		if (d <= 0) 			return 0;			
 		if (Double.isNaN(d)) 	return 0;
@@ -524,7 +576,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	// ------------------------------------------------------
 	public Range getXRange()
 	{
-		if (xAxis == null) xAxis = (ValueAxis<Number>) theChart.getXAxis();  //return Range.EMPTY;
+		xAxis = (ValueAxis<Number>) theChart.getXAxis();  //return Range.EMPTY;
 		return new Range(xAxis.getLowerBound(), xAxis.getUpperBound());
 	}
 	// ------------------------------------------------------
@@ -565,6 +617,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		AnchorPane.setRightAnchor(n, right);
 	}
 	// ------------------------------------------------------
+	/*
+	 * Rather than each field getting its own lambda expr
+	 * @param fldId ID of the field
+	 * @param newValue The value it was set to
+	 */
 	public void fieldEdited(String fldId, BigDecimal newValue) {
 		
 		double v = newValue.doubleValue();

@@ -8,7 +8,11 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
-
+/*
+ * Important class to convert coordinate systems
+ * 	  Frame coordinates are the pixels in the view
+ *    Scale coordinates are the measure within the axes 
+ */
 public class FrameScaleConverter {
 
 	/**-------------------------------------------------------------------------------

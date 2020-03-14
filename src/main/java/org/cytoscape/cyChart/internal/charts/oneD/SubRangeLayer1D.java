@@ -96,8 +96,14 @@ public class SubRangeLayer1D
 	{
 		double xMin = controller.getSelectionStart();
 		double xMax = controller.getSelectionEnd();
+		Histogram1D histo = controller.getCurrentHistogram();
+		int minBin = histo.rangeToBin(xMin);
+		int maxBin = histo.rangeToBin(xMax);
+		int rangeArea = histo.getArea(minBin, maxBin);
+		int totalArea = histo.getArea();
 		NumberFormat fmt = new DecimalFormat("0.00");
-		String s = getRangeCount(chart, xMin, xMax) + " / " + controller.getDataSize(chart) +   " are between " + fmt.format(xMin) + " and " + fmt.format(xMax) ;
+		String s = rangeArea + " / " + totalArea +
+				" are between " + fmt.format(xMin) + " and " + fmt.format(xMax) ;
 		
 		Range xRange = new Range(xMin, xMax);
 		controller.setStatus(s, xRange, null);
@@ -431,6 +437,8 @@ public class SubRangeLayer1D
 	
 	//-----------------------------------------------------------------
 	private Group groupH = new Group();
+	// earlier implementation drew a H shaped selection.   |---| 
+	//	Now only the recectnagle is visible
 	private Line leftBar, crossBar, rightBar;
 	private Rectangle selection;
 	int resizing = 0;
@@ -448,7 +456,7 @@ public class SubRangeLayer1D
 		rightBar = new Line(220, 10, 220, 399);
 		selection = new Rectangle(20, 100, 220, 100);
 //		update(0,100, 0);
-		Color c = Color.PURPLE;
+		Color c = Color.CYAN;
 		leftBar.setStrokeWidth(2);		leftBar.setStroke(c);
 		crossBar.setStrokeWidth(4);		crossBar.setStroke(c);
 		rightBar.setStrokeWidth(2);		rightBar.setStroke(c);

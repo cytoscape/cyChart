@@ -105,7 +105,8 @@ public class CyActivator extends AbstractCyActivator {
 		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		props.setProperty(COMMAND_EXAMPLE_JSON, "{\"version\":\"1.0\"}");
 		registerService(bc, versionTask, TaskFactory.class, props);
-        registerService(bc, histoChart, HistogramFilterTaskFactory.class, props);
+//		props = new Properties();
+//       registerService(bc, histoChart, HistogramFilterTaskFactory.class, props);
 //        registerService(bc, startChart, TableColumnTaskFactory.class, props);
 	}
 }

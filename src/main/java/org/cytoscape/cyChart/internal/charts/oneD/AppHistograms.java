@@ -8,7 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-
+// this was an early entry point for running outside of Cytoscape
 public class AppHistograms extends Application 
 {
     public static void main(final String[] args) {    Application.launch(args);    }
