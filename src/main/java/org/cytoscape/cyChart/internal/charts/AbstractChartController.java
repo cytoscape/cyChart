@@ -61,18 +61,18 @@ import javafx.stage.WindowEvent;
  * It builds the panel, with header / chart / footer
  */
 abstract public class AbstractChartController implements SetCurrentNetworkListener {		// implements Initializable
-	
+
 	protected CyApplicationManager applicationManager = null;
 	protected CyServiceRegistrar registrar;
 	protected CyNetwork myNetwork = null;		// remember the network that created us, and only enable when it is active
 	protected CyChartManager manager;
-	
+
 	protected CyTable table;
 	protected NumberField xMin, xMax;
 	protected NumberField yMin, yMax;
 	protected Label statusLabel = new Label();
 	protected CyColumn xColumn, yColumn;
-	
+
 	protected AnchorPane chartBox;
 	protected StackPane chartContainer;
 	protected ChoiceBox<String> xAxisChoices;
@@ -87,40 +87,40 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	protected XYChart<Number,Number> theChart;
 	public void setChart(XYChart<Number,Number> c) { theChart = c; }
 	protected XYChart<Number,Number> getChart() 	{ return theChart; }
-	public Node getPlotAreaNode() 		{		return theChart == null ? null : theChart.lookup(".chart-plot-background");	}	
+	public Node getPlotAreaNode() 		{		return theChart == null ? null : theChart.lookup(".chart-plot-background");	}
 	public Bounds getPlotBounds()		{		return theChart == null ? null : getPlotAreaNode().getBoundsInParent();		}
-	public int getDataSize()			
-	{		
+	public int getDataSize()
+	{
 		if (theChart == null)	return 0;
 
 		ObservableList<Series<Number,Number>> data = theChart.getData();
 		if (data.size() == 0)  return 0;
 		 Series<Number,Number> series = data.get(0);
 		if (series == null) return 0;
-		return series.getData().size();		
+		return series.getData().size();
 	}
-	
-//	public Rectangle getPlotBoundsRect()		
+
+//	public Rectangle getPlotBoundsRect()
 //	{
 //		Bounds b= getPlotBounds();
-//		return new Rectangle(b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight());		
-//		
+//		return new Rectangle(b.getMinX(), b.getMinY(), b.getWidth(), b.getHeight());
+//
 //	}
 	protected HBox header1, footer1, footer2, footer3;
-	
+
 	static Font numberFont = new Font("SansSerif", 10);
-	abstract public void setParameters(); 
+	abstract public void setParameters();
 	//-------------------------------------------------------------
 	// use this if you don't use FXML to define the chart
 	/*
 	 * Constructor
-	 * 
+	 *
 	 * @param StackPane parent The JavaFX Node that contains us
 	 * @param CyServiceRegistrar reg Access to Cytoscape's registered services
 	 * @param boolean is2D	Both histogram and scatter charts come thru here
 	 * @param CyChartManager mgr  The app's central intelligence
 	 */
-	
+
 	public AbstractChartController(StackPane parent, CyServiceRegistrar reg, boolean is2D, CyChartManager mgr) {
 //		System.out.println("AbstractChartController");
 		chartContainer = parent;
@@ -138,10 +138,10 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 //			table = manager.getCurrentNetwork().getDefaultNodeTable();
 			myNetwork = applicationManager.getCurrentNetwork();
 		}
-		
+
 		HBox top = makeHeader(is2D);
 		chartBox = new AnchorPane();			//  the placeholder to contain the chart
-		anchor(chartBox);		
+		anchor(chartBox);
 		VBox bottom = makeFooter(is2D);
 
 		BorderPane page = new BorderPane();
@@ -151,26 +151,30 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		bottom.setPadding(new Insets(2,10,2,10));
 
 		parent.getChildren().add(page);
-		anchor(parent); 
+		anchor(parent);
 		xColumn = manager.getXColumn();
 		yColumn = manager.getYColumn();
 		initialize();
 		parentStackPane = parent;
 		parentStackPane.getChildren().add(tip);
 		tip.setVisible(false);
-//		
+//
 	}
 	Label tip = new Label("");
 	StackPane parentStackPane;
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
 		CyNetwork currentNet = e.getSource().getCurrentNetwork();
-		
-		boolean active = currentNet != null && currentNet == myNetwork;
+		boolean active;
+		if (currentNet == null) {
+			active = false;
+		} else {
+				active = currentNet == myNetwork;
+		}
 		parentStackPane.setDisable(!active);
 		parentStackPane.setOpacity(active ? 1 : 0.5);
-		Platform.runLater(() -> 
-		{	
+		Platform.runLater(() ->
+		{
 			String s = "This window is disabled \nbecause no network is active.";
 			if (currentNet != null)
 			{
@@ -182,7 +186,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 			tip.setVisible(!active);
 		});
 	}
-	
+
 	//-------------------------------------------------------------
 	public String getTitle()
 	{
@@ -193,7 +197,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		else if (myNetwork != null)
 		{
 			CyTable networkTable = myNetwork.getDefaultNetworkTable();
-			if (networkTable != null) 
+			if (networkTable != null)
 				title =  myNetwork.getDefaultNetworkTable().getTitle();
 		}
 		return title;
@@ -204,17 +208,17 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 //	{
 //		initialize();
 //	}
-	
+
 	public void initialize()
 	{
 	    assert( chartContainer != null);
-		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{	
-			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
-			{   setXParameters(newV);   }	
+		ChangeListener<Number> xListener = new ChangeListener<Number>() 		{
+			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV)
+			{   setXParameters(newV);   }
 		};
-		ChangeListener<Number> yListener = new ChangeListener<Number>() 		{	
-			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV) 
-			{   setYParameters(newV);   }	
+		ChangeListener<Number> yListener = new ChangeListener<Number>() 		{
+			@Override public void changed(ObservableValue<? extends Number> obs, Number oldV, Number newV)
+			{   setYParameters(newV);   }
 		};
 		populateColumnChoices();
 		int xIndex = 0;
@@ -223,31 +227,31 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		if (xColumn != null)
 			xSelector.select(xColumn.getName());
 		else 	xSelector.select(xIndex);
-		
+
 		if (yColumn == null)
 		{
 			ySelector.select(1);
 			manager.setYColumnName(ySelector.getSelectedItem());
 		}
 		else	ySelector.select(yColumn.getName());
-			
-		
+
+
 		setParameters();
 		xSelector.selectedIndexProperty().addListener(xListener);
 		ySelector.selectedIndexProperty().addListener(yListener);
-		
+
 		registrar.registerService(this, SetCurrentNetworkListener.class, new Properties());
 	}
 	/*
 	 * Unregister the service when we are inactive
 	 */
-	
+
 	public void unregister()
 	{
 //		System.out.println("unregister");
 		registrar.unregisterService(this, SetCurrentNetworkListener.class);
 	}
-	// ------------  
+	// ------------
 	/*
 	 * Shared code to make the container of buttons and checkboxes
 	 */
@@ -278,7 +282,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		AnchorPane.setLeftAnchor(header1, 12.0);
 		return header1;
 	}
-	// ------------  
+	// ------------
 	/*
 	 * Shared code to make the container of axis ChoiceBox popup with log and min-max fields
 	 */
@@ -288,7 +292,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		ChangeListener<Boolean> logXChange = new ChangeListener<Boolean>() {
 		    @Override public void changed(ObservableValue<? extends Boolean> ov, Boolean old_val, Boolean new_val) {
 		        setLogXDistribution(new_val);
-//		        System.out.println("log changed");} 	
+//		        System.out.println("log changed");}
 		    }  };
 
 		logXTransform = new CheckBox("Log");
@@ -297,8 +301,8 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		logXTransform.setDisable(false);
 		logXTransform.setVisible(true);
 		xMin = makeNumberField("xMin");
-		xMax = makeNumberField("xMax");	
-		
+		xMax = makeNumberField("xMax");
+
 		// ------------   we always create the Y axis line, but only include it if (is2D)
 		yAxisChoices = new ChoiceBox<String>();
 		ChangeListener<Boolean> logYChange = new ChangeListener<Boolean>() {
@@ -315,11 +319,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		logYTransform.setVisible(true);
 		yMin = makeNumberField("yMin");
 		yMax = makeNumberField("yMax");
-		
-		// -------------- layout		
+
+		// -------------- layout
 		footer1 = makeNumberRangeLine(xAxisChoices, logXTransform, xMin, xMax);
 		footer2 = makeNumberRangeLine(yAxisChoices, logYTransform, yMin, yMax);
-		footer3 = new HBox(statusLabel); 
+		footer3 = new HBox(statusLabel);
 		VBox bottom = new VBox();
 		List<Node> children = bottom.getChildren();
 		children.add(footer1);
@@ -327,16 +331,16 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		children.add(footer3);
 		return bottom;
 	}
-	// ------------ 
+	// ------------
 	private HBox makeNumberRangeLine(ChoiceBox<?> choices, CheckBox log, NumberField minFld, NumberField maxFld)		// 6 controls
 	{
 		Label min = new Label("Min:");
-		Label max = new Label("Max:");		
+		Label max = new Label("Max:");
 		min.setFont(numberFont);	min.setAlignment(Pos.BASELINE_RIGHT);		min.setTranslateY(4);
 		max.setFont(numberFont);	max.setAlignment(Pos.BASELINE_RIGHT);		max.setTranslateY(4);
 		return new HBox(8, choices, log, min, minFld, max, maxFld);
 	}
-	// ------------ 
+	// ------------
 	private NumberField makeNumberField(String id) {
 		NumberField fld = new NumberField(this);
 		fld.setId(id);
@@ -347,19 +351,19 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		fld.focusedProperty().addListener((obs, old, nVal) -> { if (!nVal.booleanValue()) fieldChanged(fld.getText(), fld.getId());  });
 		return fld;
 	}
-	// ------------  respond to user edits of range values.  
+	// ------------  respond to user edits of range values.
 	public void fieldChanged(String newValue, String fieldId) {
 
 		BigDecimal newXmin = xMin == null ? new BigDecimal(0) : xMin.getNumber();
 		BigDecimal newXmax = xMax == null ? new BigDecimal(0) : xMax.getNumber();
 		BigDecimal newYmin = yMin == null ? new BigDecimal(0) : yMin.getNumber();
 		BigDecimal newYmax = yMax == null ? new BigDecimal(0) : yMax.getNumber();
-		
+
 		double val = 0;
 		try {
 			val = Double.parseDouble(newValue);
 		}
-		catch (NumberFormatException e) 
+		catch (NumberFormatException e)
 		{
 			return;
 		}
@@ -368,7 +372,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		if ("yMin".equals(fieldId))	setYRange(new Range(val, newYmax.doubleValue()));
 		if ("yMax".equals(fieldId))	setYRange(new Range(newYmin.doubleValue(), val));
 
-		
+
 //		resizeRangeFields();
 //		System.out.println(fieldId + " = " + val);
 }
@@ -378,7 +382,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	protected Button makeFilter;
 	protected Button copyImage;
 	protected CheckBox curveFit;
-	
+
 	protected void makeFilter() {
 		if (registrar == null) {		System.err.println("No registrar found");  return; 	}
 		String x = xAxisChoices.getSelectionModel().getSelectedItem();
@@ -387,7 +391,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	    builder.makeCompositeFilter(registrar);
 	    selectFilterPanel();
 	 }
-	 
+
 	protected void clearRegression()
 	{
 		curveFit.setSelected(false);
@@ -407,15 +411,15 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		if (index >= 0)
 			cytoPanelWest.setSelectedIndex(index);
 	}
-	
+
 	//-------------------------------------------------------------
 	/*
 	 * Take a snapshot of the window and save it as a PNG
 	 */
 	private void snapshot() {
-	    FileChooser fileChooser = new FileChooser();	
+	    FileChooser fileChooser = new FileChooser();
 	    fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("png files (*.png)", "*.png"));
-	
+
 	    //Prompt user to select a file
 	    fileChooser.setInitialFileName(getTitle());
 	    File file = fileChooser.showSaveDialog(null);		//manager.getOwner()
@@ -446,11 +450,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 
 	 public boolean isXLog()	{ return isXLog;	}
 	 public boolean isYLog()	{ return isYLog;	}
-	 
+
 		/*
 		 * Go thru the table columns and collect the numerics
 		 */
-	 
+
 	protected void populateColumnChoices() {
 		if (table != null && !table.getColumns().isEmpty()) {
 			for (CyColumn col : table.getColumns()) {
@@ -464,7 +468,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	}
 	/*
 	 * Search the active table for a column by name
-	 * 
+	 *
 	 * @param name The column name
 	 */
 
@@ -501,29 +505,29 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	public void setStatus(String s)	{
 		if ( statusLabel != null)  statusLabel.setText(s);
 	}
-	  
+
 	public void setStatus(String s, Range xRange, Range yRange)	{
 		if ( statusLabel != null)  statusLabel.setText(s);
 		setXRange(xRange);
 		setYRange(yRange);
 	}
-	  
+
 	public void setXmin(double d)	{ if (!Double.isNaN(d))	xMin.setNumber(d);	}
 	public void setXmax(double d)	{ xMax.setNumber(d);	}
 	public void setYmin(double d)	{ yMin.setNumber(d);	}
 	public void setYmax(double d)	{ yMax.setNumber(d);	}
-	
+
 	public void setXRange(Range r) {
 		if (r == null) return;
-		setXmin(startX = r.min());		
-		setXmax(endX = r.max());		
+		setXmin(startX = r.min());
+		setXmax(endX = r.max());
 	}
 	public void setYRange(Range r) {
 		if (r == null) return;
 		setYmin(startY = r.min());
-		setYmax(endY = r.max());		
+		setYmax(endY = r.max());
 	}
-		
+
 	// ------------------------------------------------------
 	public int getDataSize(XYChart<Number, Number> chart)
 	{
@@ -532,12 +536,12 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 		XYChart.Series<Number, Number> data = dataList.get(0);
 		return data.getData().size();
 	}
-	
+
 	// ------------------------------------------------------
 	protected boolean isNumericColumn(CyColumn col) {
 		return col.getType() == Double.class || col.getType() == Integer.class;
 	}
-	
+
 	protected List<Double> getColumnValues(CyColumn col)
 	{
 		if (col.getType() == Double.class)
@@ -547,7 +551,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 			List<Integer> intvalues = col.getValues(Integer.class);
 			List<Double> dubvalues = new ArrayList<Double>();
 			for (Integer i : intvalues)
-				if (i != null) 
+				if (i != null)
 					dubvalues.add(new Double(i));
 			return dubvalues;
 		}
@@ -558,11 +562,11 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 /*
  * Return the log if it's defined, otherwise 0
  * This is a hack to handle values when plotting on a log axis
- * 
+ *
  * @return the log(d) or 0
  */
 	protected double safelog(double d) {			//  BAD STATS!
-		if (d <= 0) 			return 0;			
+		if (d <= 0) 			return 0;
 		if (Double.isNaN(d)) 	return 0;
 		return Math.log(d);
 	}
@@ -582,7 +586,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	// ------------------------------------------------------
 	public Range getYRange()
 	{
-		if (yAxis == null) yAxis = (ValueAxis<Number>) theChart.getYAxis(); 
+		if (yAxis == null) yAxis = (ValueAxis<Number>) theChart.getYAxis();
 		return new Range(yAxis.getLowerBound(), yAxis.getUpperBound());
 	}
 	// ------------------------------------------------------
@@ -623,7 +627,7 @@ abstract public class AbstractChartController implements SetCurrentNetworkListen
 	 * @param newValue The value it was set to
 	 */
 	public void fieldEdited(String fldId, BigDecimal newValue) {
-		
+
 		double v = newValue.doubleValue();
 		if ("xMin".contentEquals(fldId))	setXmin(v);
 		if ("xMax".contentEquals(fldId))	setXmax(v);
